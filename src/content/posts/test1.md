@@ -1,5 +1,5 @@
 ---
-title: test1
+title: test
 published: 2026-04-24
 description: ''
 image: ''
