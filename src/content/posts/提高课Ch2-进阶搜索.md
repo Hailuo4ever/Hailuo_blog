@@ -4,7 +4,7 @@ published: 2026-04-24
 description: '学习笔记'
 image: ''
 tags: [Algorithm]
-category: '算法题解'
+category: '算法笔记'
 draft: false 
 lang: ''
 ---
