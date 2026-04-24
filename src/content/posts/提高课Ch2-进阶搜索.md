@@ -1,10 +1,10 @@
 ---
-title: Acwing算法提高课-Ch2-进阶搜索笔记
+title: 进阶搜索-笔记
 published: 2026-04-24
-description: '学习笔记'
+description: 'Acwing算法提高课-Ch2-进阶搜索'
 image: ''
-tags: [Algorithm]
-category: '算法笔记'
+tags: [算法笔记]
+category: 'Algorithm'
 draft: false 
 lang: ''
 ---
