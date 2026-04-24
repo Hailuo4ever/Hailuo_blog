@@ -1,0 +1,46 @@
+---
+import { Icon } from "astro-icon/components";
+import { friendLinksConfig } from "../config";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const pageTitle = i18n(I18nKey.friendLinks);
+const links = friendLinksConfig.links;
+---
+
+<MainGridLayout title={pageTitle} description={pageTitle}>
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+            <div class="mb-5 md:mb-6">
+                <h1 class="text-3xl font-bold text-90">{pageTitle}</h1>
+                <div class="h-1 w-12 bg-[var(--primary)] rounded-full mt-2"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {links.map((link) => (
+                    <a
+                        aria-label={link.name}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-card rounded-xl p-4 justify-between active:scale-[0.99]"
+                    >
+                        <div class="min-w-0 flex items-center gap-3">
+                            <span class="btn-regular rounded-lg h-10 w-10 shrink-0">
+                                <Icon name="fa6-solid:link" class="text-[1rem]"></Icon>
+                            </span>
+                            <div class="min-w-0">
+                                <div class="font-bold text-90 truncate">{link.name}</div>
+                                <div class="text-sm text-50 truncate">{link.url}</div>
+                            </div>
+                        </div>
+                        <Icon
+                            name="fa6-solid:arrow-up-right-from-square"
+                            class="text-[0.875rem] shrink-0 ml-3 text-black/[0.25] dark:text-white/[0.25]"
+                        ></Icon>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </div>
+</MainGridLayout>
