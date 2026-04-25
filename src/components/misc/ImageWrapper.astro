@@ -15,14 +15,20 @@ import { url } from "../../utils/url-utils";
 
 const { id, src, alt, position = "center", basePath = "/" } = Astro.props;
 const className = Astro.props.class;
+const normalizedSrc = String(src || "")
+	.trim()
+	.replace(/\\/g, "/");
+const hasSrc = normalizedSrc.length > 0;
 
-const isLocal = !(
-	src.startsWith("/") ||
-	src.startsWith("http") ||
-	src.startsWith("https") ||
-	src.startsWith("data:")
-);
-const isPublic = src.startsWith("/");
+const isLocal =
+	hasSrc &&
+	!(
+		normalizedSrc.startsWith("/") ||
+		normalizedSrc.startsWith("http") ||
+		normalizedSrc.startsWith("https") ||
+		normalizedSrc.startsWith("data:")
+	);
+const isPublic = normalizedSrc.startsWith("/");
 
 // TODO temporary workaround for images dynamic import
 // https://github.com/withastro/astro/issues/3373
@@ -32,16 +38,34 @@ if (isLocal) {
 	const files = import.meta.glob<ImageMetadata>("../../**", {
 		import: "default",
 	});
-	let normalizedPath = path
-		.normalize(path.join("../../", basePath, src))
-		.replace(/\\/g, "/");
-	const file = files[normalizedPath];
+	const localPathCandidates = [
+		path
+			.normalize(path.join("../../", basePath, normalizedSrc))
+			.replace(/\\/g, "/"),
+		path
+			.normalize(
+				path.join(
+					"../../",
+					basePath,
+					"static",
+					normalizedSrc.replace(/^\.?\//, ""),
+				),
+			)
+			.replace(/\\/g, "/"),
+	];
+	const normalizedPath = localPathCandidates.find(
+		(candidate) => typeof files[candidate] === "function",
+	);
+	const file = normalizedPath ? files[normalizedPath] : undefined;
 	if (!file) {
 		console.error(
-			`\n[ERROR] Image file not found: ${normalizedPath.replace("../../", "src/")}`,
+			`\n[ERROR] Image file not found: ${localPathCandidates
+				.map((candidate) => candidate.replace("../../", "src/"))
+				.join(" | ")}`,
 		);
+	} else {
+		img = await file();
 	}
-	img = await file();
 }
 
 const imageClass = "w-full h-full object-cover";
@@ -50,5 +74,5 @@ const imageStyle = `object-position: ${position}`;
 <div id={id} class:list={[className, 'overflow-hidden relative']}>
     <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
     {isLocal && img && <Image src={img} alt={alt || ""} class={imageClass} style={imageStyle}/>}
-    {!isLocal && <img src={isPublic ? url(src) : src} alt={alt || ""} class={imageClass} style={imageStyle}/>}
+	{!isLocal && hasSrc && <img src={isPublic ? url(normalizedSrc) : normalizedSrc} alt={alt || ""} class={imageClass} style={imageStyle}/>}
 </div>
