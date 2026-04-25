@@ -2,7 +2,7 @@
 title: 基础算法-笔记
 published: 2026-04-25
 description: 'Acwing算法基础课-Ch1-基础算法'
-image: './static/acwing.png'
+image: 'https://img.hailuo4ever.com/acwing.png'
 tags: [算法笔记]
 category: 'Algorithm'
 draft: false 
@@ -23,9 +23,9 @@ lang: ''
 2. 将整区间划分为两部分，使分界点左侧的元素都小于 x，右侧都大于 x  
 做法：定义两个指针，由两个端点向中间遍历，当左指针遇到大于 x 的数时停下，右指针遇到小于 x 的数时停下，swap，继续向中间移动，移动到两指针相遇。此时满足左指针左侧的数值都小于 x，右指针右侧的数都大于 x
 
-![](static/board1.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board1.png)
 
-3. 递归处理左侧和右侧
+1. 递归处理左侧和右侧
 
 ### 模板
 
@@ -119,7 +119,7 @@ void merge_sort(int arr[], int l, int r)
 
 > [!TIP]
 > 注意：第三种情况，每次要输出 q[j]时，向答案里加 mid-i+1
-> ![](static/img1.png)
+> ![](https://img.hailuo4ever.com/acwing_ba_ch1/img1.png)
 
 ```cpp
 #include <bits/stdc++.h>
@@ -356,7 +356,7 @@ C++ 标准库中实现了查找首个不小于给定值的元素的函数 `std::
 
 > 解题的时候往往会考虑枚举答案然后检验枚举的值是否正确。若满足单调性，则满足使用二分法的条件。把这里的枚举换成二分，就变成了「二分答案」。
 
-![](static/img2.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/img2.png)
 
 例题：[https://www.luogu.com.cn/problem/P1873](https://www.luogu.com.cn/problem/P1873)
 
@@ -394,7 +394,7 @@ int main() {
 }
 ```
 
-![](static/img3.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/img3.png)
 
 ## 二分的开区间写法、循环不变量
 
@@ -652,7 +652,7 @@ vector<int> mul(vector<int> &A, vector<int> &B)
 > 而输出的时候是倒着输出，最后就会负负得正，输出正确的结果
 > 注意部分题目中，余数可能整型溢出！
 
-![](static/board2.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board2.png)
 
 ```cpp
 #include <iostream>
@@ -785,7 +785,7 @@ int main()
 
 `sum[x2][y2] - sum[x1-1][y2] - sum[x2][y1-1] + sum[x1-1][y1-1]`
 
-![](static/board3.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board3.png)
 
 ## 差分
 
@@ -813,7 +813,7 @@ void insert(int l, int r, int c)
 }
 ```
 
-![](static/board4.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board4.png)
 
 构造时：`for(int i = 1; i <= n; i++) insert(i,i,a[i]);` //a[i]为原数组
 
@@ -884,7 +884,7 @@ void insert(int x1, int y1, int x2, int y2, int c)
                 insert(i, j, i, j, a[i][j]); //a[i][j]为原数组
 ```
 
-![](static/board5.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board5.png)
 
 #### 例题-Acwing798
 
@@ -944,7 +944,7 @@ x & -x = x & (~x+1）
 2. 按区间左端点排序
 3. 模板（注意代码细节）
 
-![](static/board6.png)
+![](https://img.hailuo4ever.com/acwing_ba_ch1/board6.png)
 
 ## 模板函数
 

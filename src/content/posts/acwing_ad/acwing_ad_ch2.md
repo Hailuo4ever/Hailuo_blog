@@ -2,7 +2,7 @@
 title: 进阶搜索-笔记
 published: 2026-04-24
 description: 'Acwing算法提高课-Ch2-进阶搜索'
-image: '.\acwing.png'
+image: 'https://img.hailuo4ever.com/acwing.png'
 tags: [算法笔记]
 category: 'Algorithm'
 draft: false 
