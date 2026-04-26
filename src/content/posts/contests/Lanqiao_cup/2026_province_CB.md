@@ -2,7 +2,7 @@
 title: 第17届蓝桥杯省赛C/C++ B组题解
 published: 2026-04-24
 description: '补题总结的题解'
-image: 'https://img.hailuo4ever.com/lanqiao.png'
+image: 'https://img.hailuo4ever.com/cover/lanqiao.png'
 tags: [算法题解]
 category: 'Algorithm'
 draft: false 

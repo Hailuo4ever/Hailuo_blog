@@ -2,7 +2,7 @@
 title: 基础算法-笔记
 published: 2026-04-25
 description: 'Acwing算法基础课-Ch1-基础算法'
-image: 'https://img.hailuo4ever.com/acwing.png'
+image: 'https://img.hailuo4ever.com/cover/acwing.png'
 tags: [算法笔记]
 category: 'Algorithm'
 draft: false 
