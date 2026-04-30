@@ -1,6 +1,6 @@
 ---
 title: 基础课-贪心
-published: 2026-02-26
+published: 2026-03-13
 description: 'Acwing算法基础课-Ch6-贪心'
 image: https://img.hailuo4ever.com/cover/acwing.png
 tags: [算法笔记, Acwing]

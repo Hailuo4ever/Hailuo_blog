@@ -1,6 +1,6 @@
 ---
 title: 基础课-动态规划
-published: 2026-02-15
+published: 2026-03-06
 description: 'Acwing算法基础课-Ch5-动态规划'
 image: https://img.hailuo4ever.com/cover/acwing.png
 tags: [算法笔记, Acwing]

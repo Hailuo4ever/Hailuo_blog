@@ -1,6 +1,6 @@
 ---
 title: 基础课-数论
-published: 2026-02-09
+published: 2026-02-16
 description: 'Acwing算法基础课-Ch4-数论'
 image: https://img.hailuo4ever.com/cover/acwing.png
 tags: [算法笔记, Acwing]

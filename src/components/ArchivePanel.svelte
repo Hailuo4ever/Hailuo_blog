@@ -26,6 +26,7 @@ interface Post {
 
 interface Group {
 	year: number;
+    month: number;
 	posts: Post[];
 }
 
@@ -62,26 +63,28 @@ onMount(async () => {
 		filteredPosts = filteredPosts.filter((post) => !post.data.category);
 	}
 
-	const grouped = filteredPosts.reduce(
-		(acc, post) => {
-			const year = post.data.published.getFullYear();
-			if (!acc[year]) {
-				acc[year] = [];
-			}
-			acc[year].push(post);
-			return acc;
-		},
-		{} as Record<number, Post[]>,
-	);
+    const grouped = filteredPosts.reduce(
+        (acc, post) => {
+            const year = post.data.published.getFullYear();
+            const month = post.data.published.getMonth() + 1;
+            const key = `${year}-${month}`;
+            if (!acc[key]) {
+                acc[key] = { year, month, posts: [] };
+            }
+            acc[key].posts.push(post);
+            return acc;
+        },
+        {} as Record<string, Group>,
+    );
 
-	const groupedPostsArray = Object.keys(grouped).map((yearStr) => ({
-		year: Number.parseInt(yearStr, 10),
-		posts: grouped[Number.parseInt(yearStr, 10)],
-	}));
+    const groupedPostsArray = Object.values(grouped);
 
-	groupedPostsArray.sort((a, b) => b.year - a.year);
+    groupedPostsArray.sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+    });
 
-	groups = groupedPostsArray;
+    groups = groupedPostsArray;
 });
 </script>
 
@@ -89,8 +92,8 @@ onMount(async () => {
     {#each groups as group}
         <div>
             <div class="flex flex-row w-full items-center h-[3.75rem]">
-                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
-                    {group.year}
+                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75 whitespace-nowrap">
+                    {group.year}-{group.month.toString().padStart(2, "0")}
                 </div>
                 <div class="w-[15%] md:w-[10%]">
                     <div
