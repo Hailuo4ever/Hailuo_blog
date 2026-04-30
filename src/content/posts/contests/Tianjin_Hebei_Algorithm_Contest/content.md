@@ -1,9 +1,9 @@
 ---
-title: 第一届津冀九校竞赛补题
+title: 第一届津冀九校
 published: 2026-04-26
 description: '被虐爆了...'
 image: 'https://img.hailuo4ever.com/cover/cry.png'
-tags: [算法题解]
+tags: [算法题解, 线下练习赛]
 category: 'Algorithm'
 draft: false 
 lang: ''

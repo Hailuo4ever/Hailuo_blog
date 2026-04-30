@@ -1,9 +1,9 @@
 ---
-title: 基础算法-笔记
-published: 2026-04-25
+title: 基础课-基础算法
+published: 2025-12-21
 description: 'Acwing算法基础课-Ch1-基础算法'
 image: 'https://img.hailuo4ever.com/cover/acwing.png'
-tags: [算法笔记]
+tags: [算法笔记, Acwing]
 category: 'Algorithm'
 draft: false 
 lang: ''
@@ -46,7 +46,7 @@ void quick_sort(int q[], int l, int r)
         do
             j--; // 向左移动j
         while (q[j] > x);
-        **if (i < j)** // **两个指针不相遇时，**swap
+        if (i < j) // 两个指针不相遇时，swap
             swap(q[i], q[j]);
     }
     quick_sort(q, l, j);     // 处理区间【原数组左边界,j】的数据
@@ -98,7 +98,8 @@ void merge_sort(int arr[], int l, int r)
     while(i <= mid && j <= r) //左半边和右半边不为空
     {
         if(arr[i] < arr[j]) tmp[k++] = arr[i++]; //比较i，j指向的数，把较小的数放到当前位置上并迭代指针
-        **else** tmp[k++] = arr[j++]; //注意别忘写else，算进等于的情况
+        else
+            tmp[k++] = arr[j++]; // 注意别忘写else，算进等于的情况
     }
     
     //扫尾
@@ -114,8 +115,8 @@ void merge_sort(int arr[], int l, int r)
 
 ### 逆序对问题
 
-**[https://www.acwing.com/problem/content/description/790/](https://www.acwing.com/problem/content/description/790/)**\
-**[https://www.luogu.com.cn/problem/P1116](https://www.luogu.com.cn/problem/P1116)**
+[https://www.acwing.com/problem/content/description/790/](https://www.acwing.com/problem/content/description/790/)\
+[https://www.luogu.com.cn/problem/P1116](https://www.luogu.com.cn/problem/P1116)
 
 > [!TIP]
 > 注意：第三种情况，每次要输出 q[j]时，向答案里加 mid-i+1
