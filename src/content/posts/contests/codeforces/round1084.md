@@ -1,5 +1,5 @@
 ---
-title: cf round 1084 (Div.3)
+title: cf 2200 (Div.3)
 published: 2026-04-29
 description: 'Codeforces Round 1084 (Div.3) 补题A-E'
 image: 'https://img.hailuo4ever.com/cover/codeforces.png'
