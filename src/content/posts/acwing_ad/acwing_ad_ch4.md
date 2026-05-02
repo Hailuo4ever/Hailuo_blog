@@ -1,12 +1,12 @@
 ---
 title: 提高课-数据结构
 published: 2026-04-30
-description: 'Acwing算法提高课-Ch4-数据结构'
-image: 'https://img.hailuo4ever.com/cover/acwing.png'
+description: "Acwing算法提高课-Ch4-数据结构"
+image: "https://img.hailuo4ever.com/cover/acwing.png"
 tags: [算法笔记, Acwing]
-category: 'Algorithm'
-draft: false 
-lang: ''
+category: "Algorithm"
+draft: false
+lang: ""
 ---
 
 # 并查集
@@ -814,9 +814,9 @@ int main()
 1. `pushup(u)`，一般 u 为节点编号，把某一个节点所需的信息算出来
 2. `build()`，将一段区间初始化成线段树
 3. `modify()`，修改
-
    - 单点修改：easy
    - 区间修改：`pushdown()`，懒标记（Hard）
+
 4. `query()`，区间查询
 
 ## 基本概念
@@ -837,7 +837,7 @@ int main()
 2. 左儿子为 `2x`，即 `x << 1`
 3. 右儿子 `2x+1`，即 `x << 1 | 1`
 
-**一般来说，线段树的空间要开到****4n**
+**一般来说，线段树的空间要开到`4n`**
 
 因为一颗线段树最多是一棵满二叉树，而满二叉树的最后一层是 n 个点，前面是 n - 1 个点，所以一共需要 `2n-1` 的空间，但由于线段树有可能最后一层节点还有子节点，最多 `2n` 个点，最坏情况下只有最右边两个节点（此时所需的空间最大），最右下角的一个节点的编号为 `2n-1+2n=4n-1`，所以线段树一般开 `4n` 的空间
 
@@ -860,7 +860,7 @@ int main()
 
 即 `build(u << 1, l, mid)`，`build(u << 1 | 1, mid + 1, r)`
 
-**最后****pushup(u)****！**
+**最后 `pushup(u)` ！**
 
 ### 查询-query()
 
@@ -869,4 +869,4 @@ int main()
 1. `[TL, TR]` 真包含于 `[L, R]` 时，直接 `return` 即可
 2. `[L, R] ∩ [TL, TR] != ∅` 时，如果左儿子代表的区间与询问区间有交集，就递归查询左儿子；右儿子有交集就递归右儿子
 
-**注：根据线段树的特性，不存在****[L, R] ∩ [TL, TR] == ∅****的情况，且这种查询方法是对数时间的**
+**注：根据线段树的特性，不存在 `[L, R] ∩ [TL, TR] == ∅` 的情况，且这种查询方法是对数时间的**

@@ -1,12 +1,12 @@
 ---
 title: 提高课-搜索
 published: 2026-04-24
-description: 'Acwing算法提高课-Ch2-进阶搜索'
-image: 'https://img.hailuo4ever.com/cover/acwing.png'
+description: "Acwing算法提高课-Ch2-进阶搜索"
+image: "https://img.hailuo4ever.com/cover/acwing.png"
 tags: [算法笔记, Acwing]
-category: 'Algorithm'
-draft: false 
-lang: ''
+category: "Algorithm"
+draft: false
+lang: ""
 ---
 
 # 进阶搜索思路
@@ -943,7 +943,7 @@ int main()
 }
 ```
 
-## A*
+## A\*
 
 > A* 搜索算法（A* search algorithm，A* 读作 A-star），简称 A* 算法，是一种在带权有向图上，找到给定起点与终点之间的最短路径的算法．它属于图遍历（graph traversal）和最佳优先搜索算法（best-first search），亦是 BFS 的改进，适用于搜索状态比较庞大的情况，可有效进行优化。
 

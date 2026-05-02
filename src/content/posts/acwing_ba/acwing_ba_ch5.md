@@ -1,17 +1,17 @@
 ---
 title: 基础课-动态规划
 published: 2026-03-06
-description: 'Acwing算法基础课-Ch5-动态规划'
+description: "Acwing算法基础课-Ch5-动态规划"
 image: https://img.hailuo4ever.com/cover/acwing.png
 tags: [算法笔记, Acwing]
-category: 'Algorithm'
+category: "Algorithm"
 draft: false
-lang: ''
+lang: ""
 ---
 
 > [!TIP]
 > DP 问题的本质：有限集中的最优解
-> DP 问题的时间复杂度分析方法：状态数量 * 转移计算量
+> DP 问题的时间复杂度分析方法：状态数量 \* 转移计算量
 > 注意：方程中需要计算下标 i-1 的时候，输入需要从 1 开始，否则从 0 开始
 
 ![](https://img.hailuo4ever.com/acwing_ba_ch5/1.png)
@@ -20,10 +20,10 @@ lang: ''
 2. 划分集合：寻找最后一个不同点
 3. 状态计算：把集合分成若干个子集，先求解若干个子集的解，再加起来
 4. 考虑状态转移：
-
    - 先考虑：如果没有进行这个操作应该是什么状态
    - 然后考虑：进行这一步操作之后会对你下一个状态造成什么影响
    - 然后再加上之前状态表示中，决策出来的那个 DP 属性，写出状态转移方程
+
 5. 考虑状态数据的初始化
 
 # 背包问题
@@ -56,8 +56,8 @@ lang: ''
 ![](https://img.hailuo4ever.com/acwing_ba_ch5/4.png)
 
 $$
-f[i][j] = 
-\begin{cases} 
+f[i][j] =
+\begin{cases}
 f[i - 1][j] & \text{} v_i \geq j \\
 \max\{f[i - 1][j], f[i - 1][j - v_i]\} + w_i & \text{} v_i < j
 \end{cases}
@@ -466,8 +466,8 @@ int main()
 ##### 朴素的状态转移方程
 
 $$
-f[i][j] = 
-\begin{cases} 
+f[i][j] =
+\begin{cases}
 f[i - 1][j] & \text{} v[i][k] > j \\
 \max\{f[i][j], f[i - 1][j - v[i][k]] + w[i][k] & \text{} v[i][k] \leqslant j
 \end{cases}
@@ -1014,7 +1014,7 @@ int main()
     int res = 0;
     for (int i = 1; i <= n; i++)
         res = (res + f[n][i]) % mod;
-    
+
     cout << res << endl;
     return 0;
 }

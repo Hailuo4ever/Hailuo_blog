@@ -1,12 +1,12 @@
 ---
 title: cf 2200 (Div.3)
 published: 2026-04-29
-description: 'Codeforces Round 1084 (Div.3) 补题A-E'
-image: 'https://img.hailuo4ever.com/cover/codeforces.png'
+description: "Codeforces Round 1084 (Div.3) 补题A-E"
+image: "https://img.hailuo4ever.com/cover/codeforces.png"
 tags: [算法题解, Codeforces]
-category: 'Algorithm'
-draft: false 
-lang: ''
+category: "Algorithm"
+draft: false
+lang: ""
 ---
 
 > [!NOTE]
@@ -120,8 +120,6 @@ int main()
 }
 
 ```
-
-
 
 # C - Specialty String
 
@@ -446,6 +444,3 @@ int main()
 }
 
 ```
-
-
-

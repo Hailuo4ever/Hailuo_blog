@@ -1,15 +1,16 @@
 ---
 title: 牛客周赛 Round 141
 published: 2026-04-28
-description: '补题总结的题解'
+description: "补题总结的题解"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
 tags: [算法题解, Nowcoder]
-category: 'Algorithm'
+category: "Algorithm"
 draft: false
-lang: ''
+lang: ""
 ---
->[!NOTE]
->比赛链接：[Nowcoder_Week_Contest_141](https://ac.nowcoder.com/acm/contest/133523)
+
+> [!NOTE]
+> 比赛链接：[Nowcoder_Week_Contest_141](https://ac.nowcoder.com/acm/contest/133523)
 
 # A - 回文 1
 

@@ -1,12 +1,12 @@
 ---
 title: 基础课-数论
 published: 2026-02-16
-description: 'Acwing算法基础课-Ch4-数论'
+description: "Acwing算法基础课-Ch4-数论"
 image: https://img.hailuo4ever.com/cover/acwing.png
 tags: [算法笔记, Acwing]
-category: 'Algorithm'
+category: "Algorithm"
 draft: false
-lang: ''
+lang: ""
 ---
 
 # 格雷码
@@ -15,6 +15,7 @@ lang: ''
 例如：3 位二进制数的格雷码序列为：
 `000,001,011,010,110,111,101,100`
 对应十进制数 `0,1,3,2,6,7,5,4`
+
 > 对应十进制数 `0,1,3,2,6,7,5,4`
 
 ## 构造方式
@@ -99,7 +100,7 @@ int grey(int n) { return n ^ (n >> 1); }
 ![](https://img.hailuo4ever.com/acwing_ba_ch4/3.png)
 
 ```cpp
-int rev_g(int g) 
+int rev_g(int g)
 {
   int n = 0;
   for (; g; g >>= 1) n ^= g;
@@ -281,10 +282,10 @@ $N = P_1^{a_1} P_2^{a_2} P_3^{a_3} \cdots P_n^{a_n}$，P 均为质数，a 均为
 中国剩余定理可以求解如下形式的一元线性同余方程组（其中$n_1,n_2\cdots n_k$两两互质）
 
 $$
-\begin{cases} 
-x \equiv a_1 \pmod{n_1} \\ 
-x \equiv a_2 \pmod{n_2} \\ 
-\vdots \\ 
+\begin{cases}
+x \equiv a_1 \pmod{n_1} \\
+x \equiv a_2 \pmod{n_2} \\
+\vdots \\
 x \equiv a_k \pmod{n_k}
 \end{cases}
 $$
@@ -311,10 +312,10 @@ $$
 
 1. 计算所有模数的积$n=n_1n_2\cdots n_k$
 2. 对于第$i$个方程
-
    1. 计算$m_i= \frac {n} n_i$
    2. 计算$m_i$在模$n_i$意义下的逆元$m_i^{-1}$
    3. 计算$c_i=m_i m_i^{-1}$，注意这里不要对$n_i$取模
+
 3. 方程组在模$n$意义下的唯一解为：$x = \sum_{i=1}^k a_i c_i \pmod{n}$
 
 ### 代码
@@ -436,7 +437,7 @@ bool is_prime(int n)
 
 注意事项：
 
-1. x 的质因子中，最多只包含一个大于 `√x` 的质数    如果有两个，他们的乘积就大于 n 了，这样矛盾
+1. x 的质因子中，最多只包含一个大于 `√x` 的质数 如果有两个，他们的乘积就大于 n 了，这样矛盾
 2. `i` 从 2 遍历到 `√x`，用 `x/i`，如果余数为 0，则 `i` 一定是一个质因子
 3. `s` 表示质因子 i 的指数（有多少个这样的因子）
 4. 最后要检查一下：是否有大于 `√x` 的因子
@@ -509,7 +510,7 @@ void get_primes(int n)
     {
         if (!st[i])
             primes[cnt++] = i;
-        
+
         for (int j = i + i; j <= n; j += i)
             st[j] = true;
     }
@@ -733,7 +734,7 @@ int main()
     }
 
     long long res = 1;
-        
+
         // 计算公式：(a1+1)(a2+1)...(an+1)
     for (auto it = mp.begin(); it != mp.end(); ++it)
         res = res * (it->second + 1) % mod;
@@ -824,7 +825,7 @@ while (b)
     a = b;
     b = c;
 }
-        
+
 cout << a << endl;
 ```
 
@@ -977,7 +978,7 @@ int main()
 ## 综合例题-洛谷 P2568
 
 > [https://www.luogu.com.cn/problem/P2568](https://www.luogu.com.cn/problem/P2568)
-> 给定正整数 _n_，求 1≤_x_,_y_≤_n_ 且 gcd(_x_,_y_) 为素数的数对 (_x_,_y_) 有多少对。
+> 给定正整数 _n_，求 1≤*x*,*y*≤*n* 且 gcd(_x_,_y_) 为素数的数对 (_x_,_y_) 有多少对。
 > 应用知识：
 
 ### 思路
@@ -1355,11 +1356,11 @@ int main()
 ### 求解思路
 
 1. 把原矩阵通过高斯消元消成上三角形矩阵（做异或操作）
-
    - 枚举矩阵的每一列
    - 找出第一个非零行
    - 交换非零行到最上方
    - 将该列下面的行通过异或操作清零
+
 2. 判断解的情况确定返回值（唯一解、无解、无穷组解）
 3. 反推回代，解出整个方程组
 
