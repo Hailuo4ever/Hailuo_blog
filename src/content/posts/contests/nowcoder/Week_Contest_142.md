@@ -19,7 +19,7 @@ lang: ""
 
 ## Code
 
-```C++
+```c++
 // Problem: 小苯的ovo3.0
 // Contest: NowCoder
 // URL: https://ac.nowcoder.com/acm/contest/133790/A
@@ -74,7 +74,7 @@ int main()
 
 ## Code
 
-```C++
+```c++
 // Problem: 小苯的双端队列
 // Contest: NowCoder
 // URL: https://ac.nowcoder.com/acm/contest/133790/B
@@ -152,7 +152,7 @@ int main()
 
 ## Code
 
-```C++
+```c++
 // Problem: 小苯的整除序列
 // Contest: NowCoder
 // URL: https://ac.nowcoder.com/acm/contest/133790/C
@@ -327,7 +327,7 @@ int main()
 
 ## Code
 
-```C++
+```c++
 // Problem: 小苯的区间操作
 // Contest: NowCoder
 // URL: https://ac.nowcoder.com/acm/contest/133790/E
@@ -421,7 +421,7 @@ int main()
 
 ## Code
 
-```C++
+```c++
 // Problem: 小苯的DFS
 // Contest: NowCoder
 // URL: https://ac.nowcoder.com/acm/contest/133790/F

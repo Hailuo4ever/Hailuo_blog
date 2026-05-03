@@ -820,7 +820,7 @@ int main()
 
 ## Code
 
-```C++
+```c++
 // Problem: CF 2227 H
 // Contest: Codeforces - Codeforces Round 1096 (Div. 3)
 // URL: https://codeforces.com/contest/2227/problem/H
