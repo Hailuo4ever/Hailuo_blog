@@ -1,7 +1,7 @@
 ---
 title: 牛客周赛 Round 141
 published: 2026-04-28
-description: "补题总结的题解"
+description: "Nowcoder Week Contest 141"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
 tags: [算法题解, Nowcoder]
 category: "Algorithm"

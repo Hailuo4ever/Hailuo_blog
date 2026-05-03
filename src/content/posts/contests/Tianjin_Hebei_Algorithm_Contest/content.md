@@ -1,7 +1,7 @@
 ---
 title: 第一届津冀九校
 published: 2026-04-26
-description: "被虐爆了..."
+description: "第一届津冀联合高校大学生程序设计竞赛"
 image: "https://img.hailuo4ever.com/cover/cry.png"
 tags: [算法题解, 线下练习赛]
 category: "Algorithm"
