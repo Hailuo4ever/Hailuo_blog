@@ -18,11 +18,13 @@ export function pluginLanguageBadge() {
         font-size: 0.75rem;
         font-weight: bold;
         text-transform: uppercase;
-        color: oklch(0.75 0.1 var(--hue));
-        background: oklch(0.33 0.035 var(--hue));
+        color: var(--codeblock-badge-color);
+        background: var(--codeblock-badge-bg);
+        border: 1px solid var(--codeblock-badge-border);
         border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
         pointer-events: none;
-        transition: opacity 0.3s;
+        transition: opacity 0.3s, background-color 0.3s, color 0.3s, border-color 0.3s;
         opacity: 0;
       }
       .frame:not(.has-title):not(.is-terminal) {
