@@ -180,6 +180,12 @@ class TableOfContents extends HTMLElement {
         this.active[idx] = true;
     };
 
+    handleHeadingCollapseChange = () => {
+        this.active.fill(false);
+        this.fallback();
+        this.update();
+    };
+
     handleAnchorClick = (event: Event) => {
         const anchor = event
             .composedPath()
@@ -222,6 +228,7 @@ class TableOfContents extends HTMLElement {
         this.tocEl.addEventListener("click", this.handleAnchorClick, {
             capture: true,
         });
+        window.addEventListener("heading-collapse:change", this.handleHeadingCollapseChange);
 
         this.activeIndicator = document.getElementById("active-indicator");
 
@@ -259,6 +266,7 @@ class TableOfContents extends HTMLElement {
         );
         this.observer.disconnect();
         this.tocEl?.removeEventListener("click", this.handleAnchorClick);
+        window.removeEventListener("heading-collapse:change", this.handleHeadingCollapseChange);
     };
 }
 

@@ -4,6 +4,26 @@
     }
 
     h1, h2, h3, h4, h5, h6 {
+        @apply relative;
+
+        .heading-collapse-toggle {
+            all: unset;
+            @apply absolute -left-6 top-[0.2em] h-6 w-6 inline-flex items-center justify-center rounded-md
+            cursor-pointer text-black/30 hover:text-[var(--primary)] hover:bg-[var(--btn-plain-bg-hover)]
+            active:bg-[var(--btn-plain-bg-active)] dark:text-white/30 dark:hover:text-[var(--primary)]
+            transition;
+        }
+
+        .heading-collapse-toggle::before {
+            content: "";
+            width: 0.45rem;
+            height: 0.45rem;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(45deg) translate(-0.05rem, -0.05rem);
+            transition: transform 0.15s ease;
+        }
+
         .anchor {
             @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0 no-underline !important;
 
@@ -17,6 +37,19 @@
                 @apply opacity-100 !important;
             }
         }
+    }
+
+    section.heading-collapsed > h1 .heading-collapse-toggle::before,
+    section.heading-collapsed > h2 .heading-collapse-toggle::before,
+    section.heading-collapsed > h3 .heading-collapse-toggle::before,
+    section.heading-collapsed > h4 .heading-collapse-toggle::before,
+    section.heading-collapsed > h5 .heading-collapse-toggle::before,
+    section.heading-collapsed > h6 .heading-collapse-toggle::before {
+        transform: rotate(-45deg);
+    }
+
+    section.heading-collapsed > :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+        display: none;
     }
 
     a:not(.no-styling) {
@@ -37,7 +70,7 @@
         }
     }
 
-    code {
+    :not(pre) > code {
         @apply bg-[var(--inline-code-bg)] text-[var(--inline-code-color)] px-1 py-0.5 rounded-md overflow-hidden;
 
         font-family: "Cascadia Code Variable", "Cascadia Code", "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

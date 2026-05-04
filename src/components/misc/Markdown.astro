@@ -16,6 +16,96 @@ const className = Astro.props.class;
 </div>
 
 <script>
+function ensureExpressiveCodeAssets() {
+    document
+        .querySelectorAll<HTMLStyleElement>(".expressive-code style")
+        .forEach((style, styleIndex) => {
+            const styleId = `expressive-code-inline-style-${styleIndex}`;
+            if (document.head.querySelector(`#${styleId}`)) return;
+
+            const headStyle = document.createElement("style");
+            headStyle.id = styleId;
+            headStyle.textContent = style.textContent;
+            document.head.appendChild(headStyle);
+        });
+
+    document
+        .querySelectorAll<HTMLLinkElement>(".expressive-code link[rel='stylesheet'][href]")
+        .forEach((link) => {
+            if (document.head.querySelector(`link[rel="stylesheet"][href="${link.href}"]`)) return;
+
+            const headLink = document.createElement("link");
+            headLink.rel = "stylesheet";
+            headLink.href = link.href;
+            document.head.appendChild(headLink);
+        });
+
+    document
+        .querySelectorAll<HTMLScriptElement>(".expressive-code script[type='module'][src]")
+        .forEach((script) => {
+            if (document.head.querySelector(`script[type="module"][src="${script.src}"]`)) return;
+
+            const headScript = document.createElement("script");
+            headScript.type = "module";
+            headScript.src = script.src;
+            document.head.appendChild(headScript);
+        });
+}
+
+function initHeadingCollapse() {
+    ensureExpressiveCodeAssets();
+
+    const markdownBlocks = document.querySelectorAll<HTMLElement>(".markdown-content");
+
+    markdownBlocks.forEach((markdownBlock) => {
+        const sections = markdownBlock.querySelectorAll<HTMLElement>("section");
+
+        sections.forEach((section) => {
+            if (section.dataset.headingCollapseInitialized === "true") return;
+
+            const heading = section.firstElementChild;
+            if (!(heading instanceof HTMLHeadingElement)) return;
+            if (!/^H[1-6]$/.test(heading.tagName)) return;
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "heading-collapse-toggle";
+            button.setAttribute("aria-expanded", "true");
+            button.setAttribute("aria-label", "Collapse section");
+            button.setAttribute("data-pagefind-ignore", "true");
+
+            button.addEventListener("click", () => {
+                const isCollapsed = section.classList.toggle("heading-collapsed");
+                button.setAttribute("aria-expanded", String(!isCollapsed));
+                button.setAttribute("aria-label", isCollapsed ? "Expand section" : "Collapse section");
+                window.dispatchEvent(new CustomEvent("heading-collapse:change"));
+            });
+
+            heading.prepend(button);
+            section.dataset.headingCollapseInitialized = "true";
+        });
+    });
+}
+
+initHeadingCollapse();
+
+const setupHeadingCollapse = () => {
+    window.swup.hooks.on("page:view", initHeadingCollapse);
+};
+
+const headingCollapseWindow = window as Window & {
+    headingCollapseSetup?: boolean;
+};
+
+if (!headingCollapseWindow.headingCollapseSetup) {
+    headingCollapseWindow.headingCollapseSetup = true;
+    if (window.swup) {
+        setupHeadingCollapse();
+    } else {
+        document.addEventListener("swup:enable", setupHeadingCollapse, { once: true });
+    }
+}
+
 document.addEventListener("click", function (e: MouseEvent) {
     const target = e.target as Element | null;
     if (target && target.classList.contains("copy-btn")) {

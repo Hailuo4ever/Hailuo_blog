@@ -59,6 +59,7 @@ export default defineConfig({
 			},
 		}),
 		expressiveCode({
+			emitExternalStylesheet: false,
 			themes: [expressiveCodeConfig.lightTheme, expressiveCodeConfig.theme],
 			useDarkModeMediaQuery: false,
 			plugins: [

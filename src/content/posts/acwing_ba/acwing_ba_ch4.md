@@ -257,6 +257,8 @@ $N = P_1^{a_1} P_2^{a_2} P_3^{a_3} \cdots P_n^{a_n}$，P 均为质数，a 均为
 
 ### 欧拉定理的证明
 
+![](https://img.hailuo4ever.com/acwing_ba_ch4/25.png)
+
 ## 费马小定理
 
 > 当欧拉定理中的 n 为素数时，欧拉定理加强为费马小定理
