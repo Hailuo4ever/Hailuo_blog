@@ -408,7 +408,8 @@ const setup = () => {
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
-		if (pathsEqual(visit.to.url, url('/'))) {
+		const targetPath = new URL(visit.to.url, window.location.origin).pathname
+		if (pathsEqual(targetPath, url('/'))) {
 			bodyElement!.classList.add('lg:is-home');
 		} else {
 			bodyElement!.classList.remove('lg:is-home');
@@ -455,10 +456,10 @@ if (window?.swup?.hooks) {
 }
 
 let backToTopBtn = document.getElementById('back-to-top-btn');
-let toc = document.getElementById('toc-wrapper');
 let navbar = document.getElementById('navbar-wrapper')
 function scrollFunction() {
 	let bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100)
+	const toc = document.getElementById('toc-wrapper');
 
 	if (backToTopBtn) {
 		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
