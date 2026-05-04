@@ -7,7 +7,7 @@ export function pluginLanguageBadge() {
 	return definePlugin({
 		name: "Language Badge",
 		baseStyles: () => `
-      [data-language]::before {
+      .frame:not(.has-title):not(.is-terminal) [data-language]::before {
         position: absolute;
         z-index: 2;
         right: 0.5rem;
