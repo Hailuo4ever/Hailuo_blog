@@ -234,3 +234,149 @@ int main()
 
 ```
 
+# D - 稻香
+
+> 关键词：树形DP，DFS
+
+## 思路
+
+相比于带剪枝的 `DFS` 寻找最小叶子，我们可以通过树上 `DP` 预处理的方式，在开始前先算出所有状态的最优解。
+
+定义 `dp[u][j]` 为以 `u` 为根的子树中，最多用 `j` 次操作所能到达的值最小的叶子节点。
+
+具体过程见代码和注释，还有[Gemini对话记录](https://gemini.google.com/share/5bb87f8c4a11)，这题还是有点难了，补不太动。
+
+## Code
+
+```c++
+// Problem: Luogu P16428
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P16428
+// Time: 2026-05-05 10:58:36
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int, int> pii;
+typedef pair<double, double> pdd;
+typedef pair<long long, long long> pll;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 1e6 + 10;
+
+int n, m, root, k, ch[N][2], dep[N], dp[N][30];
+char op;
+
+void dfs(int u)
+{
+    if (!ch[u][0]) // 如果是叶子节点
+    {
+        dp[u][0] = u; // 无论怎么走，到达的只能是自己
+        return;
+    }
+
+    dfs(ch[u][0]);
+    dfs(ch[u][1]);
+
+    dep[u] = dep[ch[u][0]] + 1; // 计算子树的高度（距离叶子的边数）
+    dp[u][0] = dp[ch[u][0]][0]; // 如果一次交换次数都没有，只能一直往左走
+
+    // 计算有 j 次交换机会时，能拿到的最小叶子
+    for (int j = 1; j <= dep[u]; ++j)
+    {
+        dp[u][j] = min(dp[ch[u][0]][min(dep[u] - 1, j)], dp[ch[u][1]][j - 1]);
+        // 策略 A：不交换当前节点，继续走左边。那这 j 次机会都可以留给左子树用
+        // 策略 B：交换当前节点，走向原先的右边。这会消耗掉 1 次机会，剩下 j-1 次留给右子树用
+    }
+}
+
+void dfsa(int u)
+{
+    if (!u)
+        return;
+    cout << u << " ";
+
+    // 前序遍历只看第一步，只要右儿子比左儿子小，且还有 k，直接换
+    if (k && ch[u][0] > ch[u][1])
+    {
+        swap(ch[u][0], ch[u][1]);
+        --k;
+    }
+
+    dfsa(ch[u][0]);
+    dfsa(ch[u][1]);
+}
+
+void dfsb(int u)
+{
+    if (!u)
+        return;
+
+    // 如果把 1 次机会花在当前节点（走向右边），且剩下的 k-1 次机会能在右子树找到的最小叶子，严格小于
+    // 不花机会在当前节点（走向左边），把全部 k 次机会都给左子树能找到的最小叶子
+    if (k && ch[u][0] && dp[ch[u][1]][min(k - 1, dep[u] - 1)] < dp[ch[u][0]][min(k, dep[u] - 1)])
+    {
+        swap(ch[u][0], ch[u][1]);
+        --k;
+    }
+
+    dfsb(ch[u][0]);
+    cout << u << " ";
+    dfsb(ch[u][1]);
+}
+
+void dfsc(int u)
+{
+    if (!u)
+        return;
+    if (k && ch[u][0] && dp[ch[u][1]][min(k - 1, dep[u] - 1)] < dp[ch[u][0]][min(k, dep[u] - 1)])
+    {
+        swap(ch[u][0], ch[u][1]);
+        --k;
+    }
+
+    dfsc(ch[u][0]);
+    dfsc(ch[u][1]);
+    cout << u << " ";
+}
+
+void solve()
+{
+    cin >> op >> n >> root >> k;
+    for (int i = 1; i <= n; i++)
+        cin >> ch[i][0] >> ch[i][1];
+
+    dfs(root);
+
+    if (op == 'A')
+        dfsa(root);
+    else if (op == 'B')
+        dfsb(root);
+    else
+        dfsc(root);
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
