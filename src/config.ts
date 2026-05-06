@@ -55,6 +55,10 @@ export const friendLinksConfig: FriendLinksConfig = {
 			name: "Heky",
 			url: "https://blog.heky.top/",
 		},
+		{
+			name: "GlowMiao",
+			url: "https://www.glowmiao.cn/",
+		},
 	],
 };
 
