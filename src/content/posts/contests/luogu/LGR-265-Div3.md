@@ -2,7 +2,7 @@
 title: LGR-265-Div3
 published: 2026-05-04
 description: "洛谷基础赛 Round 34"
-image: "https://img.hailuo4ever.com/cover/lanqiao.png"
+image: "https://img.hailuo4ever.com/cover/luogu.png"
 tags: [算法题解, 洛谷]
 category: "Algorithm"
 draft: false
