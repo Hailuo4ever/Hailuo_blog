@@ -1,5 +1,5 @@
 ---
-title: cf 2227 (Div.3)
+title: cf round 1096
 published: 2026-05-03
 description: "Codeforces Round 1096 (Div.3)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"

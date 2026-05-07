@@ -1,7 +1,7 @@
 ---
-title: cf 2200 (Div.3)
+title: cf round 1084
 published: 2026-04-29
-description: "Codeforces Round 1084 (Div.3) 补题A-E"
+description: "Codeforces Round 1084 (Div.3)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"
 tags: [算法题解, Codeforces]
 category: "Algorithm"
