@@ -36,6 +36,16 @@
           "isPublishDate": true
         },
         {
+          "title": "status",
+          "name": "status",
+          "type": "choice",
+          "default": "editing",
+          "choices": [
+            "published",
+            "editing"
+          ]
+        },
+        {
           "title": "preview",
           "name": "image",
           "type": "image",

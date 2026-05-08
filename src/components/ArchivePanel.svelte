@@ -19,14 +19,16 @@ interface Post {
 	data: {
 		title: string;
 		tags: string[];
-        category?: string | null;
+		category?: string | null;
 		published: Date;
+		status?: "published" | "editing";
 	};
 }
 
 interface Group {
-	year: number;
-    month: number;
+	type: "editing" | "month";
+	year?: number;
+	month?: number;
 	posts: Post[];
 }
 
@@ -40,6 +42,20 @@ function formatDate(date: Date) {
 
 function formatTag(tagList: string[]) {
 	return tagList.map((t) => `#${t}`).join(" ");
+}
+
+function isEditingPost(post: Post) {
+	return post.data.status === "editing";
+}
+
+function getArchiveDateLabel(post: Post) {
+	return isEditingPost(post) ? i18n(I18nKey.editing) : formatDate(post.data.published);
+}
+
+function getGroupTitle(group: Group) {
+	return group.type === "editing"
+		? i18n(I18nKey.editing)
+		: `${group.year}-${group.month?.toString().padStart(2, "0")}`;
 }
 
 onMount(async () => {
@@ -63,28 +79,34 @@ onMount(async () => {
 		filteredPosts = filteredPosts.filter((post) => !post.data.category);
 	}
 
-    const grouped = filteredPosts.reduce(
-        (acc, post) => {
-            const year = post.data.published.getFullYear();
-            const month = post.data.published.getMonth() + 1;
-            const key = `${year}-${month}`;
-            if (!acc[key]) {
-                acc[key] = { year, month, posts: [] };
-            }
-            acc[key].posts.push(post);
-            return acc;
-        },
-        {} as Record<string, Group>,
-    );
+	const editingPosts = filteredPosts.filter(isEditingPost);
+	const publishedPosts = filteredPosts.filter((post) => !isEditingPost(post));
 
-    const groupedPostsArray = Object.values(grouped);
+	const grouped = publishedPosts.reduce(
+		(acc, post) => {
+			const year = post.data.published.getFullYear();
+			const month = post.data.published.getMonth() + 1;
+			const key = `${year}-${month}`;
+			if (!acc[key]) {
+				acc[key] = { type: "month", year, month, posts: [] };
+			}
+			acc[key].posts.push(post);
+			return acc;
+		},
+		{} as Record<string, Group>,
+	);
 
-    groupedPostsArray.sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
-    });
+	const groupedPostsArray = Object.values(grouped);
 
-    groups = groupedPostsArray;
+	groupedPostsArray.sort((a, b) => {
+		if (a.year !== b.year) return (b.year ?? 0) - (a.year ?? 0);
+		return (b.month ?? 0) - (a.month ?? 0);
+	});
+
+	groups =
+		editingPosts.length > 0
+			? [{ type: "editing", posts: editingPosts }, ...groupedPostsArray]
+			: groupedPostsArray;
 });
 </script>
 
@@ -93,7 +115,7 @@ onMount(async () => {
         <div>
             <div class="flex flex-row w-full items-center h-[3.75rem]">
                 <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75 whitespace-nowrap">
-                    {group.year}-{group.month.toString().padStart(2, "0")}
+                    {getGroupTitle(group)}
                 </div>
                 <div class="w-[15%] md:w-[10%]">
                     <div
@@ -115,7 +137,7 @@ onMount(async () => {
                     <div class="flex flex-row justify-start items-center h-full">
                         <!-- date -->
                         <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
-                            {formatDate(post.data.published)}
+                            {getArchiveDateLabel(post)}
                         </div>
 
                         <!-- dot and line -->
@@ -137,6 +159,11 @@ onMount(async () => {
                      text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
                         >
                             {post.data.title}
+                            {#if post.data.status === "editing"}
+                                <span class="ml-2 inline-flex rounded-md border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-1.5 py-0.5 text-xs font-semibold text-[var(--primary)]">
+                                    {i18n(I18nKey.editing)}
+                                </span>
+                            {/if}
                         </div>
 
                         <!-- tag list -->

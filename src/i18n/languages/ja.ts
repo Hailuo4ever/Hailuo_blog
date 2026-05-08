@@ -35,5 +35,6 @@ export const ja: Translation = {
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
+	[Key.editing]: "編集中",
 	[Key.license]: "ライセンス",
 };

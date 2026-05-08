@@ -9,6 +9,7 @@ interface Props {
 	class: string;
 	published: Date;
 	updated?: Date;
+	status?: "published" | "editing";
 	tags: string[];
 	category: string | null;
 	hideTagsForMobile?: boolean;
@@ -17,6 +18,7 @@ interface Props {
 const {
 	published,
 	updated,
+	status = "published",
 	tags,
 	category,
 	hideTagsForMobile = false,
@@ -43,6 +45,17 @@ const className = Astro.props.class;
                 <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl"></Icon>
             </div>
             <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
+        </div>
+    )}
+
+    <!-- editing status -->
+    {status === "editing" && (
+        <div class="flex items-center">
+            <div class="meta-icon"
+            >
+                <Icon name="material-symbols:edit-note-rounded" class="text-xl"></Icon>
+            </div>
+            <span class="text-50 text-sm font-medium">{i18n(I18nKey.editing)}</span>
         </div>
     )}
 

@@ -96,6 +96,7 @@ export type BlogPostData = {
 	body: string;
 	title: string;
 	published: Date;
+	status?: "published" | "editing";
 	description: string;
 	tags: string[];
 	draft?: boolean;

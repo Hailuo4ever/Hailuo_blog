@@ -32,6 +32,7 @@ enum I18nKey {
 
 	author = "author",
 	publishedAt = "publishedAt",
+	editing = "editing",
 	license = "license",
 }
 
