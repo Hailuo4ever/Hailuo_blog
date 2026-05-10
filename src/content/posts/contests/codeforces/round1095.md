@@ -1,6 +1,5 @@
 ---
 title: cf round 1095
-status: "editing"
 published: 2026-05-09
 description: "Codeforces Round 1095 (Div.2)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"
@@ -179,7 +178,7 @@ int main()
 
 > 比如 `x = 5`，可以把它变成 `5, 0, 1, 2`，但不能变成 `3, 4`。
 
-## Step2 - 判断能否到达某个具体的 mex
+### Step2 - 判断能否到达某个具体的 mex
 
 假设我们现在的目标是：验证最终数组的 MEX 能否达到 $M$。要让 MEX 为 $M$，这就意味着我们的数组里必须凑齐 $\{0, 1, 2, \dots, M-1\}$ 这 $M$ 个数字。
 
