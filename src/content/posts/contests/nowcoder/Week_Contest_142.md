@@ -11,7 +11,7 @@ lang: ""
 
 > [!NOTE]
 >
-> 比赛链接：[牛客周赛 Round 142]((https://ac.nowcoder.com/acm/contest/133790))
+> 比赛链接：[牛客周赛 Round 142](https://ac.nowcoder.com/acm/contest/133790)
 
 # A - 小苯的ovo 3.0
 
