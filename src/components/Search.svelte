@@ -4,14 +4,32 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import { url } from "@utils/url-utils.ts";
 import { onMount } from "svelte";
-import type { SearchResult } from "@/global";
+import type { ContestProblemSearchItem, SearchResult } from "@/global";
+
+type SearchPanelItem =
+	| {
+			kind: "contest-problem";
+			url: string;
+			title: string;
+			contestTitle: string;
+			keywords: string[];
+	  }
+	| {
+			kind: "pagefind";
+			url: string;
+			title: string;
+			excerpt: string;
+	  };
 
 let keywordDesktop = "";
 let keywordMobile = "";
-let result: SearchResult[] = [];
+let result: SearchPanelItem[] = [];
 let isSearching = false;
 let pagefindLoaded = false;
 let initialized = false;
+let searchRequestId = 0;
+let contestProblems: ContestProblemSearchItem[] | null = null;
+let contestProblemsPromise: Promise<ContestProblemSearchItem[]> | null = null;
 
 const fakeResult: SearchResult[] = [
 	{
@@ -31,6 +49,160 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
+const normalizeSearchText = (value: string): string => {
+	return value.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+};
+
+const compactSearchText = (value: string): string => {
+	return normalizeSearchText(value).replace(/\s+/g, "");
+};
+
+const getQueryTokens = (keyword: string): string[] => {
+	return normalizeSearchText(keyword)
+		.split(/[\s,，、;；]+/u)
+		.map((token) => token.trim())
+		.filter(Boolean);
+};
+
+const textContainsToken = (text: string, token: string): boolean => {
+	const normalizedText = normalizeSearchText(text);
+	const compactText = compactSearchText(text);
+	const compactToken = compactSearchText(token);
+
+	return (
+		normalizedText.includes(token) ||
+		(!!compactToken && compactText.includes(compactToken))
+	);
+};
+
+const textEqualsToken = (text: string, token: string): boolean => {
+	return (
+		normalizeSearchText(text) === token ||
+		compactSearchText(text) === compactSearchText(token)
+	);
+};
+
+const getTokenRank = (
+	item: ContestProblemSearchItem,
+	token: string,
+): number | null => {
+	if (item.keywords.some((keyword) => textEqualsToken(keyword, token))) {
+		return 0;
+	}
+	if (item.keywords.some((keyword) => textContainsToken(keyword, token))) {
+		return 1;
+	}
+	if (textContainsToken(item.title, token)) {
+		return 2;
+	}
+	if (textContainsToken(item.contestTitle, token)) {
+		return 3;
+	}
+
+	return null;
+};
+
+const getMatchedKeywords = (
+	item: ContestProblemSearchItem,
+	tokens: string[],
+): string[] => {
+	return item.keywords.filter((keyword) =>
+		tokens.some((token) => textContainsToken(keyword, token)),
+	);
+};
+
+const loadContestProblems = async (): Promise<ContestProblemSearchItem[]> => {
+	if (contestProblems) return contestProblems;
+
+	if (!contestProblemsPromise) {
+		contestProblemsPromise = fetch(url("/contest-problems.json"))
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(
+						`Failed to load contest problem index: ${response.status}`,
+					);
+				}
+				return response.json() as Promise<ContestProblemSearchItem[]>;
+			})
+			.then((items) => {
+				contestProblems = items;
+				return items;
+			})
+			.catch((error) => {
+				contestProblemsPromise = null;
+				console.error(error);
+				return [];
+			});
+	}
+
+	return contestProblemsPromise;
+};
+
+const searchContestProblems = async (
+	keyword: string,
+): Promise<SearchPanelItem[]> => {
+	const tokens = getQueryTokens(keyword);
+	if (tokens.length === 0) return [];
+
+	const problems = await loadContestProblems();
+	return problems
+		.map((item, index) => {
+			const ranks = tokens.map((token) => getTokenRank(item, token));
+			if (ranks.some((rank) => rank === null)) return null;
+
+			const rank = Math.max(...(ranks as number[]));
+			const exactMatchCount = ranks.filter((itemRank) => itemRank === 0).length;
+			const matchedKeywords = getMatchedKeywords(item, tokens);
+
+			return {
+				item,
+				index,
+				rank,
+				exactMatchCount,
+				keywords:
+					matchedKeywords.length > 0 ? matchedKeywords : item.keywords,
+			};
+		})
+		.filter((item): item is NonNullable<typeof item> => item !== null)
+		.sort((a, b) => {
+			return (
+				a.rank - b.rank ||
+				b.exactMatchCount - a.exactMatchCount ||
+				b.item.published.localeCompare(a.item.published) ||
+				a.index - b.index
+			);
+		})
+		.map(({ item, keywords }) => ({
+			kind: "contest-problem",
+			url: item.url,
+			title: item.title,
+			contestTitle: item.contestTitle,
+			keywords,
+		}));
+};
+
+const searchPagefind = async (keyword: string): Promise<SearchPanelItem[]> => {
+	let searchResults: SearchResult[] = [];
+
+	if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
+		const response = await window.pagefind.search(keyword);
+		searchResults = await Promise.all(
+			response.results.map((item) => item.data()),
+		);
+	} else if (import.meta.env.DEV) {
+		searchResults = fakeResult;
+	} else {
+		console.error("Pagefind is not available in production environment.");
+	}
+
+	return searchResults.map((item) => ({
+		kind: "pagefind",
+		url: item.url,
+		title: item.meta.title,
+		excerpt: item.excerpt,
+	}));
+};
+
 const togglePanel = () => {
 	const panel = document.getElementById("search-panel");
 	panel?.classList.toggle("float-panel-closed");
@@ -48,7 +220,10 @@ const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 };
 
 const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
-	if (!keyword) {
+	const requestId = ++searchRequestId;
+	const tokens = getQueryTokens(keyword);
+
+	if (tokens.length === 0) {
 		setPanelVisibility(false, isDesktop);
 		result = [];
 		return;
@@ -61,29 +236,35 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 	isSearching = true;
 
 	try {
-		let searchResults: SearchResult[] = [];
+		const [problemResults, pagefindResults] = await Promise.all([
+			searchContestProblems(keyword),
+			searchPagefind(keyword),
+		]);
 
-		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
-			const response = await window.pagefind.search(keyword);
-			searchResults = await Promise.all(
-				response.results.map((item) => item.data()),
-			);
-		} else if (import.meta.env.DEV) {
-			searchResults = fakeResult;
-		} else {
-			searchResults = [];
-			console.error("Pagefind is not available in production environment.");
-		}
+		if (requestId !== searchRequestId) return;
 
-		result = searchResults;
+		result = [...problemResults, ...pagefindResults];
 		setPanelVisibility(result.length > 0, isDesktop);
 	} catch (error) {
 		console.error("Search error:", error);
+		if (requestId !== searchRequestId) return;
 		result = [];
 		setPanelVisibility(false, isDesktop);
 	} finally {
-		isSearching = false;
+		if (requestId === searchRequestId) {
+			isSearching = false;
+		}
 	}
+};
+
+const handleDesktopInput = (event: Event): void => {
+	keywordDesktop = (event.currentTarget as HTMLInputElement).value;
+	search(keywordDesktop, true);
+};
+
+const handleMobileInput = (event: Event): void => {
+	keywordMobile = (event.currentTarget as HTMLInputElement).value;
+	search(keywordMobile, false);
 };
 
 onMount(() => {
@@ -124,18 +305,6 @@ onMount(() => {
 		}, 2000); // Adjust timeout as needed
 	}
 });
-
-$: if (initialized && keywordDesktop) {
-	(async () => {
-		await search(keywordDesktop, true);
-	})();
-}
-
-$: if (initialized && keywordMobile) {
-	(async () => {
-		await search(keywordMobile, false);
-	})();
-}
 </script>
 
 <!-- search bar for desktop view -->
@@ -144,7 +313,7 @@ $: if (initialized && keywordMobile) {
       dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
 ">
     <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-    <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop} on:focus={() => search(keywordDesktop, true)}
+    <input placeholder="{i18n(I18nKey.search)}" value={keywordDesktop} on:input={handleDesktopInput} on:focus={() => search(keywordDesktop, true)}
            class="transition-all pl-10 text-sm bg-transparent outline-0
          h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
     >
@@ -166,7 +335,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
       dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
   ">
         <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-        <input placeholder="Search" bind:value={keywordMobile}
+        <input placeholder="Search" value={keywordMobile} on:input={handleMobileInput}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-black/50 dark:text-white/50"
         >
@@ -178,11 +347,26 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
        rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]">
             <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--primary)]">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
+                {item.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
             </div>
-            <div class="transition text-sm text-50">
-                {@html item.excerpt}
-            </div>
+            {#if item.kind === "contest-problem"}
+                <div class="transition text-sm text-50">
+                    {item.contestTitle}
+                </div>
+                {#if item.keywords.length > 0}
+                    <div class="mt-1 flex flex-wrap gap-1.5">
+                        {#each item.keywords as keyword}
+                            <span class="rounded-md bg-[var(--primary)]/10 px-1.5 py-0.5 text-xs font-medium text-[var(--primary)]">
+                                {keyword}
+                            </span>
+                        {/each}
+                    </div>
+                {/if}
+            {:else}
+                <div class="transition text-sm text-50">
+                    {@html item.excerpt}
+                </div>
+            {/if}
         </a>
     {/each}
 </div>

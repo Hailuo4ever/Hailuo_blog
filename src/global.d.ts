@@ -14,7 +14,16 @@ declare global {
 	}
 }
 
-interface SearchResult {
+export interface ContestProblemSearchItem {
+	url: string;
+	title: string;
+	contestTitle: string;
+	keywords: string[];
+	published: string;
+	slug: string;
+}
+
+export interface SearchResult {
 	url: string;
 	meta: {
 		title: string;
