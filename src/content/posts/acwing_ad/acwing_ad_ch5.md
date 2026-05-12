@@ -344,3 +344,120 @@ int main()
 
 ```
 
+### 矩阵加速数列2
+
+[洛谷 - P1939 矩阵加速（数列）](https://www.luogu.com.cn/problem/P1939)
+
+构造初始矩阵更通用的方法就是，当明确目标矩阵以后，像这样推一下递推式。
+
+![](https://img.hailuo4ever.com/acwing_ad_ch5/1.png)
+
+#### Code
+
+```c++
+// Problem: Luogu P1939
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P1939
+// Time: 2026-05-12 15:59:21
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll mod = 1e9 + 7;
+
+struct Matrix
+{
+    int r, c;
+    vector<vector<ll>> mat;
+
+    Matrix(int r, int c) : r(r), c(c), mat(r, vector<ll>(c, 0))
+    {
+    }
+
+    Matrix operator*(const Matrix &other) const
+    {
+        Matrix res(r, other.c);
+
+        for (int i = 0; i < r; i++)
+        {
+            for (int k = 0; k < c; k++)
+            {
+                if (mat[i][k] == 0)
+                    continue;
+                for (int j = 0; j < other.c; j++)
+                {
+                    res.mat[i][j] = (res.mat[i][j] + mat[i][k] * other.mat[k][j]) % mod;
+                }
+            }
+        }
+        return res;
+    }
+
+    Matrix power(ll k) const
+    {
+        assert(r == c);
+        Matrix res(r, c);
+
+        for (int i = 0; i < r; i++)
+            res.mat[i][i] = 1;
+
+        Matrix base = *this;
+        while (k > 0)
+        {
+            if (k & 1)
+                res = res * base;
+            base = base * base;
+            k >>= 1;
+        }
+        return res;
+    }
+};
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    Matrix base(3, 3);
+    base.mat[0][0] = 1, base.mat[0][1] = 0, base.mat[0][2] = 1;
+    base.mat[1][0] = 1, base.mat[1][1] = 0, base.mat[1][2] = 0;
+    base.mat[2][0] = 0, base.mat[2][1] = 1, base.mat[2][2] = 0;
+
+    while (T--)
+    {
+        ll n;
+        cin >> n;
+
+        if (n <= 3)
+        {
+            cout << 1 << endl;
+            continue;
+        }
+
+        Matrix res = base.power(n);
+        cout << res.mat[1][0] << endl;
+    }
+
+    return 0;
+}
+
+```
+
