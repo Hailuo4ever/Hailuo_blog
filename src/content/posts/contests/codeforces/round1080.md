@@ -313,3 +313,149 @@ int main()
 
 ```
 
+# E - Idiot First Search
+
+> 关键词：树形DP，dfs
+
+## 思路
+
+### Step 1 - 完整遍历一个空子树的代价
+
+首先我们先不考虑起点，假设 Bob 按照规则，从父节点正常进入了一个**完全空白**的子树 $u$，模拟一下他的流程。
+
+1. 他会给 $u$ 写上 'L'，然后进入左子树。
+
+2. 左子树也是空白的，他会把左子树完整遍历一遍，最终退回到 $u$。
+
+3. 此时 $u$ 上是 'L'，他改成 'R'，进入右子树。
+
+4. 右子树完整遍历后，再次退回到 $u$。
+
+5. 此时 $u$ 上是 'R'，他擦除掉，退回到 $u$ 的父节点。
+
+我们发现，当他完整遍历完一个子树并退出时，这个子树里的所有节点都会恢复成初始的空白状态。
+
+那么遍历整个子树 $u$ 并退回父节点，总共需要多少步（秒）？每经过一条边（向下或向上）都需要 1 秒。在一棵大小为 $sz[u]$ 的子树中，共有 $sz[u]-1$ 条边。每条边都会走两遍，再加上最初进入 $u$ 和最后离开 $u$ 的 2 步，总时间为： **$T(u) = 2 \times sz[u]$**
+
+### Step 2 - 从起点第一次到父节点的代价
+
+现在考虑 Bob 的起点是 $k$，它会先遍历完左子树，再遍历完右子树，最后走向父节点。
+
+总代价为：$2 \times sz[k.left] + 2 \times sz[k.right] + 1$。由于 $sz[k] = sz[k.left] + sz[k.right] + 1$，因此对于任意的起点 $k$，Bob 需要消耗 $U(k) = 2 \times sz[k] - 1$ 的代价走到起点 $k$ 的父节点。
+
+> [!TIP]
+>
+> 注意：当 Bob 离开 $k$ 节点到达父节点时，$k$ 节点和它的整棵子树都恢复到了完全空白的状态。
+
+### Step 3 - 到达父节点后
+
+现在 Bob 从 $k$ 到达了父节点 $p$，父节点此刻是空白的。根据他的运动规则，应该写下 'L'，然后走到左边，遍历完左边整棵子树以后再走到右边，也就是说他会再次走一遍 $k$，考虑在 $p$ 节点花费的时间，就是 $2 \times sz[p.left] + 2 \times sz[p.right] + 1 = 2 \times sz[p] - 1$
+
+### Step 4 - 推公式
+
+对于从任意节点 $k$ 出发，Bob 向上“逃脱”的过程就是：
+
+1. 逃出 $k$ 到达 $p_1$：耗时 $2 \times sz[k] - 1$
+2. 逃出 $p_1$ 到达 $p_2$：耗时 $2 \times sz[p_1] - 1$
+3. 逃出 $p_2$ 到达 $p_3$：耗时 $2 \times sz[p_2] - 1$
+4. 直到到达节点 1，逃出节点 1 到达最终目的地 0：耗时 $2 \times sz[1] - 1$。
+
+所以，如果以 $dp[k]$ 表示从节点 $k$ 到达节点 $0$ 的总时间，公式为：$dp[k] = \sum_{v \in \text{path}(k \to 1)} (2 \times sz[v] - 1)$
+
+## Code
+
+```c++
+// Problem: CF 2195 E
+// Contest: Codeforces - Codeforces Round 1080 (Div. 3)
+// URL: https://codeforces.com/contest/2195/problem/E
+// Time: 2026-05-13 13:08:58
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll mod = 1e9 + 7;
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<int> l(n + 1), r(n + 1);
+    for (int i = 1; i <= n; i++)
+        cin >> l[i] >> r[i];
+
+    vector<ll> sz(n + 1, 0);
+
+    // 计算每个节点子树大小
+    auto dfs = [&](auto &self, int u) -> void
+    {
+        sz[u] = 1;
+
+        if (l[u])
+        {
+            self(self, l[u]);
+            sz[u] += sz[l[u]];
+        }
+
+        if (r[u])
+        {
+            self(self, r[u]);
+            sz[u] += sz[r[u]];
+        }
+    };
+
+    dfs(dfs, 1); // 注意实际能遍历的根节点还是 1
+
+    vector<ll> dp(n + 1, 0);
+
+    // 自顶向下计算路径前缀和 dp[u]
+    auto dfss = [&](auto &self, int u, ll cur) -> void
+    {
+        ll t = (2 * sz[u] - 1) % mod;
+        dp[u] = (cur + t) % mod;
+
+        if (l[u])
+            self(self, l[u], dp[u]);
+        if (r[u])
+            self(self, r[u], dp[u]);
+    };
+
+    dfss(dfss, 1, 0);
+
+    for (int i = 1; i <= n; i++)
+        cout << dp[i] << " ";
+
+    cout << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+

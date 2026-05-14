@@ -121,7 +121,9 @@ int main()
 
 ```
 
-### 指针+结构体存树（待补）
+# 离线二维数点
 
-[L2-006 树的遍历 - 团体程序设计天梯赛-练习集](https://pintia.cn/problem-sets/994805046380707840/exam/problems/type/7?problemSetProblemId=994805069361299456&page=1)
+> [!NOTE]
+>
+> 前置知识：树状数组，离线与在线
 
