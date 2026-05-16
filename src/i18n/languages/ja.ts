@@ -5,6 +5,10 @@ export const ja: Translation = {
 	[Key.home]: "Home",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",
+	[Key.timelineArchive]: "タイムライン",
+	[Key.folderArchive]: "フォルダー",
+	[Key.expandAll]: "すべて展開",
+	[Key.collapseAll]: "すべて閉じる",
 	[Key.friendLinks]: "友達リンク",
 	[Key.search]: "検索",
 

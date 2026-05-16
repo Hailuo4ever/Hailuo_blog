@@ -2,6 +2,10 @@ enum I18nKey {
 	home = "home",
 	about = "about",
 	archive = "archive",
+	timelineArchive = "timelineArchive",
+	folderArchive = "folderArchive",
+	expandAll = "expandAll",
+	collapseAll = "collapseAll",
 	friendLinks = "friendLinks",
 	search = "search",
 

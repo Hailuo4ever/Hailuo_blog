@@ -5,6 +5,10 @@ export const zh_CN: Translation = {
 	[Key.home]: "主页",
 	[Key.about]: "关于",
 	[Key.archive]: "归档",
+	[Key.timelineArchive]: "时间线",
+	[Key.folderArchive]: "文件夹",
+	[Key.expandAll]: "全部展开",
+	[Key.collapseAll]: "全部收起",
 	[Key.friendLinks]: "友链",
 	[Key.search]: "搜索",
 

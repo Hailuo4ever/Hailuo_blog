@@ -1,6 +1,5 @@
 ---
 title: cf round 1074
-status: "editing"
 published: 2026-05-15
 description: "Codeforces Round 1074 (Div.4)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"

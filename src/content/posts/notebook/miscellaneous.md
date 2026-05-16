@@ -1,6 +1,6 @@
 ---
 title: Miscellaneous (Notebook)
-published: 2025-11-09
+published: 2024-01-01
 description: "杂项整理"
 image: https://img.hailuo4ever.com/cover/notebook.png
 tags: [算法笔记, Notebook]

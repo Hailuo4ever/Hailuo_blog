@@ -5,6 +5,10 @@ export const en: Translation = {
 	[Key.home]: "Home",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",
+	[Key.timelineArchive]: "Timeline",
+	[Key.folderArchive]: "Folders",
+	[Key.expandAll]: "Expand all",
+	[Key.collapseAll]: "Collapse all",
 	[Key.friendLinks]: "Friend Links",
 	[Key.search]: "Search",
 

@@ -5,6 +5,10 @@ export const vi: Translation = {
 	[Key.home]: "Trang chủ",
 	[Key.about]: "Giới thiệu",
 	[Key.archive]: "Kho bài",
+	[Key.timelineArchive]: "Dòng thời gian",
+	[Key.folderArchive]: "Thư mục",
+	[Key.expandAll]: "Mở rộng tất cả",
+	[Key.collapseAll]: "Thu gọn tất cả",
 	[Key.friendLinks]: "Liên Kết Bạn Bè",
 	[Key.search]: "Tìm kiếm",
 
