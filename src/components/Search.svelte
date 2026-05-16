@@ -115,7 +115,9 @@ const loadContestProblems = async (): Promise<ContestProblemSearchItem[]> => {
 	if (contestProblems) return contestProblems;
 
 	if (!contestProblemsPromise) {
-		contestProblemsPromise = fetch(url("/contest-problems.json"))
+		contestProblemsPromise = fetch(url("/contest-problems.json"), {
+			cache: "no-store",
+		})
 			.then((response) => {
 				if (!response.ok) {
 					throw new Error(
