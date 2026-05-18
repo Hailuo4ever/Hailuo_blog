@@ -362,6 +362,10 @@ int main()
 > 当题目有以下特征时，可以使用树状数组维护信息：
 >
 > ![](https://img.hailuo4ever.com/acwing_ad_ch4/8.png)
+>
+> 树状数组天然适合维护**具有可逆性（存在逆元）且满足结合律**的信息。例如区间和或区间异或和。
+>
+> 树状数组本质上维护的是**前缀信息**。当你需要查询区间 $[L, R]$ 的信息时，它实际上是通过 $Query(R) - Query(L-1)$ 来计算的。这就要求信息能够“相减”。
 
 ## 基本思想
 
@@ -806,6 +810,111 @@ int main()
     return 0;
 }
 ```
+
+### 逆序对问题
+
+[P1908 逆序对 - 洛谷](https://www.luogu.com.cn/problem/P1908)
+
+由于我们只关注数字之间的相对大小关系，可以离散化。
+
+在这个过程中，树状数组代表某个离散化后的值在当前遍历过程中出现的次数（频率）
+
+统计逆序对的过程（从左到右遍历）：假设我们已经按原序列顺序从左向右遍历到了第 $i$ 个数 $a_i$，
+
+1. 此时我们一共遍历了 $i-1$ 个数。
+2. 我们查询树状数组中排名小于等于 $a_i$ 的数字出现的总次数（即 `query(rank[a_i])`）。
+3. 那么，在已经遍历过的数字中，**严格大于** $a_i$ 的数字个数就是：`(i - 1) - query(rank[a_i])`。这部分数字都会与当前的 $a_i$ 构成逆序对。
+4. 统计完后，我们将 $a_i$ 的出现次数加 $1$（即 `add(rank[a_i], 1)`），把它放入树状数组，继续遍历下一个。
+
+```c++
+// Problem: Luogu P1908
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P1908
+// Time: 2026-05-17 16:17:34
+// 使用树状数组维护在当前遍历过程中出现的次数
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 5e5 + 10;
+
+int tr[N], a[N], n;
+vector<int> b;
+
+int lowbit(int x)
+{
+    return (x & -x);
+}
+
+void add(int i, ll k)
+{
+    for (; i <= n; i += lowbit(i))
+        tr[i] += k;
+}
+
+ll query(int i)
+{
+    ll res = 0;
+    for (; i > 0; i -= lowbit(i))
+        res += tr[i];
+    return res;
+}
+
+void solve()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        b.push_back(a[i]);
+    }
+
+    sort(all(b));
+    b.erase(unique(all(b)), b.end());
+
+    ll res = 0;
+
+    for (int i = 1; i <= n; i++)
+    {
+        int rank = lower_bound(all(b), a[i]) - b.begin() + 1;
+        res += (i - 1) - query(rank);
+        add(rank, 1);
+    }
+
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
 
 # 线段树
 
