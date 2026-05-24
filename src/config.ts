@@ -59,6 +59,10 @@ export const friendLinksConfig: FriendLinksConfig = {
 			name: "GlowMiao",
 			url: "https://www.glowmiao.cn/",
 		},
+		{
+			name: "Sakana",
+			url: "http://sakana520.top/",
+		},
 	],
 };
 

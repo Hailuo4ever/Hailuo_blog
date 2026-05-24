@@ -208,9 +208,11 @@ inline void print(int128 x) {
 }
 ```
 
+## std::accumulate
 
+`ll sum = accumulate(a + 1, a + n + 1, 0LL);`
 
-
+注意`std::accumulate` 的返回类型和累加过程的类型，是由它的**第三个参数**决定的。然后会把计算结果隐式转换。
 
 # 根据数据范围选择算法
 

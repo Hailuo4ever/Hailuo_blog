@@ -10,6 +10,7 @@ lang: ""
 ---
 
 > [!NOTE]
+>
 > 比赛链接：[Codeforces Round 1096 (Div. 3)](https://codeforces.com/contest/2227)
 
 # A - Koshary

@@ -10,6 +10,7 @@ lang: ""
 ---
 
 > [!NOTE]
+>
 > 比赛链接：[Codeforces Round 1097.(Div. 2)](https://codeforces.com/contest/2224)
 
 # A - Zhily and Array Operating
