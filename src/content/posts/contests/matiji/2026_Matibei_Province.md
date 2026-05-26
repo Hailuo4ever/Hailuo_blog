@@ -225,5 +225,89 @@ int main()
 
 状态转移方程：$f[i] = 1 + \sum_{j=1}^{i-d} f[j] + \sum_{j=1}^{i-d+1} f[j]$，这里使用了 $f[j]$ 替代第 $1$ 行的方案数，因为他们对称相等。
 
-对于方程中的两个求和
+对于方程中的两个求和式子，可以通过维护前缀和来 $O(1)$ 计算。
+
+最终答案为第 $0$ 行的所有结尾方案 + 第 $1$ 行的所有结尾方案，再加上一种“一个格子都不涂”的方案。
+
+注意特判 $d = 1$ 的情况，只要是两个不一样的格子，曼哈顿距离肯定 $\ge 1$，因此一共 $2n$ 个格子，答案为 $2^{2n}=4^n$。
+
+## Code
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll mod = 1e9 + 7;
+
+ll qmi(ll a, ll k)
+{
+    ll res = 1;
+    while (k)
+    {
+        if (k & 1)
+            res = (res * a) % mod;
+        a = (a * a) % mod;
+        k >>= 1;
+    }
+    return res;
+}
+
+void solve()
+{
+    int n, d;
+    cin >> n >> d;
+
+    if (d == 1)
+    {
+        cout << qmi(4, (ll) n) << endl;
+        return;
+    }
+
+    vector<ll> dp(n + 1, 0), sum(n + 1, 0);
+
+    for (int i = 1; i <= n; i++)
+    {
+        ll dp0 = (i - d >= 0) ? sum[i - d] : 0;
+        ll dp1 = (i - d + 1 >= 0) ? sum[i - d + 1] : 0;
+
+        dp[i] = (1 + dp0 + dp1) % mod;
+
+        sum[i] = (sum[i - 1] + dp[i]) % mod;
+    }
+
+    ll res = (2 * sum[n] + 1) % mod;
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
 
