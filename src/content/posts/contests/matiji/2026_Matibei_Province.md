@@ -1,6 +1,6 @@
 ---
 title: 2026 码蹄杯省赛第三场
-published: 2026-05-23
+published: 2026-05-24
 description: "MatiCup Province III"
 image: "https://img.hailuo4ever.com/cover/cry.png"
 tags: [算法题解, 码蹄杯]
