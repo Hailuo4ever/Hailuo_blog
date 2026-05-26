@@ -49,17 +49,32 @@ interface PostNode {
 }
 
 type TreeNode = FolderNode | PostNode;
-type ArchiveView = "timeline" | "folders";
+type ArchiveView = "timeline" | "folders" | "calendar";
 
 interface TreeRow {
 	node: TreeNode;
 	depth: number;
 }
 
+interface CalendarDay {
+	date: Date;
+	dateKey: string;
+	day: number;
+	isCurrentMonth: boolean;
+	isToday: boolean;
+	posts: Post[];
+}
+
 const naturalCollator = new Intl.Collator(undefined, {
 	numeric: true,
 	sensitivity: "base",
 });
+const weekdayFormatter = new Intl.DateTimeFormat(undefined, {
+	weekday: "short",
+});
+const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
+	weekdayFormatter.format(new Date(2026, 0, 5 + index)),
+);
 
 let activeView: ArchiveView = "timeline";
 let groups: Group[] = [];
@@ -68,12 +83,21 @@ let expandedFolderPaths = new Set<string>();
 let visibleTreeRows: TreeRow[] = [];
 let allFolderPaths: string[] = [];
 let areAllFoldersExpanded = false;
+let calendarPostMap = new Map<string, Post[]>();
+let visibleMonth = getMonthStart(new Date());
+let selectedDateKey = getDateKey(new Date());
+let calendarDays: CalendarDay[] = [];
+let selectedDatePosts: Post[] = [];
 
 $: visibleTreeRows = getVisibleTreeRows(treeRoot, expandedFolderPaths);
 $: allFolderPaths = getFolderPaths(treeRoot);
 $: areAllFoldersExpanded =
 	allFolderPaths.length > 0 &&
 	allFolderPaths.every((path) => expandedFolderPaths.has(path));
+$: calendarDays = buildCalendarDays(visibleMonth, calendarPostMap);
+$: selectedDatePosts = selectedDateKey
+	? calendarPostMap.get(selectedDateKey) ?? []
+	: [];
 
 function createTreeRoot(): FolderNode {
 	return {
@@ -93,6 +117,29 @@ function formatDate(date: Date) {
 	const month = (date.getMonth() + 1).toString().padStart(2, "0");
 	const day = date.getDate().toString().padStart(2, "0");
 	return `${month}-${day}`;
+}
+
+function getMonthStart(date: Date) {
+	return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getDateKey(date: Date) {
+	const year = date.getFullYear();
+	const month = (date.getMonth() + 1).toString().padStart(2, "0");
+	const day = date.getDate().toString().padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
+function getMonthKey(date: Date) {
+	const year = date.getFullYear();
+	const month = (date.getMonth() + 1).toString().padStart(2, "0");
+	return `${year}-${month}`;
+}
+
+function addDays(date: Date, days: number) {
+	const nextDate = new Date(date);
+	nextDate.setDate(nextDate.getDate() + days);
+	return nextDate;
 }
 
 function formatTag(tagList: string[]) {
@@ -170,6 +217,83 @@ function buildArchiveGroups(posts: Post[]) {
 	return editingPosts.length > 0
 		? [{ type: "editing", posts: editingPosts }, ...groupedPostsArray]
 		: groupedPostsArray;
+}
+
+function buildCalendarPostMap(posts: Post[]) {
+	const postMap = new Map<string, Post[]>();
+
+	for (const post of posts) {
+		const dateKey = getDateKey(getPostDate(post));
+		const dayPosts = postMap.get(dateKey) ?? [];
+		dayPosts.push(post);
+		postMap.set(dateKey, dayPosts);
+	}
+
+	return postMap;
+}
+
+function getDefaultSelectedDateKey(month: Date, postMap: Map<string, Post[]>) {
+	const monthKey = getMonthKey(month);
+	const monthDateKeys = Array.from(postMap.keys())
+		.filter((dateKey) => dateKey.startsWith(monthKey))
+		.sort((a, b) => b.localeCompare(a));
+
+	return monthDateKeys[0] ?? getDateKey(month);
+}
+
+function buildCalendarDays(month: Date, postMap: Map<string, Post[]>) {
+	const monthStart = getMonthStart(month);
+	const firstWeekdayOffset = (monthStart.getDay() + 6) % 7;
+	const daysInMonth = new Date(
+		monthStart.getFullYear(),
+		monthStart.getMonth() + 1,
+		0,
+	).getDate();
+	const cellCount = Math.ceil((firstWeekdayOffset + daysInMonth) / 7) * 7;
+	const calendarStart = addDays(monthStart, -firstWeekdayOffset);
+	const todayKey = getDateKey(new Date());
+
+	return Array.from({ length: cellCount }, (_, index) => {
+		const date = addDays(calendarStart, index);
+		const dateKey = getDateKey(date);
+		const isCurrentMonth =
+			date.getFullYear() === monthStart.getFullYear() &&
+			date.getMonth() === monthStart.getMonth();
+
+		return {
+			date,
+			dateKey,
+			day: date.getDate(),
+			isCurrentMonth,
+			isToday: dateKey === todayKey,
+			posts: isCurrentMonth ? postMap.get(dateKey) ?? [] : [],
+		};
+	});
+}
+
+function getDayCellClass(day: CalendarDay) {
+	const selectedClass =
+		day.dateKey === selectedDateKey
+			? "border-[var(--primary)] bg-[var(--btn-plain-bg-hover)] text-[var(--primary)]"
+			: "border-black/5 text-75 hover:border-[var(--primary)]/50 hover:bg-[var(--btn-plain-bg-hover)] dark:border-white/10";
+	const disabledClass = !day.isCurrentMonth
+		? "pointer-events-none border-transparent text-25 opacity-60"
+		: selectedClass;
+
+	return `group flex min-h-[4.75rem] min-w-0 flex-col rounded-lg border p-1.5 text-left transition sm:min-h-[6rem] ${disabledClass}`;
+}
+
+function moveVisibleMonth(monthOffset: number) {
+	const nextMonth = getMonthStart(
+		new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + monthOffset, 1),
+	);
+	visibleMonth = nextMonth;
+	selectedDateKey = getDefaultSelectedDateKey(nextMonth, calendarPostMap);
+}
+
+function selectCalendarDay(day: CalendarDay) {
+	if (!day.isCurrentMonth) return;
+	selectedDateKey = day.dateKey;
 }
 
 function normalizePostPath(post: Post) {
@@ -301,6 +425,13 @@ onMount(() => {
 	const filteredPosts = getFilteredPosts(sortedPosts);
 	groups = buildArchiveGroups(filteredPosts);
 	treeRoot = buildFolderTree(filteredPosts);
+	calendarPostMap = buildCalendarPostMap(filteredPosts);
+
+	const initialDate =
+		filteredPosts.length > 0 ? getPostDate(filteredPosts[0]) : new Date();
+	visibleMonth = getMonthStart(initialDate);
+	selectedDateKey =
+		filteredPosts.length > 0 ? getDateKey(initialDate) : getDateKey(new Date());
 	expandedFolderPaths = new Set();
 });
 </script>
@@ -332,6 +463,22 @@ onMount(() => {
 		>
 			<Icon icon="material-symbols:folder-outline-rounded" class="mr-2 text-[1.25rem]"></Icon>
 			{i18n(I18nKey.folderArchive)}
+		</button>
+		<button
+			type="button"
+			aria-pressed={activeView === "calendar"}
+			class={`btn-plain h-9 rounded-lg px-3 text-sm font-bold transition-all ${
+				activeView === "calendar"
+					? "bg-[var(--btn-plain-bg-hover)] text-[var(--primary)]"
+					: "text-50"
+			}`}
+			on:click={() => (activeView = "calendar")}
+		>
+			<Icon
+				icon="material-symbols:calendar-month-outline-rounded"
+				class="mr-2 text-[1.25rem]"
+			></Icon>
+			{i18n(I18nKey.calendarArchive)}
 		</button>
 		{#if activeView === "folders"}
 			<button
@@ -407,7 +554,7 @@ onMount(() => {
 				{/each}
 			</div>
 		{/each}
-	{:else}
+	{:else if activeView === "folders"}
 		<div class="space-y-1">
 			{#each visibleTreeRows as row (getTreeRowKey(row))}
 				{#if row.node.type === "folder"}
@@ -474,6 +621,135 @@ onMount(() => {
 					</a>
 				{/if}
 			{/each}
+		</div>
+	{:else}
+		<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+			<div class="min-w-0">
+				<div class="mb-4 flex items-center justify-between gap-3">
+					<button
+						type="button"
+						aria-label={i18n(I18nKey.previousMonth)}
+						class="btn-plain h-9 w-9 shrink-0 rounded-lg text-50 transition-all hover:text-[var(--primary)]"
+						on:click={() => moveVisibleMonth(-1)}
+					>
+						<Icon icon="material-symbols:chevron-left-rounded" class="text-2xl"></Icon>
+					</button>
+					<div class="min-w-0 text-center text-xl font-bold text-75">
+						{getMonthKey(visibleMonth)}
+					</div>
+					<button
+						type="button"
+						aria-label={i18n(I18nKey.nextMonth)}
+						class="btn-plain h-9 w-9 shrink-0 rounded-lg text-50 transition-all hover:text-[var(--primary)]"
+						on:click={() => moveVisibleMonth(1)}
+					>
+						<Icon icon="material-symbols:chevron-right-rounded" class="text-2xl"></Icon>
+					</button>
+				</div>
+
+				<div class="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-bold text-30">
+					{#each weekdayLabels as weekday}
+						<div class="min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap px-1">
+							{weekday}
+						</div>
+					{/each}
+				</div>
+
+				<div class="grid grid-cols-7 gap-1">
+					{#each calendarDays as day (day.dateKey)}
+						<button
+							type="button"
+							aria-pressed={day.dateKey === selectedDateKey}
+							disabled={!day.isCurrentMonth}
+							class={getDayCellClass(day)}
+							on:click={() => selectCalendarDay(day)}
+						>
+							<div class="flex w-full min-w-0 items-center justify-between gap-1">
+								<span class="text-sm font-bold">
+									{day.day}
+								</span>
+								{#if day.isToday && day.isCurrentMonth}
+									<span
+										class="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--primary)]"
+									></span>
+								{/if}
+								{#if day.posts.length > 0}
+									<span
+										class="ml-auto shrink-0 rounded-full bg-[var(--primary)]/10 px-1.5 text-[0.68rem] font-bold text-[var(--primary)]"
+									>
+										{day.posts.length}
+									</span>
+								{/if}
+							</div>
+							{#if day.posts.length > 0}
+								<div class="mt-1 hidden w-full min-w-0 space-y-0.5 sm:block">
+									{#each day.posts.slice(0, 2) as post}
+										<span
+											class="block min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap text-[0.68rem] leading-4 text-50 transition group-hover:text-[var(--primary)]"
+										>
+											{post.data.title}
+										</span>
+									{/each}
+									{#if day.posts.length > 2}
+										<span class="block text-[0.68rem] font-bold leading-4 text-30">
+											+{day.posts.length - 2}
+										</span>
+									{/if}
+								</div>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<div
+				class="min-w-0 border-t border-[var(--line-divider)] pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"
+			>
+				<div class="mb-3 flex min-w-0 items-center justify-between gap-3">
+					<div class="min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap text-lg font-bold text-75">
+						{selectedDateKey}
+					</div>
+					<div class="shrink-0 text-sm text-30">
+						{formatPostCount(selectedDatePosts.length)}
+					</div>
+				</div>
+
+				<div class="space-y-1">
+					{#each selectedDatePosts as post}
+						<a
+							href={getPostUrlBySlug(post.slug)}
+							aria-label={post.data.title}
+							class="group btn-plain !flex min-h-10 w-full items-center rounded-lg px-2 py-1.5 text-left hover:text-[initial]"
+						>
+							<Icon
+								icon="material-symbols:article-outline-rounded"
+								class="mr-2 shrink-0 text-[1.15rem] text-30 transition group-hover:text-[var(--primary)]"
+							></Icon>
+							<div class="min-w-0 flex-1 overflow-hidden">
+								<div class="flex min-w-0 items-center">
+									<span
+										class="min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap font-bold text-75 transition group-hover:text-[var(--primary)]"
+									>
+										{post.data.title}
+									</span>
+									{#if post.data.status === "editing"}
+										<span
+											class="ml-2 shrink-0 rounded-md border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-1.5 py-0.5 text-xs font-semibold text-[var(--primary)]"
+										>
+											{i18n(I18nKey.editing)}
+										</span>
+									{/if}
+								</div>
+								<div
+									class="mt-0.5 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap text-xs text-30"
+								>
+									{formatTag(post.data.tags)}
+								</div>
+							</div>
+						</a>
+					{/each}
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
