@@ -8,6 +8,30 @@ import { siteConfig } from "@/config";
 
 const parser = new MarkdownIt();
 
+function getDirectiveAttribute(attributes: string, name: string) {
+	const match = attributes.match(new RegExp(`${name}="([^"]*)"`, "i"));
+	return match?.[1] || "";
+}
+
+function replaceMusicDirectives(content: string) {
+	return content.replace(/^::music\{([^}]*)\}$/gm, (_match, attributes) => {
+		const title = getDirectiveAttribute(attributes, "title") || "Audio";
+		const artist = getDirectiveAttribute(attributes, "artist");
+		const mp3 = getDirectiveAttribute(attributes, "mp3");
+		const flac = getDirectiveAttribute(attributes, "flac");
+		const src = getDirectiveAttribute(attributes, "src");
+		const audioUrl = mp3 || src || flac;
+		const label = artist ? `${title} - ${artist}` : title;
+		const links = audioUrl ? [`[${label}](${audioUrl})`] : [label];
+
+		if (flac && flac !== audioUrl) {
+			links.push(`[FLAC](${flac})`);
+		}
+
+		return `Music: ${links.join(" / ")}`;
+	});
+}
+
 function stripInvalidXmlChars(str: string): string {
 	return str.replace(
 		// biome-ignore lint/suspicious/noControlCharactersInRegex: https://www.w3.org/TR/xml/#charsets
@@ -28,7 +52,9 @@ export async function GET(context: APIContext) {
 		items: blog.map((post) => {
 			const content =
 				typeof post.body === "string" ? post.body : String(post.body || "");
-			const cleanedContent = stripInvalidXmlChars(content);
+			const cleanedContent = stripInvalidXmlChars(
+				replaceMusicDirectives(content),
+			);
 			return {
 				title: post.data.title,
 				pubDate: post.data.published,

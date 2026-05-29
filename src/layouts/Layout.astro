@@ -4,6 +4,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
+import MusicPlayerRuntime from "@components/music/MusicPlayerRuntime.astro";
 import { expressiveCodeConfig, profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
@@ -169,6 +170,7 @@ const bannerOffset =
 		  data-overlayscrollbars-initialize
 	>
 		<ConfigCarrier></ConfigCarrier>
+		<MusicPlayerRuntime></MusicPlayerRuntime>
 		<slot />
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
@@ -274,6 +276,151 @@ function disableAnimation() {
 */
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
+const BIRTHDAY_FIREWORKS_CANVAS_ID = 'birthday-fireworks-canvas'
+let birthdayFireworksFrame = 0
+let birthdayFireworksResize: (() => void) | null = null
+
+function removeBirthdayFireworks() {
+	if (birthdayFireworksFrame) {
+		cancelAnimationFrame(birthdayFireworksFrame)
+		birthdayFireworksFrame = 0
+	}
+
+	if (birthdayFireworksResize) {
+		window.removeEventListener('resize', birthdayFireworksResize)
+		birthdayFireworksResize = null
+	}
+
+	document.getElementById(BIRTHDAY_FIREWORKS_CANVAS_ID)?.remove()
+}
+
+function initBirthdayFireworks() {
+	const marker = document.querySelector('[data-birthday-post="true"]')
+	if (!marker) {
+		removeBirthdayFireworks()
+		return
+	}
+
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		removeBirthdayFireworks()
+		return
+	}
+
+	if (document.getElementById(BIRTHDAY_FIREWORKS_CANVAS_ID)) return
+
+	const canvas = document.createElement('canvas')
+	const context = canvas.getContext('2d')
+	if (!context) return
+
+	canvas.id = BIRTHDAY_FIREWORKS_CANVAS_ID
+	canvas.setAttribute('aria-hidden', 'true')
+	Object.assign(canvas.style, {
+		position: 'fixed',
+		inset: '0',
+		zIndex: '80',
+		width: '100vw',
+		height: '100vh',
+		pointerEvents: 'none',
+	})
+	document.body.appendChild(canvas)
+
+	let viewportWidth = window.innerWidth
+	let viewportHeight = window.innerHeight
+	const colors = ['#facc15', '#ef5da8', '#38bdf8', '#34d399', '#f97316', '#a78bfa']
+	const burstTimes = [0, 360, 760, 1240, 1880, 2560]
+	let burstIndex = 0
+
+	type Particle = {
+		x: number
+		y: number
+		vx: number
+		vy: number
+		life: number
+		decay: number
+		size: number
+		color: string
+	}
+	const particles: Particle[] = []
+
+	const resize = () => {
+		const ratio = Math.min(window.devicePixelRatio || 1, 2)
+		viewportWidth = window.innerWidth
+		viewportHeight = window.innerHeight
+		canvas.width = Math.floor(viewportWidth * ratio)
+		canvas.height = Math.floor(viewportHeight * ratio)
+		context.setTransform(ratio, 0, 0, ratio, 0, 0)
+	}
+	birthdayFireworksResize = resize
+	window.addEventListener('resize', resize)
+	resize()
+
+	const addBurst = () => {
+		const x = viewportWidth * (0.18 + Math.random() * 0.64)
+		const y = viewportHeight * (0.16 + Math.random() * 0.34)
+		const count = 42
+
+		for (let i = 0; i < count; i++) {
+			const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.28
+			const speed = 1.5 + Math.random() * 3.3
+			particles.push({
+				x,
+				y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: 1,
+				decay: 0.012 + Math.random() * 0.012,
+				size: 1.6 + Math.random() * 2.4,
+				color: colors[Math.floor(Math.random() * colors.length)],
+			})
+		}
+	}
+
+	const startedAt = performance.now()
+	const duration = 4300
+
+	const draw = (now: number) => {
+		const elapsed = now - startedAt
+		context.clearRect(0, 0, viewportWidth, viewportHeight)
+		context.globalCompositeOperation = 'lighter'
+
+		while (burstIndex < burstTimes.length && elapsed >= burstTimes[burstIndex]) {
+			addBurst()
+			burstIndex++
+		}
+
+		for (let i = particles.length - 1; i >= 0; i--) {
+			const particle = particles[i]
+			particle.x += particle.vx
+			particle.y += particle.vy
+			particle.vy += 0.035
+			particle.vx *= 0.992
+			particle.vy *= 0.992
+			particle.life -= particle.decay
+
+			if (particle.life <= 0) {
+				particles.splice(i, 1)
+				continue
+			}
+
+			context.globalAlpha = Math.max(particle.life, 0)
+			context.fillStyle = particle.color
+			context.beginPath()
+			context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+			context.fill()
+		}
+
+		context.globalAlpha = 1
+		context.globalCompositeOperation = 'source-over'
+
+		if (elapsed < duration || particles.length > 0) {
+			birthdayFireworksFrame = requestAnimationFrame(draw)
+		} else {
+			removeBirthdayFireworks()
+		}
+	}
+
+	birthdayFireworksFrame = requestAnimationFrame(draw)
+}
 
 function setClickOutsideToClose(panel: string, ignores: string[]) {
 	document.addEventListener("click", event => {
@@ -386,6 +533,7 @@ function init() {
 	loadHue();
 	initCustomScrollbar();
 	showBanner();
+	initBirthdayFireworks();
 }
 
 /* Load settings when entering the site */
@@ -423,6 +571,8 @@ const setup = () => {
 	})
 	window.swup.hooks.on('content:replace', initCustomScrollbar)
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
+		removeBirthdayFireworks()
+
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
 		const targetPath = new URL(visit.to.url, window.location.origin).pathname
@@ -445,6 +595,8 @@ const setup = () => {
 		}
 	});
 	window.swup.hooks.on('page:view', () => {
+		initBirthdayFireworks()
+
 		// hide the temp high element when the transition is done
 		const heightExtend = document.getElementById('page-height-extend')
 		if (heightExtend) {

@@ -1,0 +1,553 @@
+<style is:global>
+hailuo-audio-player {
+	position: relative;
+	z-index: 2;
+	display: block;
+	margin: 1.25rem 0 2rem;
+}
+
+.hailuo-audio-player {
+	--player-progress: 0%;
+	position: relative;
+	display: grid;
+	grid-template-columns: 5.5rem minmax(0, 1fr);
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem;
+	border: 1px solid color-mix(in oklch, var(--primary) 24%, transparent);
+	border-radius: var(--radius-large);
+	background:
+		linear-gradient(
+			135deg,
+			color-mix(in oklch, var(--card-bg) 88%, var(--primary) 12%),
+			color-mix(in oklch, var(--card-bg) 72%, var(--primary) 28%)
+		),
+		var(--card-bg);
+	box-shadow: 0 16px 36px color-mix(in oklch, var(--primary) 14%, transparent);
+	color: var(--tw-prose-body, currentColor);
+	overflow: hidden;
+}
+
+.hailuo-audio-player::before {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle at 18% 18%, color-mix(in oklch, var(--primary) 24%, transparent), transparent 36%),
+		linear-gradient(135deg, transparent, color-mix(in oklch, var(--primary) 10%, transparent));
+	content: "";
+	pointer-events: none;
+}
+
+.hailuo-audio-player__cover {
+	position: relative;
+	z-index: 1;
+	width: 5.5rem;
+	aspect-ratio: 1;
+	overflow: hidden;
+	border: 1px solid color-mix(in oklch, var(--primary) 28%, white 28%);
+	border-radius: 0.875rem;
+	background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 36%, white), var(--btn-regular-bg));
+	box-shadow: 0 12px 28px color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.hailuo-audio-player__cover img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	pointer-events: none;
+	cursor: default;
+}
+
+.hailuo-audio-player__cover-fallback {
+	display: grid;
+	width: 100%;
+	height: 100%;
+	place-items: center;
+	color: var(--btn-content);
+	font-weight: 800;
+	font-size: 1.5rem;
+}
+
+.hailuo-audio-player__main {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+}
+
+.hailuo-audio-player__meta {
+	min-width: 0;
+	margin-bottom: 0.875rem;
+}
+
+.hailuo-audio-player__title {
+	overflow: hidden;
+	color: var(--deep-text, currentColor);
+	font-weight: 800;
+	line-height: 1.25;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.hailuo-audio-player__artist {
+	overflow: hidden;
+	margin-top: 0.25rem;
+	color: color-mix(in oklch, var(--deep-text, currentColor) 68%, transparent);
+	font-size: 0.875rem;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.hailuo-audio-player__controls {
+	display: grid;
+	grid-template-columns: 2.75rem minmax(0, 1fr);
+	gap: 0.875rem;
+	align-items: center;
+}
+
+.hailuo-audio-player__button {
+	width: 2.75rem;
+	height: 2.75rem;
+	border: 0;
+	border-radius: 999px;
+	background: linear-gradient(135deg, var(--primary), oklch(0.82 0.1 var(--hue)));
+	color: white;
+	font-weight: 800;
+	line-height: 1;
+	box-shadow: 0 10px 22px color-mix(in oklch, var(--primary) 32%, transparent);
+	cursor: pointer;
+	transition:
+		transform 150ms ease,
+		opacity 150ms ease,
+		box-shadow 150ms ease;
+}
+
+.hailuo-audio-player__button:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 13px 28px color-mix(in oklch, var(--primary) 38%, transparent);
+}
+
+.hailuo-audio-player__button:active {
+	transform: translateY(0) scale(0.97);
+}
+
+.hailuo-audio-player__button:disabled {
+	cursor: wait;
+	opacity: 0.62;
+}
+
+.hailuo-audio-player__progress-wrap {
+	min-width: 0;
+}
+
+.hailuo-audio-player__progress {
+	width: 100%;
+	min-width: 0;
+	height: 0.375rem;
+	border-radius: 999px;
+	appearance: none;
+	background: linear-gradient(
+		to right,
+		var(--primary) 0 var(--player-progress),
+		color-mix(in oklch, var(--primary) 20%, var(--card-bg)) var(--player-progress) 100%
+	);
+	cursor: pointer;
+	display: block;
+}
+
+.hailuo-audio-player__progress::-webkit-slider-thumb {
+	width: 1rem;
+	height: 1rem;
+	border: 2px solid white;
+	border-radius: 999px;
+	appearance: none;
+	background: var(--primary);
+	box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 45%, transparent);
+}
+
+.hailuo-audio-player__progress::-moz-range-thumb {
+	width: 0.875rem;
+	height: 0.875rem;
+	border: 2px solid white;
+	border-radius: 999px;
+	background: var(--primary);
+	box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 45%, transparent);
+}
+
+.hailuo-audio-player__progress:disabled {
+	cursor: default;
+	opacity: 0.55;
+}
+
+.hailuo-audio-player__time-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-top: 0.375rem;
+}
+
+.hailuo-audio-player__time {
+	color: color-mix(in oklch, var(--deep-text, currentColor) 62%, transparent);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.75rem;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.hailuo-audio-player__status {
+	display: none;
+	margin-top: 0.625rem;
+	color: #dc2626;
+	font-size: 0.8125rem;
+	font-weight: 650;
+}
+
+.hailuo-audio-player__status.is-error {
+	display: block;
+}
+
+html.dark .hailuo-audio-player {
+	border-color: color-mix(in oklch, var(--primary) 24%, transparent);
+	background:
+		linear-gradient(
+			135deg,
+			color-mix(in oklch, var(--card-bg) 90%, var(--primary) 10%),
+			color-mix(in oklch, var(--card-bg) 78%, var(--primary) 22%)
+		),
+		var(--card-bg);
+	box-shadow: 0 18px 42px color-mix(in oklch, black 42%, transparent);
+}
+
+html.dark .hailuo-audio-player__cover {
+	border-color: color-mix(in oklch, var(--primary) 32%, white 12%);
+	background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 28%, var(--card-bg)), var(--btn-regular-bg));
+}
+
+html.dark .hailuo-audio-player__title {
+	color: rgba(255, 255, 255, 0.9);
+}
+
+html.dark .hailuo-audio-player__artist,
+html.dark .hailuo-audio-player__time {
+	color: rgba(255, 255, 255, 0.58);
+}
+
+html.dark .hailuo-audio-player__status.is-error {
+	color: #fca5a5;
+}
+
+@media (max-width: 640px) {
+	.hailuo-audio-player {
+		grid-template-columns: 4.5rem minmax(0, 1fr);
+		gap: 0.875rem;
+		padding: 0.875rem;
+	}
+
+	.hailuo-audio-player__cover {
+		width: 4.5rem;
+		border-radius: 0.75rem;
+	}
+
+	.hailuo-audio-player__meta {
+		margin-bottom: 0.75rem;
+	}
+
+	.hailuo-audio-player__title {
+		font-size: 0.95rem;
+	}
+
+	.hailuo-audio-player__controls {
+		grid-template-columns: 2.5rem minmax(0, 1fr);
+		gap: 0.75rem;
+	}
+
+	.hailuo-audio-player__button {
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+}
+</style>
+
+<script>
+const PLAY_ICON = "\u25b6";
+const PAUSE_ICON = "\u23f8";
+const UI_TEXT = {
+	untitled: "Untitled track",
+	source: "Source",
+	play: "\u64ad\u653e\u97f3\u4e50",
+	pause: "\u6682\u505c\u97f3\u4e50",
+	progress: "\u64ad\u653e\u8fdb\u5ea6",
+	cover: "\u4e13\u8f91\u5c01\u9762",
+	loading: "\u52a0\u8f7d\u4e2d",
+	error: "\u97f3\u9891\u52a0\u8f7d\u5931\u8d25",
+};
+
+function formatAudioTime(seconds: number) {
+	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+
+	const totalSeconds = Math.floor(seconds);
+	const minutes = Math.floor(totalSeconds / 60);
+	const remainingSeconds = totalSeconds % 60;
+
+	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
+class HailuoAudioPlayer extends HTMLElement {
+	private audio?: HTMLAudioElement;
+	private button?: HTMLButtonElement;
+	private progress?: HTMLInputElement;
+	private currentTime?: HTMLSpanElement;
+	private durationTime?: HTMLSpanElement;
+	private status?: HTMLSpanElement;
+	private wrapper?: HTMLDivElement;
+	private isSeeking = false;
+
+	connectedCallback() {
+		if (this.dataset.initialized === "true") return;
+		this.dataset.initialized = "true";
+		this.render();
+	}
+
+	private getSources() {
+		const mp3 = this.getAttribute("mp3")?.trim() || "";
+		const flac = this.getAttribute("flac")?.trim() || "";
+		const src = this.getAttribute("src")?.trim() || "";
+		const type = this.getAttribute("type")?.trim() || "";
+		const sources: Array<{ src: string; type: string; label: string }> = [];
+
+		if (mp3) sources.push({ src: mp3, type: "audio/mpeg", label: "MP3" });
+		if (flac) sources.push({ src: flac, type: "audio/flac", label: "FLAC" });
+		if (!sources.length && src) {
+			sources.push({ src, type: type || "", label: UI_TEXT.source });
+		}
+
+		return sources;
+	}
+
+	private renderCover(title: string) {
+		const cover = this.getAttribute("cover")?.trim() || "";
+		const coverWrap = document.createElement("div");
+		coverWrap.className = "hailuo-audio-player__cover";
+
+		if (cover) {
+			const image = document.createElement("img");
+			image.src = cover;
+			image.alt = `${title} ${UI_TEXT.cover}`;
+			image.loading = "lazy";
+			image.decoding = "async";
+			image.addEventListener("error", () => {
+				coverWrap.textContent = "";
+				const fallback = document.createElement("div");
+				fallback.className = "hailuo-audio-player__cover-fallback";
+				fallback.textContent = "\u266b";
+				coverWrap.appendChild(fallback);
+			});
+			coverWrap.appendChild(image);
+			return coverWrap;
+		}
+
+		const fallback = document.createElement("div");
+		fallback.className = "hailuo-audio-player__cover-fallback";
+		fallback.textContent = "\u266b";
+		coverWrap.appendChild(fallback);
+
+		return coverWrap;
+	}
+
+	private render() {
+		const sources = this.getSources();
+		const title = this.getAttribute("title")?.trim() || UI_TEXT.untitled;
+		const artist = this.getAttribute("artist")?.trim() || "";
+
+		this.textContent = "";
+
+		this.wrapper = document.createElement("div");
+		this.wrapper.className = "hailuo-audio-player";
+
+		const cover = this.renderCover(title);
+		const main = document.createElement("div");
+		main.className = "hailuo-audio-player__main";
+
+		const meta = document.createElement("div");
+		meta.className = "hailuo-audio-player__meta";
+
+		const titleEl = document.createElement("div");
+		titleEl.className = "hailuo-audio-player__title";
+		titleEl.textContent = title;
+		meta.appendChild(titleEl);
+
+		if (artist) {
+			const artistEl = document.createElement("div");
+			artistEl.className = "hailuo-audio-player__artist";
+			artistEl.textContent = artist;
+			meta.appendChild(artistEl);
+		}
+
+		const controls = document.createElement("div");
+		controls.className = "hailuo-audio-player__controls";
+
+		this.button = document.createElement("button");
+		this.button.type = "button";
+		this.button.className = "hailuo-audio-player__button";
+		this.button.textContent = PLAY_ICON;
+		this.button.setAttribute("aria-label", UI_TEXT.play);
+		this.button.disabled = sources.length === 0;
+
+		const progressWrap = document.createElement("div");
+		progressWrap.className = "hailuo-audio-player__progress-wrap";
+
+		this.progress = document.createElement("input");
+		this.progress.className = "hailuo-audio-player__progress";
+		this.progress.type = "range";
+		this.progress.min = "0";
+		this.progress.max = "1000";
+		this.progress.value = "0";
+		this.progress.step = "1";
+		this.progress.setAttribute("aria-label", UI_TEXT.progress);
+		this.progress.disabled = sources.length === 0;
+
+		const timeRow = document.createElement("div");
+		timeRow.className = "hailuo-audio-player__time-row";
+
+		this.currentTime = document.createElement("span");
+		this.currentTime.className = "hailuo-audio-player__time";
+		this.currentTime.textContent = "0:00";
+
+		this.durationTime = document.createElement("span");
+		this.durationTime.className = "hailuo-audio-player__time";
+		this.durationTime.textContent = "0:00";
+
+		timeRow.append(this.currentTime, this.durationTime);
+		progressWrap.append(this.progress, timeRow);
+		controls.append(this.button, progressWrap);
+
+		this.status = document.createElement("span");
+		this.status.className = "hailuo-audio-player__status";
+		this.status.setAttribute("aria-live", "polite");
+
+		main.append(meta, controls, this.status);
+
+		this.audio = document.createElement("audio");
+		this.audio.preload = "metadata";
+		for (const source of sources) {
+			const sourceEl = document.createElement("source");
+			sourceEl.src = source.src;
+			if (source.type) sourceEl.type = source.type;
+			this.audio.appendChild(sourceEl);
+		}
+
+		this.wrapper.append(cover, main, this.audio);
+		this.appendChild(this.wrapper);
+
+		this.bindEvents();
+		this.updateProgress();
+	}
+
+	private bindEvents() {
+		if (!this.audio || !this.button || !this.progress) return;
+
+		this.button.addEventListener("click", () => this.togglePlayback());
+		this.progress.addEventListener("input", () => this.handleSeekInput());
+		this.progress.addEventListener("change", () => this.commitSeek());
+
+		this.audio.addEventListener("loadedmetadata", () => this.updateProgress());
+		this.audio.addEventListener("durationchange", () => this.updateProgress());
+		this.audio.addEventListener("timeupdate", () => this.updateProgress());
+		this.audio.addEventListener("play", () => {
+			this.clearError();
+			this.updatePlayingState(true);
+		});
+		this.audio.addEventListener("pause", () => this.updatePlayingState(false));
+		this.audio.addEventListener("ended", () => this.updatePlayingState(false));
+		this.audio.addEventListener("error", () => this.showError());
+	}
+
+	private async togglePlayback() {
+		if (!this.audio || !this.button) return;
+
+		if (this.audio.paused) {
+			try {
+				this.button.disabled = true;
+				this.clearError();
+				await this.audio.play();
+			} catch {
+				this.showError();
+			} finally {
+				this.button.disabled = false;
+			}
+			return;
+		}
+
+		this.audio.pause();
+	}
+
+	private handleSeekInput() {
+		if (!this.audio || !this.progress || !Number.isFinite(this.audio.duration)) return;
+
+		this.isSeeking = true;
+		const nextTime = (Number(this.progress.value) / 1000) * this.audio.duration;
+		if (this.currentTime) this.currentTime.textContent = formatAudioTime(nextTime);
+		this.updateProgressFill();
+	}
+
+	private commitSeek() {
+		if (!this.audio || !this.progress || !Number.isFinite(this.audio.duration)) return;
+
+		this.audio.currentTime = (Number(this.progress.value) / 1000) * this.audio.duration;
+		this.isSeeking = false;
+		this.updateProgress();
+	}
+
+	private updatePlayingState(isPlaying: boolean) {
+		if (!this.button) return;
+
+		this.button.textContent = isPlaying ? PAUSE_ICON : PLAY_ICON;
+		this.button.setAttribute("aria-label", isPlaying ? UI_TEXT.pause : UI_TEXT.play);
+	}
+
+	private updateProgress() {
+		if (!this.audio || !this.progress || !this.currentTime || !this.durationTime) return;
+
+		const duration = this.audio.duration;
+		const currentTime = this.audio.currentTime;
+
+		this.currentTime.textContent = formatAudioTime(currentTime);
+		this.durationTime.textContent = formatAudioTime(duration);
+
+		if (!this.isSeeking && Number.isFinite(duration) && duration > 0) {
+			this.progress.value = String(Math.round((currentTime / duration) * 1000));
+		}
+		this.updateProgressFill();
+	}
+
+	private updateProgressFill() {
+		if (!this.wrapper || !this.progress) return;
+
+		const progress = Math.max(0, Math.min(100, Number(this.progress.value) / 10));
+		this.wrapper.style.setProperty("--player-progress", `${progress}%`);
+	}
+
+	private clearError() {
+		if (!this.status) return;
+
+		this.status.textContent = "";
+		this.status.classList.remove("is-error");
+	}
+
+	private showError() {
+		if (this.status) {
+			this.status.textContent = UI_TEXT.error;
+			this.status.classList.add("is-error");
+		}
+		if (this.button) {
+			this.button.textContent = PLAY_ICON;
+			this.button.setAttribute("aria-label", UI_TEXT.play);
+		}
+	}
+}
+
+if (!customElements.get("hailuo-audio-player")) {
+	customElements.define("hailuo-audio-player", HailuoAudioPlayer);
+}
+</script>
