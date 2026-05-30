@@ -124,3 +124,68 @@ int main()
 
 ```
 
+# L - 三人成角
+
+> 关键词：思维
+
+## 思路
+
+题目是：在 $N$ 个等距圆周点中选 $3$ 个点，问有多少种选法构成直角三角形；且选法只看最终选中的 $3$ 把椅子，不区分人坐哪一把。
+
+注意到直径所对的圆周角为 $90$ 度， 分奇偶考虑。
+
+当 $n$ 为偶数的时候，每个点都有一个正对点，对于每一条直径，第三个点从剩下的 $n-2$ 个点中任选，答案为 $\frac {n(n-2)}{2}$。
+
+而奇数点时，圆周上不存在正对着的两把椅子，答案为 $0$。
+
+## Code
+
+```c++
+// Problem: CF GYM 106554 L
+// Contest: Codeforces - [Unofficial Mirror] 2026 CCPC National Invitational (Nanchang) and The 3rd Jiangxi Provincial
+// Programming Contest URL: https://codeforces.com/gym/106554/problem/L Time: 2026-05-29 18:44:32
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+
+void solve()
+{
+    ll n;
+    cin >> n;
+
+    ll res = (n % 2 == 1 ? 0 : n * (n - 2) / 2);
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+

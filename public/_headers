@@ -1,0 +1,29 @@
+/
+  Cache-Control: no-store, max-age=0
+
+/:page/
+  Cache-Control: no-store, max-age=0
+
+/posts/*
+  Cache-Control: no-store, max-age=0
+
+/rss.xml
+  Cache-Control: no-store, max-age=0
+
+/sitemap-index.xml
+  Cache-Control: no-store, max-age=0
+
+/sitemap-0.xml
+  Cache-Control: no-store, max-age=0
+
+/contest-problems.json
+  Cache-Control: no-store, max-age=0
+
+/pagefind/*
+  Cache-Control: no-store, max-age=0
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon/*
+  Cache-Control: public, max-age=31536000, immutable

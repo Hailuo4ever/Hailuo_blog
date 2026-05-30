@@ -44,8 +44,8 @@ export default defineConfig({
 			// when the Tailwind class `transition-all` is used
 			containers: ["#main-grid"],
 			smoothScrolling: true,
-			cache: true,
-			preload: true,
+			cache: false,
+			preload: false,
 			accessibility: true,
 			updateHead: true,
 			updateBodyClass: false,

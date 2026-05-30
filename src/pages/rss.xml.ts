@@ -8,6 +8,8 @@ import { siteConfig } from "@/config";
 
 const parser = new MarkdownIt();
 
+export const prerender = true;
+
 function getDirectiveAttribute(attributes: string, name: string) {
 	const match = attributes.match(new RegExp(`${name}="([^"]*)"`, "i"));
 	return match?.[1] || "";
