@@ -175,5 +175,10 @@ export default defineConfig({
 		},
 	},
 
+	// This site does not use Astro sessions; avoid requiring a Cloudflare SESSION KV binding.
+	session: {
+		driver: "memory",
+	},
+
 	adapter: cloudflare(),
 });

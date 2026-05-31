@@ -211,3 +211,107 @@ cntA--, cntm++;
 // 选一个之前出现的A，将它重新解释为开桌者，并新增一张非空桌，总容量增加k
 ```
 
+### 总结
+
+```markdown
+遇到 I
+  → 必须开桌
+
+遇到 E
+  → 优先坐旧桌
+  → 如果容量不足，尝试消耗一个旧 A 开桌
+
+遇到 A
+  → 优先假装它是 E，坐旧桌
+  → 保留一张“开桌券”
+  → 未来必要时，再将它反悔为 I
+```
+
+## Code
+
+```c++
+// Problem: CF 2232 C2
+// Contest: Codeforces - Codeforces Round 1101 (Div. 2)
+// URL: https://codeforces.com/contest/2232/problem/C2
+// Time: 2026-05-31 17:34:28
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+
+void solve()
+{
+    int n;
+    ll table_cnt, seat_cnt;
+    cin >> n >> table_cnt >> seat_cnt;
+
+    string u;
+    cin >> u;
+
+    ll opened = 0; // 已启用桌子数量
+    ll seated = 0; // 已入座人数
+    ll spare_a = 0; // 可以被重新解释为开桌者的 A 数量
+
+    for (char c: u)
+    {
+        if (c == 'I')
+        {
+            if (opened < table_cnt)
+            {
+                opened++;
+                seated++;
+            }
+            continue;
+        }
+
+        if (c == 'A')
+            spare_a++;
+
+        if (seated < opened * seat_cnt)
+            seated++;
+
+        else if (spare_a > 0 && opened < table_cnt)
+        {
+            spare_a--;
+            opened++;
+            seated++;
+        }
+        else if (c == 'A')
+            spare_a--;
+    }
+
+    cout << seated << endl;
+}
+
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
