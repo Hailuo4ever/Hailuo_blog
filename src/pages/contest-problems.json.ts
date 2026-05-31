@@ -1,6 +1,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import type { APIRoute, MarkdownHeading } from "astro";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import { isVisiblePost } from "@utils/content-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import type { ContestProblemSearchItem } from "@/global";
 
@@ -112,7 +113,7 @@ async function extractContestProblems(
 
 export const GET: APIRoute = async () => {
 	const posts = await getCollection("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return isVisiblePost(data);
 	});
 
 	const contestPosts = posts

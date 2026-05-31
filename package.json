@@ -6,7 +6,11 @@
     "dev": "node scripts/dev.js",
     "start": "node scripts/dev.js",
     "check": "astro check",
+<<<<<<< Updated upstream
     "build": "astro build && node scripts/fix-cloudflare-routes.js && pagefind --site dist",
+=======
+    "build": "astro build && pagefind --site dist && pnpm run verify:posts",
+>>>>>>> Stashed changes
     "preview": "pnpm run build && wrangler dev",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
@@ -15,6 +19,7 @@
     "lint": "biome check --write ./src",
     "preinstall": "npx only-allow pnpm",
     "deploy": "pnpm run build && wrangler deploy",
+    "verify:posts": "node scripts/verify-posts.js",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

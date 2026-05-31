@@ -18,6 +18,7 @@ const uncategorized = params.get("uncategorized");
 interface Post {
 	slug: string;
 	id: string;
+	sourcePath?: string;
 	data: {
 		title: string;
 		tags: string[];
@@ -297,7 +298,7 @@ function selectCalendarDay(day: CalendarDay) {
 }
 
 function normalizePostPath(post: Post) {
-	const sourcePath = (post.id || post.slug).replace(/\\/g, "/");
+	const sourcePath = (post.sourcePath || post.id || post.slug).replace(/\\/g, "/");
 	return sourcePath.replace(/^\/+|\/+$/g, "").replace(/\.mdx?$/i, "");
 }
 
