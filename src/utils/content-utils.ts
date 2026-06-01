@@ -6,8 +6,7 @@ import { getCategoryUrl } from "@utils/url-utils.ts";
 type PostData = CollectionEntry<"posts">["data"];
 
 export function isVisiblePost(data: Pick<PostData, "draft">) {
-	void data;
-	return true;
+	return data.draft !== true;
 }
 
 export function isFinishedPost(data: Pick<PostData, "status">) {

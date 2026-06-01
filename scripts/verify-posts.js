@@ -38,6 +38,14 @@ function decodeHtml(value) {
 		.replace(/&amp;/g, "&");
 }
 
+function isDraftPost(file) {
+	const content = fs.readFileSync(file, "utf8");
+	const frontmatterMatch = content.match(/^---\s*\r?\n([\s\S]*?)\r?\n---/);
+	if (!frontmatterMatch) return false;
+
+	return /^draft\s*:\s*true\s*(?:#.*)?$/im.test(frontmatterMatch[1]);
+}
+
 function fail(message, details = []) {
 	console.error(`[verify-posts] ${message}`);
 	for (const detail of details) {
@@ -48,6 +56,7 @@ function fail(message, details = []) {
 
 const sourcePostIds = walkFiles(sourcePostsDir)
 	.filter((file) => postExtensions.has(path.extname(file).toLowerCase()))
+	.filter((file) => !isDraftPost(file))
 	.map((file) => toPosixPath(path.relative(sourcePostsDir, file)))
 	.sort((a, b) => a.localeCompare(b));
 
@@ -107,5 +116,5 @@ if (missingRoutePages.length > 0) {
 }
 
 console.log(
-	`[verify-posts] ${sourcePostIds.length} source posts, ${generatedPostPages.length} generated routes, ${archiveSourcePathCount} archive entries.`,
+	`[verify-posts] ${sourcePostIds.length} visible source posts, ${generatedPostPages.length} generated routes, ${archiveSourcePathCount} archive entries.`,
 );
