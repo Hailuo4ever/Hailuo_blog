@@ -3,7 +3,7 @@ title: 2026 icpc武汉邀请赛
 published: 2026-05-21
 description: "The 2026 ICPC China Wuhan National Invitational and Hubei Provincial Programming Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
-tags: [算法题解, Nowcoder]
+tags: [算法题解, icpc, 邀请赛]
 category: "Algorithm"
 draft: false
 lang: ""

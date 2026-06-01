@@ -3,7 +3,7 @@ title: 2026 ccpc南昌邀请赛
 published: 2026-05-21
 description: "2026 CCPC National Invitational (Nanchang) and The 3rd Jiangxi Provincial Programming Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
-tags: [算法题解, Nowcoder]
+tags: [算法题解, ccpc, 邀请赛]
 category: "Algorithm"
 draft: false
 lang: ""
