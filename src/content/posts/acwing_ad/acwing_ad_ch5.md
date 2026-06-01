@@ -1,6 +1,5 @@
 ---
 title: 提高课-数学
-status: "editing"
 published: 2026-05-08
 description: "Acwing算法提高课-Ch5-数学"
 image: "https://img.hailuo4ever.com/cover/acwing.png"

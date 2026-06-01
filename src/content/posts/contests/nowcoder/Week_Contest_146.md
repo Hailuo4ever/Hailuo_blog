@@ -1,5 +1,6 @@
 ---
 title: 牛客周赛 Round 146
+status: "editing"
 published: 2026-05-31
 description: "Nowcoder Week Contest 146"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
