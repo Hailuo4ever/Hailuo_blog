@@ -8,10 +8,11 @@ hailuo-audio-player {
 
 .hailuo-audio-player {
 	--player-progress: 0%;
+	--player-volume: 100%;
 	position: relative;
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr) auto;
-	grid-template-rows: auto 0.125rem;
+	grid-template-rows: auto auto;
 	column-gap: 1.45rem;
 	row-gap: 0.45rem;
 	align-items: center;
@@ -166,8 +167,9 @@ hailuo-audio-player {
 	position: relative;
 	z-index: 2;
 	display: block;
-	grid-column: 2 / 4;
+	grid-column: 2;
 	grid-row: 2;
+	align-self: center;
 	width: 100%;
 	height: 0.125rem;
 	border-radius: 999px;
@@ -223,6 +225,90 @@ hailuo-audio-player {
 	opacity: 0.22;
 }
 
+.hailuo-audio-player__volume {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	grid-column: 3;
+	grid-row: 2;
+	align-items: center;
+	justify-self: end;
+	gap: 0.55rem;
+	width: min(9.5rem, 100%);
+	color: #626269;
+	opacity: 0.65;
+	transition: opacity 150ms ease;
+}
+
+.hailuo-audio-player__volume:hover,
+.hailuo-audio-player__volume:focus-within {
+	opacity: 0.92;
+}
+
+.hailuo-audio-player__volume-icon {
+	display: inline-grid;
+	flex: 0 0 auto;
+	width: 1.05rem;
+	height: 1.05rem;
+	place-items: center;
+}
+
+.hailuo-audio-player__volume-icon svg {
+	display: block;
+	width: 1.05rem;
+	height: 1.05rem;
+	stroke-width: 1.9;
+}
+
+.hailuo-audio-player__volume-range {
+	display: block;
+	flex: 1 1 auto;
+	min-width: 4.5rem;
+	height: 0.125rem;
+	border-radius: 999px;
+	appearance: none;
+	background: linear-gradient(
+		to right,
+		rgba(86, 86, 92, 0.7) 0 var(--player-volume),
+		rgba(86, 86, 92, 0.18) var(--player-volume) 100%
+	);
+	cursor: pointer;
+}
+
+.hailuo-audio-player__volume-range::-webkit-slider-thumb {
+	width: 0.72rem;
+	height: 0.72rem;
+	border: 0;
+	border-radius: 999px;
+	appearance: none;
+	background: rgba(86, 86, 92, 0.85);
+	transition: transform 150ms ease;
+}
+
+.hailuo-audio-player__volume-range::-moz-range-thumb {
+	width: 0.72rem;
+	height: 0.72rem;
+	border: 0;
+	border-radius: 999px;
+	background: rgba(86, 86, 92, 0.85);
+	transition: transform 150ms ease;
+}
+
+.hailuo-audio-player__volume-range:hover::-webkit-slider-thumb,
+.hailuo-audio-player__volume-range:focus-visible::-webkit-slider-thumb {
+	transform: scale(1.12);
+}
+
+.hailuo-audio-player__volume-range:hover::-moz-range-thumb,
+.hailuo-audio-player__volume-range:focus-visible::-moz-range-thumb {
+	transform: scale(1.12);
+}
+
+.hailuo-audio-player__volume-range:disabled {
+	cursor: default;
+	opacity: 0.22;
+}
+
 .hailuo-audio-player__status {
 	display: none;
 	margin-top: 0.35rem;
@@ -259,12 +345,32 @@ html.dark .hailuo-audio-player__button {
 	color: rgba(255, 255, 255, 0.68);
 }
 
+html.dark .hailuo-audio-player__volume {
+	color: rgba(255, 255, 255, 0.68);
+}
+
 html.dark .hailuo-audio-player__progress {
 	background: linear-gradient(
 		to right,
 		rgba(255, 255, 255, 0.74) 0 var(--player-progress),
 		rgba(255, 255, 255, 0.2) var(--player-progress) 100%
 	);
+}
+
+html.dark .hailuo-audio-player__volume-range {
+	background: linear-gradient(
+		to right,
+		rgba(255, 255, 255, 0.74) 0 var(--player-volume),
+		rgba(255, 255, 255, 0.2) var(--player-volume) 100%
+	);
+}
+
+html.dark .hailuo-audio-player__volume-range::-webkit-slider-thumb {
+	background: rgba(255, 255, 255, 0.82);
+}
+
+html.dark .hailuo-audio-player__volume-range::-moz-range-thumb {
+	background: rgba(255, 255, 255, 0.82);
 }
 
 html.dark .hailuo-audio-player__status.is-error {
@@ -274,6 +380,7 @@ html.dark .hailuo-audio-player__status.is-error {
 @media (max-width: 640px) {
 	.hailuo-audio-player {
 		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-rows: auto auto auto;
 		column-gap: 0.75rem;
 		row-gap: 0.34rem;
 		min-height: 4.65rem;
@@ -316,7 +423,26 @@ html.dark .hailuo-audio-player__status.is-error {
 	}
 
 	.hailuo-audio-player__progress {
+		grid-column: 2 / 4;
+		grid-row: 2;
 		width: 100%;
+	}
+
+	.hailuo-audio-player__volume {
+		grid-column: 2 / 4;
+		grid-row: 3;
+		gap: 0.45rem;
+		width: 100%;
+	}
+
+	.hailuo-audio-player__volume-icon,
+	.hailuo-audio-player__volume-icon svg {
+		width: 0.95rem;
+		height: 0.95rem;
+	}
+
+	.hailuo-audio-player__volume-range {
+		min-width: 0;
 	}
 }
 </style>
@@ -328,6 +454,8 @@ const ICONS = {
 	previous: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7v18"/><path d="M24 7.5 11 16l13 8.5V7.5Z"/></svg>`,
 	next: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7v18"/><path d="M8 7.5 21 16 8 24.5V7.5Z"/></svg>`,
 	repeat: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10.5h14.5a4.5 4.5 0 0 1 4.5 4.5v1"/><path d="m22.5 6.5 4 4-4 4"/><path d="M25 21.5H10.5A4.5 4.5 0 0 1 6 17v-1"/><path d="m9.5 25.5-4-4 4-4"/></svg>`,
+	volume: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13v8h5l7 5V8l-7 5H7Z"/><path d="M23 12.5a6 6 0 0 1 0 7"/></svg>`,
+	volumeMuted: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13v8h5l7 5V8l-7 5H7Z"/><path d="m23.5 13.5 5 5"/><path d="m28.5 13.5-5 5"/></svg>`,
 };
 const UI_TEXT = {
 	untitled: "Untitled track",
@@ -338,6 +466,7 @@ const UI_TEXT = {
 	next: "\u4e0b\u4e00\u9996\uff08\u5355\u66f2\u64ad\u653e\u5668\u6682\u4e0d\u53ef\u7528\uff09",
 	repeat: "\u5faa\u73af\uff08\u5355\u66f2\u64ad\u653e\u5668\u6682\u4e0d\u53ef\u7528\uff09",
 	progress: "\u64ad\u653e\u8fdb\u5ea6",
+	volume: "\u97f3\u91cf",
 	cover: "\u4e13\u8f91\u5c01\u9762",
 	loading: "\u52a0\u8f7d\u4e2d",
 	error: "\u97f3\u9891\u52a0\u8f7d\u5931\u8d25",
@@ -357,6 +486,8 @@ class HailuoAudioPlayer extends HTMLElement {
 	private audio?: HTMLAudioElement;
 	private button?: HTMLButtonElement;
 	private progress?: HTMLInputElement;
+	private volume?: HTMLInputElement;
+	private volumeIcon?: HTMLSpanElement;
 	private currentTime?: HTMLSpanElement;
 	private durationTime?: HTMLSpanElement;
 	private status?: HTMLSpanElement;
@@ -503,6 +634,26 @@ class HailuoAudioPlayer extends HTMLElement {
 
 		controls.append(previousButton, this.button, nextButton, repeatButton);
 
+		const volumeControl = document.createElement("div");
+		volumeControl.className = "hailuo-audio-player__volume";
+
+		this.volumeIcon = document.createElement("span");
+		this.volumeIcon.className = "hailuo-audio-player__volume-icon";
+		this.volumeIcon.setAttribute("aria-hidden", "true");
+		this.volumeIcon.innerHTML = ICONS.volume;
+
+		this.volume = document.createElement("input");
+		this.volume.className = "hailuo-audio-player__volume-range";
+		this.volume.type = "range";
+		this.volume.min = "0";
+		this.volume.max = "100";
+		this.volume.value = "100";
+		this.volume.step = "1";
+		this.volume.setAttribute("aria-label", UI_TEXT.volume);
+		this.volume.disabled = sources.length === 0;
+
+		volumeControl.append(this.volumeIcon, this.volume);
+
 		this.status = document.createElement("span");
 		this.status.className = "hailuo-audio-player__status";
 		this.status.setAttribute("aria-live", "polite");
@@ -511,6 +662,7 @@ class HailuoAudioPlayer extends HTMLElement {
 
 		this.audio = document.createElement("audio");
 		this.audio.preload = "metadata";
+		this.audio.volume = this.getVolumePercent() / 100;
 		for (const source of sources) {
 			const sourceEl = document.createElement("source");
 			sourceEl.src = source.src;
@@ -518,23 +670,26 @@ class HailuoAudioPlayer extends HTMLElement {
 			this.audio.appendChild(sourceEl);
 		}
 
-		this.wrapper.append(cover, main, controls, this.progress, this.audio);
+		this.wrapper.append(cover, main, controls, this.progress, volumeControl, this.audio);
 		this.appendChild(this.wrapper);
 
 		this.bindEvents();
 		this.updateProgress();
+		this.updateVolumeFill();
 	}
 
 	private bindEvents() {
-		if (!this.audio || !this.button || !this.progress) return;
+		if (!this.audio || !this.button || !this.progress || !this.volume) return;
 
 		this.button.addEventListener("click", () => this.togglePlayback());
 		this.progress.addEventListener("input", () => this.handleSeekInput());
 		this.progress.addEventListener("change", () => this.commitSeek());
+		this.volume.addEventListener("input", () => this.handleVolumeInput());
 
 		this.audio.addEventListener("loadedmetadata", () => this.updateProgress());
 		this.audio.addEventListener("durationchange", () => this.updateProgress());
 		this.audio.addEventListener("timeupdate", () => this.updateProgress());
+		this.audio.addEventListener("volumechange", () => this.syncVolumeFromAudio());
 		this.audio.addEventListener("play", () => {
 			this.clearError();
 			this.updatePlayingState(true);
@@ -574,6 +729,30 @@ class HailuoAudioPlayer extends HTMLElement {
 		this.updateProgressFill();
 	}
 
+	private handleVolumeInput() {
+		if (!this.audio || !this.volume) return;
+
+		const volume = this.getVolumePercent() / 100;
+		this.audio.volume = volume;
+		this.audio.muted = volume === 0;
+		this.updateVolumeFill();
+	}
+
+	private syncVolumeFromAudio() {
+		if (!this.audio || !this.volume) return;
+
+		const volume = this.audio.muted ? 0 : this.audio.volume * 100;
+		this.volume.value = String(Math.round(volume));
+		this.updateVolumeFill();
+	}
+
+	private getVolumePercent() {
+		const value = Number(this.volume?.value ?? 100);
+		if (!Number.isFinite(value)) return 100;
+
+		return Math.max(0, Math.min(100, value));
+	}
+
 	private commitSeek() {
 		if (!this.audio || !this.progress || !Number.isFinite(this.audio.duration)) return;
 
@@ -611,6 +790,15 @@ class HailuoAudioPlayer extends HTMLElement {
 
 		const progress = Math.max(0, Math.min(100, Number(this.progress.value) / 10));
 		this.wrapper.style.setProperty("--player-progress", `${progress}%`);
+	}
+
+	private updateVolumeFill() {
+		if (!this.wrapper || !this.volume) return;
+
+		const volume = this.getVolumePercent();
+		this.volume.value = String(Math.round(volume));
+		this.wrapper.style.setProperty("--player-volume", `${volume}%`);
+		if (this.volumeIcon) this.volumeIcon.innerHTML = volume === 0 ? ICONS.volumeMuted : ICONS.volume;
 	}
 
 	private clearError() {
