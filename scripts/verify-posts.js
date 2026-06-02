@@ -7,6 +7,7 @@ const sourcePostsDir = path.join(rootDir, "src", "content", "posts");
 const distPostsDir = path.join(rootDir, "dist", "posts");
 const archiveHtmlPath = path.join(rootDir, "dist", "archive", "index.html");
 const postExtensions = new Set([".md", ".mdx"]);
+const postStatuses = new Set(["published", "editing"]);
 
 function walkFiles(dir) {
 	if (!fs.existsSync(dir)) return [];
@@ -38,12 +39,11 @@ function decodeHtml(value) {
 		.replace(/&amp;/g, "&");
 }
 
-function isDraftPost(file) {
+function readFrontmatter(file) {
 	const content = fs.readFileSync(file, "utf8");
 	const frontmatterMatch = content.match(/^---\s*\r?\n([\s\S]*?)\r?\n---/);
-	if (!frontmatterMatch) return false;
 
-	return /^draft\s*:\s*true\s*(?:#.*)?$/im.test(frontmatterMatch[1]);
+	return frontmatterMatch?.[1] ?? "";
 }
 
 function fail(message, details = []) {
@@ -54,11 +54,57 @@ function fail(message, details = []) {
 	process.exit(1);
 }
 
-const sourcePostIds = walkFiles(sourcePostsDir)
+function readPostStatus(file, frontmatter) {
+	const statusMatch = frontmatter.match(
+		/^status\s*:\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/im,
+	);
+	const status = (statusMatch?.[1] ?? statusMatch?.[2] ?? statusMatch?.[3] ?? "published").trim();
+
+	if (!postStatuses.has(status)) {
+		fail(`Invalid status in ${path.relative(rootDir, file)}: ${status}`);
+	}
+
+	return status;
+}
+
+function readSourcePost(file) {
+	const frontmatter = readFrontmatter(file);
+	const draft = /^draft\s*:\s*true\s*(?:#.*)?$/im.test(frontmatter);
+	const id = toPosixPath(path.relative(sourcePostsDir, file));
+
+	return {
+		file,
+		id,
+		draft,
+		status: readPostStatus(file, frontmatter),
+	};
+}
+
+function getArchivePostStatus(archiveHtml, postId) {
+	const sourcePathToken = `&quot;sourcePath&quot;:[0,&quot;${escapeHtml(postId)}&quot;]`;
+	const sourcePathIndex = archiveHtml.indexOf(sourcePathToken);
+
+	if (sourcePathIndex === -1) return null;
+
+	const nextSourcePathIndex = archiveHtml.indexOf(
+		"&quot;sourcePath&quot;:[0,&quot;",
+		sourcePathIndex + sourcePathToken.length,
+	);
+	const postSegment =
+		nextSourcePathIndex === -1
+			? archiveHtml.slice(sourcePathIndex)
+			: archiveHtml.slice(sourcePathIndex, nextSourcePathIndex);
+	const statusMatch = postSegment.match(/&quot;status&quot;:\[0,&quot;([^&]*)&quot;\]/);
+
+	return statusMatch ? decodeHtml(statusMatch[1]) : null;
+}
+
+const sourcePosts = walkFiles(sourcePostsDir)
 	.filter((file) => postExtensions.has(path.extname(file).toLowerCase()))
-	.filter((file) => !isDraftPost(file))
-	.map((file) => toPosixPath(path.relative(sourcePostsDir, file)))
-	.sort((a, b) => a.localeCompare(b));
+	.map(readSourcePost)
+	.filter((post) => !post.draft)
+	.sort((a, b) => a.id.localeCompare(b.id));
+const sourcePostIds = sourcePosts.map((post) => post.id);
 
 if (sourcePostIds.length === 0) {
 	fail("No source posts were found under src/content/posts.");
@@ -96,6 +142,25 @@ if (missingArchiveEntries.length > 0) {
 	fail("Archive folder data is missing source posts.", missingArchiveEntries);
 }
 
+const staleArchiveStatuses = sourcePosts
+	.map((post) => ({
+		...post,
+		archiveStatus: getArchivePostStatus(archiveHtml, post.id),
+	}))
+	.filter((post) => post.archiveStatus !== post.status);
+
+if (staleArchiveStatuses.length > 0) {
+	fail(
+		"Archive data has stale post status values.",
+		staleArchiveStatuses.map(
+			(post) =>
+				`${post.id}: source status is ${post.status}, archive status is ${
+					post.archiveStatus ?? "missing"
+				}`,
+		),
+	);
+}
+
 const routeSlugs = [
 	...archiveHtml.matchAll(/&quot;slug&quot;:\[0,&quot;([^&]*)&quot;\]/g),
 ].map((match) => decodeHtml(match[1]));
@@ -116,5 +181,5 @@ if (missingRoutePages.length > 0) {
 }
 
 console.log(
-	`[verify-posts] ${sourcePostIds.length} visible source posts, ${generatedPostPages.length} generated routes, ${archiveSourcePathCount} archive entries.`,
+	`[verify-posts] ${sourcePostIds.length} visible source posts, ${generatedPostPages.length} generated routes, ${archiveSourcePathCount} archive entries, ${sourcePosts.length} tracked statuses.`,
 );
