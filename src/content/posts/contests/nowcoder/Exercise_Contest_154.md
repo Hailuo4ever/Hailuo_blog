@@ -229,3 +229,129 @@ int main()
 
 ```
 
+# D - Mizuki and (Mod M)
+
+> 关键词：字符串变换，线性DP
+
+## 思路
+
+首先发现不能模拟字符串替换，因为字符串长度会指数级增加，很快就会超时间和空间。
+
+关键点在于：**每一次操作中，每个数字 $0-9$ 产生的替换是相互独立的。我们只需要弄清楚单个数字经过 $K$ 次操作后，会对最终的数值产生多少贡献，以及它会给数量级带来多大的变化**。
+
+1. 我们考虑DP，由于我们最终只需要求值对 $M$ 取模的结果，对于每个状态我们需要用两个二维数组表示：
+    1. **`val[k][c]`**：数字 $c$ 经过 $k$ 次操作后，生成的字符串对应的**十进制数值**，对 $M$ 取模的结果。
+    2. **`mul[k][c]`**：数字 $c$ 经过 $k$ 次操作后，生成的字符串对应的**长度带来的数量级乘数**（即 $10^{\text{长度}}$），对 $M$ 取模的结果。这个乘数用于将其左侧的数字提升到正确的数量级。
+
+初始化：$k=0$ 时，没有进行任何操作时，数字 $c$ 就是它本身，长度为 1。`val[0][c] = c % M`，`mul[0][c] = 10 % M`。
+
+状态转移（从 $k-1$ 转移到 $k$ ）：
+
+当我们要计算数字 $c$ 经过 $k$ 次操作的属性时，根据题意，它在第 1 次操作后会变成字符串 $P_c$。**假设 $P_c$ 是一个长度为 $L$ 的字符串 $d_1 d_2 \dots d_L$。那么 $c$ 经过 $k$ 次操作的结果，等价于把 $P_c$ 中的每一个字符 $d_i$ 都进行 $k-1$ 次操作拼接而成**。
+
+考虑如何计算拼接后的数值，可以从右往左遍历 $P_c$ 的字符，维护一个当前累计的数值 `cur_val = 0`，以及当前的位移乘数 `cur_mul = 1`。
+
+```c++
+for (int i = (int)P[c].length() - 1; i >= 0; --i)
+{
+    int d = P[c][i] - '0';
+                
+    cur_val = (cur_val + val[k - 1][d] * cur_mul) % M; // 值
+    cur_mul = (cur_mul * mul[k - 1][d]) % M; // 指数
+}
+```
+
+计算答案：从右往左遍历 $S$ 的每一个字符 $s_i$，维护 `ans_val = 0` 和 `ans_mul = 1`。同样利用最终状态 `val[K][d]` 和 `mul[K][d]` 进行累加。
+
+## Code
+
+```c++
+// Problem: Mizuki and (Mod M)
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/136382/D
+// Time: 2026-06-02 20:48:39
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+
+void solve()
+{
+    string s;
+    cin >> s;
+
+    ll K, m;
+    cin >> K >> m;
+
+    vector<string> p(10);
+    for (int i = 0; i < 10; ++i)
+        cin >> p[i];
+
+    vector<vector<ll>> val(K + 1, vector<ll>(10, 0));
+    vector<vector<ll>> mul(K + 1, vector<ll>(10, 1));
+
+    for (int c = 0; c < 10; ++c) // k = 0
+    {
+        val[0][c] = c % m;
+        mul[0][c] = 10 % m;
+    }
+
+    for (int k = 1; k <= K; ++k)
+    {
+        for (int c = 0; c < 10; ++c)
+        {
+            ll cur = 0, curm = 1;
+            for (int i = p[c].size() - 1; i >= 0; --i)
+            {
+                int d = p[c][i] - '0';
+                cur = (cur + val[k - 1][d] * curm) % m;
+                curm = (curm * mul[k - 1][d]) % m;
+            }
+
+            val[k][c] = cur, mul[k][c] = curm;
+        }
+    }
+
+    ll res = 0, resm = 1;
+    for (int i = s.size() - 1; i >= 0; --i)
+    {
+        int d = s[i] - '0';
+        res = (res + val[K][d] * resm) % m;
+        resm = (resm * mul[K][d]) % m;
+    }
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
