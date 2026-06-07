@@ -403,3 +403,286 @@ int main()
 
 ```
 
+### 正解
+
+> [!NOTE]
+>
+> 注意：线性筛过程中每次构造出一个合数，都必须立刻记录。
+
+```c++
+// Problem: 小红的子序列
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/136224/D
+// Time: 2026-06-07 19:34:40
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 1e6 + 10;
+
+vector<int> primes;
+int cnt, minp[N];
+bool st[N];
+
+void get_primes(int n)
+{
+    for (int i = 2; i <= n; i++)
+    {
+        if (!st[i])
+        {
+            primes.push_back(i);
+            cnt++;
+            minp[i] = i;
+        }
+
+        for (int j = 0; j < cnt && primes[j] <= n / i; j++)
+        {
+            st[primes[j] * i] = true;
+
+            minp[primes[j] * i] = primes[j];
+
+            if (i % primes[j] == 0)
+                break;
+        }
+    }
+}
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<int> a(n + 1), path;
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+
+    int mx = *max_element(all(a));
+    get_primes(mx);
+
+    vector<int> dp(n + 1, 1), pre(n + 1, -1);
+    vector<int> blen(mx + 1, 0), bpos(mx + 1, -1);
+
+    int res = 0, end = 0;
+
+    for (int i = 1; i <= n; i++)
+    {
+        int x = a[i];
+
+        while (x > 1)
+        {
+            int p = minp[x];
+
+            int idx = a[i] / p;
+
+            if (blen[idx] + 1 > dp[i])
+            {
+                dp[i] = blen[idx] + 1;
+                pre[i] = bpos[idx];
+            }
+
+            while (x % p == 0)
+                x /= p;
+        }
+
+        if (dp[i] > blen[a[i]])
+        {
+            blen[a[i]] = dp[i];
+            bpos[a[i]] = i;
+        }
+
+        if (dp[i] > res)
+        {
+            res = dp[i];
+            end = i;
+        }
+    }
+
+    for (int i = end; i != -1; i = pre[i])
+        path.push_back(a[i]);
+
+    reverse(all(path));
+
+    cout << res << endl;
+
+    for (auto x: path)
+        cout << x << " ";
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# E - 小红的受欢迎子串
+
+> 关键词：前后缀，预处理
+>
+> 之前做过的一道类似题目：[牛客小白月赛 133 - C](https://blog.hailuo4ever.com/posts/contests/nowcoder/rookie_month_contest-133/#c---魔法少女愿望卷轴与真名刻印)
+>
+> 和那道题不同的是，那题是修改字符，这题是插入字符。
+
+## 思路
+
+首先明确一个性质：能够重复利用的字符一定是连续的。
+
+考虑 $greet$，假设我们希望使用原字符串中的一部分字符，剩下的通过插入来补齐。如果原字符串是 $get$，由于它是 $greet$ 的子序列，因此是可行的。但如果原字符串是 $g \cdots x \cdots t$，就不能利用它，将它补成 $greet$，因为字符 $x$ 无法被删除或修改。
+
+因此**对于某个目标字符串，可以复用的原字符串部分必须是一个连续子串，并且该子串必须是目标字符串的子序列。**
+
+并且两个字符串 $great$ 和 $invite$ 无法拼接，因此两个目标子串一定互不重叠，且只有两种排列方式。
+
+如果完全不复用原字符串中的字符，直接插入两个完整字符串，需要 $11$ 次操作，因此我们要求最多可复用的字符数。
+
+问题转化为：从原字符串中选择两个互不重叠的连续片段，使其中一个是 $greet$ 的子序列，另一个是 $invite$ 的子序列，最大化两个片段的长度之和。
+
+我们对两个目标字符串都预处理出前后缀的最大值：
+
+```c++
+pre[i] = 仅使用 s[0 ... i - 1] 时，最多可以复用多少个字符
+suf[i] = 仅使用 s[i ... n - 1] 时，最多可以复用多少个字符
+```
+
+由于两个字符串的长度都比较短，直接在每个位置上双指针扫一遍即可。
+
+**枚举所有分界线，取两种拼接方式的最大值。**
+
+## Code
+
+```c++
+// Problem: 小红的受欢迎子串
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/136224/E
+// Time: 2026-06-07 19:50:19
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+
+void solve()
+{
+    int n;
+    string s;
+
+    cin >> n >> s;
+
+    auto calc = [&](string p)
+    {
+        int m = p.size();
+
+        // st[i]：从位置 i 开始的合法片段最大长度
+        // ed[i]：在位置 i 结束的合法片段最大长度
+        // pre[i]：在前 i 个字符中，合法片段最大长度
+        // suf[i]：在第 i 个字符到末尾，合法片段最大长度
+
+        vector<int> st(n + 2), ed(n + 2), pre(n + 2), suf(n + 3);
+
+        // 枚举复用片段的左端点
+        for (int l = 0; l < n; l++)
+        {
+            int pos = 0;
+
+            // 复用片段的长度不会超过目标串长度
+            for (int r = l; r < n && r < l + m; r++)
+            {
+                // 在目标串 p 中寻找与 s[r] 匹配的位置
+                while (pos < m && p[pos] != s[r])
+                    pos++;
+
+                // 当前字符无法匹配，直接break
+                if (pos == m)
+                    break;
+
+                pos++;
+
+                int len = r - l + 1;
+
+                // 注意换下标，字符串下标从0开始，数组从1开始
+                st[l + 1] = max(st[l + 1], len);
+                ed[r + 1] = max(ed[r + 1], len);
+            }
+        }
+
+        // 前缀最优值
+        for (int i = 1; i <= n; ++i)
+            pre[i] = max(pre[i - 1], ed[i]);
+
+        // 后缀最优值
+        for (int i = n; i >= 1; i--)
+            suf[i] = max(suf[i + 1], st[i]);
+
+        return make_pair(pre, suf);
+    };
+
+    string a = "greet", b = "invite";
+
+    auto [pa, sa] = calc(a);
+    auto [pb, sb] = calc(b);
+
+    int mx = 0;
+
+    // 枚举分割点，将字符串划分为 s[1 ... i] | s[i + 1 ... n]
+    for (int i = 0; i <= n; i++)
+    {
+        mx = max(mx, pa[i] + sb[i + 1]);
+        mx = max(mx, pb[i] + sa[i + 1]);
+    }
+
+    cout << a.size() + b.size() - mx << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
