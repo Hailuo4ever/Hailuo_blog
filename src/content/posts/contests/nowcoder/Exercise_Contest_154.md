@@ -5,13 +5,13 @@ description: "Nowcoder Exercise Contest 154"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
 tags: [算法题解, Nowcoder]
 category: "Algorithm"
-draft: true
+draft: false
 lang: ""
 ---
 
 > [!NOTE]
 >
-> 比赛链接：[牛客练习赛 154 内测](https://ac.nowcoder.com/acm/contest/136382)
+> 比赛链接：[牛客练习赛 154](https://ac.nowcoder.com/acm/contest/135884)
 
 # A - Mizuki and Multiset
 
