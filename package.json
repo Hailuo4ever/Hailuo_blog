@@ -16,6 +16,9 @@
     "preinstall": "npx only-allow pnpm",
     "deploy": "pnpm run build && wrangler deploy",
     "verify:posts": "node scripts/verify-posts.js",
+    "luogu:format": "node scripts/luogu-format.js",
+    "luogu:format:gui": "node scripts/luogu-format-gui.js",
+    "test:luogu-format": "node scripts/luogu-format/core.test.js",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
