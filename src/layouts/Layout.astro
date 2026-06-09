@@ -277,8 +277,11 @@ function disableAnimation() {
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 const BIRTHDAY_FIREWORKS_CANVAS_ID = 'birthday-fireworks-canvas'
+const GISCUS_CONTAINER_SELECTOR = '[data-giscus-comments]'
+const GISCUS_SCRIPT_SRC = 'https://giscus.app/client.js'
 let birthdayFireworksFrame = 0
 let birthdayFireworksResize: (() => void) | null = null
+let giscusThemeObserver: MutationObserver | null = null
 
 function removeBirthdayFireworks() {
 	if (birthdayFireworksFrame) {
@@ -422,6 +425,79 @@ function initBirthdayFireworks() {
 	birthdayFireworksFrame = requestAnimationFrame(draw)
 }
 
+function getGiscusTheme() {
+	return document.documentElement.classList.contains('dark') ? 'transparent_dark' : 'light'
+}
+
+function setGiscusAttribute(script: HTMLScriptElement, name: string, value: string | undefined) {
+	if (!value) return
+	script.setAttribute(name, value)
+}
+
+function updateGiscusTheme() {
+	document.querySelectorAll<HTMLIFrameElement>('iframe.giscus-frame').forEach(frame => {
+		frame.contentWindow?.postMessage(
+			{
+				giscus: {
+					setConfig: {
+						theme: getGiscusTheme(),
+					},
+				},
+			},
+			'https://giscus.app',
+		)
+	})
+}
+
+function initGiscusComments() {
+	document.querySelectorAll<HTMLElement>(GISCUS_CONTAINER_SELECTOR).forEach(container => {
+		const loadKey = [
+			window.location.pathname,
+			container.dataset.repo,
+			container.dataset.repoId,
+			container.dataset.categoryId,
+		].join('|')
+
+		if (container.dataset.giscusLoadedKey === loadKey) {
+			updateGiscusTheme()
+			return
+		}
+
+		container.replaceChildren()
+		container.dataset.giscusLoadedKey = loadKey
+
+		const script = document.createElement('script')
+		script.src = GISCUS_SCRIPT_SRC
+		script.async = true
+		script.crossOrigin = 'anonymous'
+
+		setGiscusAttribute(script, 'data-repo', container.dataset.repo)
+		setGiscusAttribute(script, 'data-repo-id', container.dataset.repoId)
+		setGiscusAttribute(script, 'data-category', container.dataset.category)
+		setGiscusAttribute(script, 'data-category-id', container.dataset.categoryId)
+		setGiscusAttribute(script, 'data-mapping', container.dataset.mapping)
+		setGiscusAttribute(script, 'data-strict', container.dataset.strict)
+		setGiscusAttribute(script, 'data-reactions-enabled', container.dataset.reactionsEnabled)
+		setGiscusAttribute(script, 'data-emit-metadata', container.dataset.emitMetadata)
+		setGiscusAttribute(script, 'data-input-position', container.dataset.inputPosition)
+		setGiscusAttribute(script, 'data-lang', container.dataset.lang)
+		setGiscusAttribute(script, 'data-loading', container.dataset.loading)
+		script.setAttribute('data-theme', getGiscusTheme())
+
+		container.appendChild(script)
+	})
+}
+
+function setupGiscusThemeSync() {
+	if (giscusThemeObserver) return
+
+	giscusThemeObserver = new MutationObserver(updateGiscusTheme)
+	giscusThemeObserver.observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ['class'],
+	})
+}
+
 function setClickOutsideToClose(panel: string, ignores: string[]) {
 	document.addEventListener("click", event => {
 		let panelDom = document.getElementById(panel);
@@ -534,6 +610,8 @@ function init() {
 	initCustomScrollbar();
 	showBanner();
 	initBirthdayFireworks();
+	setupGiscusThemeSync();
+	initGiscusComments();
 }
 
 /* Load settings when entering the site */
@@ -596,6 +674,7 @@ const setup = () => {
 	});
 	window.swup.hooks.on('page:view', () => {
 		initBirthdayFireworks()
+		initGiscusComments()
 
 		// hide the temp high element when the transition is done
 		const heightExtend = document.getElementById('page-height-extend')

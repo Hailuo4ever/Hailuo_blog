@@ -87,6 +87,22 @@ export type LicenseConfig = {
 	url: string;
 };
 
+export type CommentConfig = {
+	enable: boolean;
+	provider: "giscus";
+	repo: string;
+	repoId: string;
+	category: string;
+	categoryId: string;
+	mapping: "pathname";
+	strict: boolean;
+	reactionsEnabled: boolean;
+	emitMetadata: boolean;
+	inputPosition: "top" | "bottom";
+	lang: string;
+	loading: "lazy" | "eager";
+};
+
 export type LIGHT_DARK_MODE =
 	| typeof LIGHT_MODE
 	| typeof DARK_MODE

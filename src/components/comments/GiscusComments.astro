@@ -1,0 +1,46 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+import { commentsConfig } from "../../config";
+
+const isConfigured =
+	commentsConfig.enable &&
+	commentsConfig.provider === "giscus" &&
+	commentsConfig.repo.length > 0 &&
+	commentsConfig.repoId.length > 0 &&
+	commentsConfig.category.length > 0 &&
+	commentsConfig.categoryId.length > 0;
+---
+
+{isConfigured && (
+	<section
+		class="card-base px-6 md:px-9 py-6 mb-4 onload-animation"
+		aria-labelledby="comments-heading"
+		data-pagefind-ignore
+	>
+		<div class="mb-5 flex items-center gap-3">
+			<div class="transition h-8 w-8 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center">
+				<Icon name="fa6-regular:comments" class="text-[1rem]" />
+			</div>
+			<h2 id="comments-heading" class="transition text-lg font-bold text-black/75 dark:text-white/75">
+				{i18n(I18nKey.comments)}
+			</h2>
+		</div>
+		<div
+			class="giscus-comments min-h-[8rem]"
+			data-giscus-comments
+			data-repo={commentsConfig.repo}
+			data-repo-id={commentsConfig.repoId}
+			data-category={commentsConfig.category}
+			data-category-id={commentsConfig.categoryId}
+			data-mapping={commentsConfig.mapping}
+			data-strict={commentsConfig.strict ? "1" : "0"}
+			data-reactions-enabled={commentsConfig.reactionsEnabled ? "1" : "0"}
+			data-emit-metadata={commentsConfig.emitMetadata ? "1" : "0"}
+			data-input-position={commentsConfig.inputPosition}
+			data-lang={commentsConfig.lang}
+			data-loading={commentsConfig.loading}
+		></div>
+	</section>
+)}

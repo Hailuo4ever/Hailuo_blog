@@ -1,4 +1,5 @@
 import type {
+	CommentConfig,
 	ExpressiveCodeConfig,
 	FriendLinksConfig,
 	LicenseConfig,
@@ -38,6 +39,23 @@ export const siteConfig: SiteConfig = {
 		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
 		// }
 	],
+};
+
+export const commentsConfig: CommentConfig = {
+	enable: true,
+	provider: "giscus",
+	repo: "Hailuo4ever/Hailuo_blog",
+	// Install https://github.com/apps/giscus and fill categoryId from https://giscus.app.
+	repoId: "R_kgDOSLK15A",
+	category: "Announcements",
+	categoryId: "DIC_kwDOSLK15M4C-0Lm",
+	mapping: "pathname",
+	strict: false,
+	reactionsEnabled: true,
+	emitMetadata: false,
+	inputPosition: "bottom",
+	lang: siteConfig.lang.replace("_", "-"),
+	loading: "lazy",
 };
 
 export const navBarConfig: NavBarConfig = {
