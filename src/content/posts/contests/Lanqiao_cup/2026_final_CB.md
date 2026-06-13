@@ -1,5 +1,6 @@
 ---
 title: 第17届蓝桥杯国赛C/C++ B组
+status: editing
 published: 2026-06-06
 description: "2026 蓝桥杯国赛 自补"
 image: "https://img.hailuo4ever.com/cover/lanqiao.png"
