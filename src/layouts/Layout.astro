@@ -425,8 +425,11 @@ function initBirthdayFireworks() {
 	birthdayFireworksFrame = requestAnimationFrame(draw)
 }
 
-function getGiscusTheme() {
-	return document.documentElement.classList.contains('dark') ? 'transparent_dark' : 'light'
+function getGiscusTheme(container?: HTMLElement | null) {
+	const isDark = document.documentElement.classList.contains('dark')
+	return isDark
+		? (container?.dataset.darkTheme || 'transparent_dark')
+		: (container?.dataset.theme || 'light')
 }
 
 function setGiscusAttribute(script: HTMLScriptElement, name: string, value: string | undefined) {
@@ -435,12 +438,22 @@ function setGiscusAttribute(script: HTMLScriptElement, name: string, value: stri
 }
 
 function updateGiscusTheme() {
+	document.querySelectorAll<HTMLElement>(GISCUS_CONTAINER_SELECTOR).forEach(container => {
+		const theme = getGiscusTheme(container)
+		container.querySelectorAll<HTMLScriptElement>('script').forEach(script => {
+			if (script.src === GISCUS_SCRIPT_SRC) {
+				script.setAttribute('data-theme', theme)
+			}
+		})
+	})
+
 	document.querySelectorAll<HTMLIFrameElement>('iframe.giscus-frame').forEach(frame => {
+		const container = frame.closest<HTMLElement>(GISCUS_CONTAINER_SELECTOR)
 		frame.contentWindow?.postMessage(
 			{
 				giscus: {
 					setConfig: {
-						theme: getGiscusTheme(),
+						theme: getGiscusTheme(container),
 					},
 				},
 			},
@@ -456,6 +469,8 @@ function initGiscusComments() {
 			container.dataset.repo,
 			container.dataset.repoId,
 			container.dataset.categoryId,
+			container.dataset.theme,
+			container.dataset.darkTheme,
 		].join('|')
 
 		if (container.dataset.giscusLoadedKey === loadKey) {
@@ -482,7 +497,7 @@ function initGiscusComments() {
 		setGiscusAttribute(script, 'data-input-position', container.dataset.inputPosition)
 		setGiscusAttribute(script, 'data-lang', container.dataset.lang)
 		setGiscusAttribute(script, 'data-loading', container.dataset.loading)
-		script.setAttribute('data-theme', getGiscusTheme())
+		script.setAttribute('data-theme', getGiscusTheme(container))
 
 		container.appendChild(script)
 	})

@@ -56,6 +56,8 @@ export const commentsConfig: CommentConfig = {
 	inputPosition: "bottom",
 	lang: siteConfig.lang.replace("_", "-"),
 	loading: "lazy",
+	theme: "light",
+	darkTheme: "transparent_dark",
 };
 
 export const navBarConfig: NavBarConfig = {

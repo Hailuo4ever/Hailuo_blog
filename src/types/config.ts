@@ -101,6 +101,8 @@ export type CommentConfig = {
 	inputPosition: "top" | "bottom";
 	lang: string;
 	loading: "lazy" | "eager";
+	theme: string;
+	darkTheme: string;
 };
 
 export type LIGHT_DARK_MODE =
