@@ -2,6 +2,7 @@
 import BackToTop from "@components/control/BackToTop.astro";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
+import MobileTOCDrawer from "@components/widget/MobileTOCDrawer.astro";
 import SideBar from "@components/widget/SideBar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
@@ -108,7 +109,7 @@ const mainPanelTop = siteConfig.banner.enable
             {showToc && <aside id="toc-wrapper" class:list={["hidden xl:block transition xl:col-start-2 xl:row-start-1 xl:row-end-2",
                 {"toc-hide": siteConfig.banner.enable}]}
             >
-                <div id="toc-inner-wrapper" class="sticky top-14 h-[calc(100vh_-_5rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
+                <div id="toc-inner-wrapper" data-toc-scroll-root class="toc-inner-wrapper sticky top-14 h-[calc(100vh_-_5rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
                     <div id="toc" class="w-full h-full transition-swup-fade">
                         <div class="h-8 w-full"></div>
                         <TOC headings={headings}></TOC>
@@ -116,6 +117,8 @@ const mainPanelTop = siteConfig.banner.enable
                     </div>
                 </div>
             </aside>}
+
+            {showToc && <MobileTOCDrawer headings={headings}></MobileTOCDrawer>}
 
             <div class:list={[
                 "footer onload-animation block lg:hidden",
