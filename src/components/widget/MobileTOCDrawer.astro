@@ -118,6 +118,7 @@ class MobileTocDrawer extends HTMLElement {
     postContainer: HTMLElement | null = null;
     panel: HTMLElement | null = null;
     pointerId: number | null = null;
+    trackingTouch = false;
     startX = 0;
     startY = 0;
     currentX = 0;
@@ -132,18 +133,26 @@ class MobileTocDrawer extends HTMLElement {
 
         this.addEventListener("click", this.handleClick);
         this.postContainer?.addEventListener("pointerdown", this.handlePointerDown);
+        this.postContainer?.addEventListener("touchstart", this.handleTouchStart, { passive: true });
         window.addEventListener("pointermove", this.handlePointerMove, { passive: true });
         window.addEventListener("pointerup", this.handlePointerEnd);
         window.addEventListener("pointercancel", this.handlePointerEnd);
+        window.addEventListener("touchmove", this.handleTouchMove, { passive: true });
+        window.addEventListener("touchend", this.handleTouchEnd);
+        window.addEventListener("touchcancel", this.handleTouchEnd);
     }
 
     disconnectedCallback() {
         this.close();
         this.removeEventListener("click", this.handleClick);
         this.postContainer?.removeEventListener("pointerdown", this.handlePointerDown);
+        this.postContainer?.removeEventListener("touchstart", this.handleTouchStart);
         window.removeEventListener("pointermove", this.handlePointerMove);
         window.removeEventListener("pointerup", this.handlePointerEnd);
         window.removeEventListener("pointercancel", this.handlePointerEnd);
+        window.removeEventListener("touchmove", this.handleTouchMove);
+        window.removeEventListener("touchend", this.handleTouchEnd);
+        window.removeEventListener("touchcancel", this.handleTouchEnd);
     }
 
     handleClick = (event: MouseEvent) => {
@@ -196,13 +205,56 @@ class MobileTocDrawer extends HTMLElement {
         }
 
         this.open();
-        this.clearPointer();
+        this.clearGestureTracking();
     };
 
     handlePointerEnd = (event: PointerEvent) => {
         if (this.pointerId === event.pointerId) {
             this.clearPointer();
         }
+    };
+
+    handleTouchStart = (event: TouchEvent) => {
+        if (!this.mobileViewport.matches) return;
+        if (this.isOpen()) return;
+        if (event.touches.length !== 1) return;
+        if (this.shouldIgnoreSwipeTarget(event.target)) return;
+
+        const touch = event.touches[0];
+        this.trackingTouch = true;
+        this.startX = touch.clientX;
+        this.startY = touch.clientY;
+        this.currentX = touch.clientX;
+        this.currentY = touch.clientY;
+    };
+
+    handleTouchMove = (event: TouchEvent) => {
+        if (!this.trackingTouch) return;
+        if (event.touches.length !== 1) {
+            this.clearTouch();
+            return;
+        }
+
+        const touch = event.touches[0];
+        this.currentX = touch.clientX;
+        this.currentY = touch.clientY;
+
+        if (!shouldOpenMobileTocDrawer({
+            startX: this.startX,
+            startY: this.startY,
+            currentX: this.currentX,
+            currentY: this.currentY,
+            viewportWidth: window.innerWidth,
+        })) {
+            return;
+        }
+
+        this.open();
+        this.clearGestureTracking();
+    };
+
+    handleTouchEnd = () => {
+        this.clearTouch();
     };
 
     shouldIgnoreSwipeTarget(target: EventTarget | null) {
@@ -249,7 +301,7 @@ class MobileTocDrawer extends HTMLElement {
         this.setAttribute("aria-hidden", "true");
         document.removeEventListener("keydown", this.handleKeyDown);
         this.unlockScroll();
-        this.clearPointer();
+        this.clearGestureTracking();
     }
 
     isOpen() {
@@ -258,6 +310,15 @@ class MobileTocDrawer extends HTMLElement {
 
     clearPointer() {
         this.pointerId = null;
+    }
+
+    clearTouch() {
+        this.trackingTouch = false;
+    }
+
+    clearGestureTracking() {
+        this.clearPointer();
+        this.clearTouch();
     }
 
     lockScroll() {
