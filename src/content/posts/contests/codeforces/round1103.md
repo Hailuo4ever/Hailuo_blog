@@ -1,6 +1,5 @@
 ---
 title: cf round 1103
-status: editing
 published: 2026-06-13
 description: "Codeforces Round 1103 (Div.3)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"
@@ -243,7 +242,7 @@ int main()
 
 # D - Brand New Tatar TV Show
 
-> 关键词：博弈论
+> 关键词：博弈论，找性质
 
 ## 思路
 
@@ -348,6 +347,303 @@ void solve()
 int main()
 {
     fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# E - Friendly Gifts
+
+> 关键词：枚举，分类讨论
+
+## 思路
+
+题目要求从原数组中选取两个不重叠的连续子段，且他们长度相同，各自均为好数组，拼接后仍然是好数组。
+
+首先考虑数组是好数组的条件：**对于一个子段，它是好数组的充要条件为：$mx-mn+1=len$，并且子段内没有重复元素。**
+
+考虑两个好数组拼起来怎样还是一个好数组。假设两个子段的长度均为 $len$，第一个子段的值域是 $[L_1,R_1]$，第二个子段的值域是 $[L_2,R_2]$，两个值域一定是首尾相接的。也就是 $R_1+1=L_2$ 或 $R_2+1=L_1$。
+
+我们可以考虑枚举分界线，枚举右侧子段的起点 $i$，左侧子段必须完全在 $i$ 左边，右侧子段从 $i$ 开始枚举。
+
+```c++
+左侧子段          右侧子段
+[------]   ...   [i------]
+```
+
+我们维护一个二维表 `have[L][R]` 表示在分界线 $i$ 左边，是否已经出现过一个值域为 $[L,R]$ 的好子段。
+
+考虑如何给右侧子段找匹配。假设当前右侧子串是好的，长度为 $len$，值域为 $[mn,mx]$，那么左侧子段有两种可能。
+
+1. 左侧值域整体更小，即左侧值域为 $[mn-len,mn-1]$。例如当右侧是 $[3,4]$ 时，左侧是 $[1,2]$。
+2. 左侧值域整体更大，即左侧值域为 $[mx+1,mx+len]$。例如当右侧是 $[1,2]$ 时，左侧是 $[3,4]$。
+
+
+## Code
+
+查询部分代码如下：
+
+```c++
+if (mn - len >= 1 && have[mn - len][mn - 1])
+    ans = max(ans, len);
+
+if (mx + len <= n && have[mx + 1][mx + len])
+    ans = max(ans, len);
+```
+
+对于每个分界线，都做如下处理：
+
+1. 把新的左侧好子段加入 `have`
+2. 枚举从 $i$ 开始的右侧好子段
+3. 遇到重复元素 `break`，因为一旦发生重复，更长的子段不可能是好的
+
+```c++
+// Problem: CF 2236 E
+// Contest: Codeforces - Codeforces Round 1103 (Div. 3)
+// URL: https://codeforces.com/contest/2236/problem/E
+// Time: 2026-06-20 11:41:39
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<int> a(n);
+    for (auto &x: a)
+        cin >> x;
+
+    vector<vector<char>> have(n + 2, vector<char>(n + 2, 0));
+
+    vector<int> vis(n + 1, 0);
+    int t = 0, res = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (i > 0)
+        {
+            t++;
+
+            int mn = inf;
+            int mx = -inf;
+
+            for (int l = i - 1; l >= 0; l--)
+            {
+                int v = a[l];
+
+                if (vis[v] == t)
+                    break;
+
+                vis[v] = t;
+
+                mn = min(mn, v);
+                mx = max(mx, v);
+
+                int len = i - l;
+
+                if (mx - mn + 1 == len)
+                    have[mn][mx] = 1;
+            }
+        }
+
+        // 枚举所有左端点为 i 的右侧子段。
+        t++;
+
+        int mn = inf;
+        int mx = -inf;
+
+        for (int r = i; r < n; r++)
+        {
+            int v = a[r];
+
+            if (vis[v] == t)
+                break;
+
+            vis[v] = t;
+
+            mn = min(mn, v);
+            mx = max(mx, v);
+
+            int len = r - i + 1;
+
+            // 当前右侧子段不是好的
+            if (mx - mn + 1 != len)
+                continue;
+
+            // 左侧值域整体更小
+            if (mn - len >= 1 && have[mn - len][mn - 1])
+                res = max(res, len);
+
+            // 左侧值域整体更大
+            if (mx + len <= n && have[mx + 1][mx + len])
+                res = max(res, len);
+        }
+    }
+
+    cout << res << endl;
+}
+
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# F1 - Elections in Saransk (Easy Version)
+
+> 关键词：数论计数，质因子
+
+## 思路
+
+简单版本中的 $x=1$，因此题目条件为 $\operatorname{lcm}(p_1,p_2,\dots,p_n)=p_1p_2\cdots p_n$，每个 $p_i$ 还必须满足 $p_i\mid a_i$，我们需要数有多少种数组 $p$。
+
+首先可以发现，如果 $lcm(u,v)=uv$，一定有 $\gcd (u,v)=1$，也就是两个数互质。因此 $p$ 数组中的每个数**两两互质。**
+
+从质因数的角度看，设某个质数 $q$ 在每个 $p_i$ 中的指数为 $e_1,e_2, \cdots ,e_n$，那么在乘积中，质因子 $q$ 的指数是 $e_1+e_2+\cdots +e_n$，在最小公倍数中，质因子 $q$ 的指数是 $\max (e_1,e_2,\cdots ,e_n)$。
+
+题目要求 $e_1+e_2+\cdots+e_n=\max(e_1,e_2,\dots,e_n)$，因为所有 $e_i \ge 0$，这个等式成立当且仅当**最多只有一个 $e_i$ 是正数。**
+
+**也就是说，每个质因子最多只能出现在一个 $p_i$ 里面。**
+
+对于每一个质数 $q$，我们考虑如何使用它，假设它出现了 $c_i$ 次，也就是 $a_i = q^{c_i}\cdot other$，$q$ 的指数可以选取 $1 \to c_i$ 的任何数，也可以不选。因此这个质数的方案数是 $1+\sum_{i=1}^{n} v_q(a_i)$，其中 $v_q(a_i)$ 表示质数 $q$ 在 $a_i$ 中的指数。
+
+而不同质数之间的分配方案是互相独立的，根据乘法原理可以直接相乘。
+
+最终答案为：
+$$
+\prod_{q}\left(1+\sum_{i=1}^{n}v_q(a_i)\right)
+$$
+
+## Code
+
+```c++
+// Problem: CF 2236 F1
+// Contest: Codeforces - Codeforces Round 1103 (Div. 3)
+// URL: https://codeforces.com/contest/2236/problem/F1
+// Time: 2026-06-20 12:17:32
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const ll mod = 1e9 + 7;
+const int N = 5e5 + 10;
+
+int primes[N], cnt;
+bool st[N];
+
+void get_primes(int n)
+{
+    for (int i = 2; i <= n; i++)
+    {
+        if (!st[i])
+            primes[cnt++] = i;
+
+        for (int j = 0; j < cnt && primes[j] <= n / i; j++)
+        {
+            st[primes[j] * i] = true;
+
+            if (i % primes[j] == 0)
+                break;
+        }
+    }
+}
+
+void solve()
+{
+    int n, x;
+    cin >> n >> x;
+
+    map<int, int> mp;
+    auto divide = [&](int y) -> void
+    {
+        for (int i = 0; i < cnt && 1LL * primes[i] * primes[i] <= y; i++)
+        {
+            int p = primes[i];
+
+            while (y % p == 0)
+            {
+                mp[p]++;
+                y /= p;
+            }
+        }
+
+        if (y > 1)
+            mp[y]++;
+    };
+
+    vector<int> a(n);
+    for (int i = 0, y; i < n; i++)
+    {
+        cin >> y;
+        divide(y);
+    }
+
+    ll res = 1;
+
+    for (auto &[p, c]: mp)
+        res = res * (c + 1) % mod;
+
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    get_primes(N - 1);
 
     int T = 1;
     cin >> T;
