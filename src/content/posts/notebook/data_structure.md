@@ -1,7 +1,7 @@
 ---
 title: Data Structure (Notebook)
 published: 2024-01-01
-description: "自己整理的一些数据结构相关知识"
+description: "Data Structure"
 image: https://img.hailuo4ever.com/cover/notebook.png
 tags: [算法笔记, Notebook]
 category: "Algorithm"

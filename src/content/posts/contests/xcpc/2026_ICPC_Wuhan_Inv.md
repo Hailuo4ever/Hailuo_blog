@@ -1,5 +1,5 @@
 ---
-title: 2026 icpc武汉邀请赛
+title: 2026 icpc 武汉邀请赛
 published: 2026-05-21
 description: "The 2026 ICPC China Wuhan National Invitational and Hubei Provincial Programming Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
