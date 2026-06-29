@@ -51,6 +51,8 @@ lang: ""
 
 例题：[cf edu round 189 - D](https://codeforces.com/contest/2225/problem/D)
 
+应用：[牛客周赛 Round 150-E](https://ac.nowcoder.com/acm/contest/137073/E)
+
 现有一自然数序列 $0, 1, 2, 3 \dots$，设 $P(x) = 0 \oplus 1 \oplus 2 \dots \oplus x$。
 
 > [!NOTE]
