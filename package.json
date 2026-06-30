@@ -21,6 +21,7 @@
     "test:luogu-format": "node scripts/luogu-format/core.test.js",
     "test:prepare-build": "node scripts/prepare-build.test.js",
     "test:verify-posts": "node scripts/verify-posts.test.js",
+    "test:build-safety": "node scripts/prepare-build.test.js && node scripts/verify-posts.test.js",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

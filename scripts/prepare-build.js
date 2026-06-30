@@ -10,6 +10,7 @@ const projectRoot = path.resolve(
 export function prepareBuild(rootDir = projectRoot) {
 	const resolvedRoot = path.resolve(rootDir);
 	const targets = [
+		path.join(resolvedRoot, ".astro-build-cache"),
 		path.join(resolvedRoot, "node_modules", ".astro"),
 		path.join(resolvedRoot, "dist"),
 	];

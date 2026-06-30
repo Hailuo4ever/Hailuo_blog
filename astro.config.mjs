@@ -29,6 +29,9 @@ import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
+	// Cloudflare restores node_modules/.astro project-wide across builds.
+	// Keep the active content store outside that shared cache.
+	cacheDir: "./.astro-build-cache",
 	site: "https://blog.hailuo4ever.com/",
 	base: "/",
 	trailingSlash: "always",
