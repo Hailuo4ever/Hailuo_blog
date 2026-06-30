@@ -1,6 +1,5 @@
 ---
 title: cf round 1102
-status: editing
 published: 2026-06-07
 description: "Codeforces Round 1102 (Div.2)"
 image: "https://img.hailuo4ever.com/cover/codeforces.png"

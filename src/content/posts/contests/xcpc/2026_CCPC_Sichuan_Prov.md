@@ -1,6 +1,5 @@
 ---
 title: 2026 ccpc 四川省赛
-status: editing
 published: 2026-05-21
 description: "The 2026 ICPC China Sichuan Provincial Programming Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
