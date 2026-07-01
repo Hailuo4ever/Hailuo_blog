@@ -32,6 +32,14 @@ export default defineConfig({
 	// Cloudflare restores node_modules/.astro project-wide across builds.
 	// Keep the active content store outside that shared cache.
 	cacheDir: "./.astro-build-cache",
+
+	// This project still uses the legacy collection entry API (`slug` and
+	// `entry.render()`). Run it on Astro's native legacy implementation instead
+	// of the Content Layer compatibility bridge, which can expose a partial
+	// collection during cold Cloudflare builds.
+	legacy: {
+		collections: true,
+	},
 	site: "https://blog.hailuo4ever.com/",
 	base: "/",
 	trailingSlash: "always",

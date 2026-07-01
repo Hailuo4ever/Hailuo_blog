@@ -5,6 +5,7 @@
 - Cloudflare Workers Builds 的构建命令必须是 `pnpm run build`，不要直接调用 `astro build`。
 - 生产与非生产触发器的 **Build caching** 必须关闭。Cloudflare 的构建缓存是项目级共享状态，曾恢复过期的 Astro 内容数据。
 - Astro 的活动缓存目录必须保持为 `./.astro-build-cache`，不能改回默认的 `node_modules/.astro`。
+- 在 `src/content/config.ts` 仍使用旧式 `type: "content"`，且页面仍调用 `entry.slug` / `entry.render()` 期间，`astro.config.mjs` 必须保持 `legacy.collections: true`。删除它会重新启用 Astro 5 的 Content Layer 兼容桥，Cloudflare 冷构建可能只看到部分文章。
 - 每次构建前必须删除 `.astro-build-cache`、`node_modules/.astro` 和 `dist`。
 - 每次 `pnpm run build` 必须先通过 `prebuild` 中的构建安全测试。
 - 部署前，`verify-posts` 输出的源码文章、生成路由、归档条目和状态条目数量必须相等。
@@ -39,9 +40,10 @@ pnpm run build
 1. 停止当前部署，不要删除或绕过 `verify-posts`。
 2. 在 Cloudflare Dashboard 打开 **Workers & Pages → hailuoblog → Settings → Builds**。
 3. 确认构建命令仍为 `pnpm run build`，并确认 **Build caching** 处于关闭状态。
-4. 执行 **Clear build cache**。
-5. 对同一个 Git commit 重新构建；不要通过额外提交掩盖平台缓存问题。
-6. 只有在四项文章清单数量一致后才允许部署。
+4. 确认 `astro.config.mjs` 仍设置了 `legacy.collections: true`；除非已经完整迁移到显式 loader、`entry.id` 和 `render(entry)`，否则不得删除。
+5. 执行 **Clear build cache**。
+6. 对同一个 Git commit 重新构建；不要通过额外提交掩盖平台缓存问题。
+7. 只有在四项文章清单数量一致后才允许部署。
 
 ## 何时必须主动清理 Cloudflare 构建缓存
 
