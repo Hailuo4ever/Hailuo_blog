@@ -107,3 +107,30 @@ test("runs build safety tests automatically before every package build", () => {
 		"node scripts/prepare-build.test.js && node scripts/verify-posts.test.js",
 	);
 });
+
+test("uses the native legacy collection runtime for the legacy entry API", () => {
+	const astroConfig = fs.readFileSync(
+		new URL("../astro.config.mjs", import.meta.url),
+		"utf8",
+	);
+	const contentConfig = fs.readFileSync(
+		new URL("../src/content/config.ts", import.meta.url),
+		"utf8",
+	);
+
+	assert.match(contentConfig, /type:\s*["']content["']/);
+	assert.match(
+		astroConfig,
+		/legacy:\s*{[\s\S]*?collections:\s*true[\s\S]*?}/,
+		"legacy collection definitions must not use Astro's Content Layer compatibility bridge",
+	);
+});
+
+test("ignores the project-local pnpm store", () => {
+	const gitignore = fs.readFileSync(
+		new URL("../.gitignore", import.meta.url),
+		"utf8",
+	);
+
+	assert.match(gitignore, /^\.pnpm-store\/$/m);
+});
