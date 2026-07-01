@@ -96,3 +96,14 @@ test("runs build safety tests in GitHub before the full build", () => {
 	);
 	assert.match(workflow, /run: pnpm run test:build-safety/);
 });
+
+test("runs build safety tests automatically before every package build", () => {
+	const packageJson = JSON.parse(
+		fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+	);
+
+	assert.equal(
+		packageJson.scripts.prebuild,
+		"node scripts/prepare-build.test.js && node scripts/verify-posts.test.js",
+	);
+});

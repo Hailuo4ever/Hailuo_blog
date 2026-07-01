@@ -6,6 +6,7 @@
     "dev": "node scripts/dev.js",
     "start": "node scripts/dev.js",
     "check": "astro check",
+    "prebuild": "node scripts/prepare-build.test.js && node scripts/verify-posts.test.js",
     "build": "node scripts/prepare-build.js && astro build && node scripts/fix-cloudflare-routes.js && pagefind --site dist && node scripts/verify-posts.js",
     "preview": "pnpm run build && wrangler dev",
     "astro": "astro",
