@@ -20,3 +20,8 @@ lang: ""
 
 初始状态 ($k=0$)：$Val(c, 0) = c \pmod M$，$Mul(c, 0) = 10 \pmod M$
 
+# 01串的回文性质
+
+二进制串有一个性质：长度至少为 $3$ 时，一定存在长度 $2$ 或 $3$ 的回文子串。
+
+Source: [Problem - C - Codeforces Round 1107 (Div.3)](https://codeforces.com/contest/2241/problem/C)
