@@ -31,3 +31,21 @@ lang: ""
 | `__builtin_mul_overflow(a,b,&res)` | 乘法溢出检测       | 返回是否溢出         |
 
 注：`clz = count leading zeros`。`ctz = count trailing zeros`。`ffs = find first set`。
+
+# std::count()
+
+**std::count 是 C++ 标准库中用于统计指定值在迭代器范围内出现次数的算法函数**‌，定义在`<algorithm>`头文件中，需传入起始迭代器、结束迭代器和目标值三个参数 。‌‌‌
+
+支持提供输入迭代器的容器，例如 vector, string, deque, array, 原生数组。
+
+统计 vector 中数字 $3$ 的出现次数：`std::count(a.begin(), a.end(), 3)`。
+
+注意：在 set, map 中，count 是一个成员函数，只判断某个 key 是否存在，不统计值。
+
+当需要更灵活的统计条件时，可以使用 std::count_if 配合 lambda 表达式。
+
+# std::move()
+
+‌**std::move 是 C++ 标准库中的类型转换工具，定义在`<utility>`头文件中，用于将左值转换为右值引用以启用移动语义**‌。它本身不执行任何数据移动操作，只是告诉编译器"这个对象的资源可以被转移"，真正移动资源的是移动构造函数或移动赋值运算符。‌‌‌
+
+通常在 DP 中使用，避免转移大量状态，直接告诉编译器这个状态可以被覆盖。
