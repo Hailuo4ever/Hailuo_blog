@@ -51,6 +51,88 @@ DP要解决的问题就是把重复计算过的状态存下来。在数学本质
 2. 某一位比现在数字的当前位要小，后面也可自由选择
 3. 根据限制一直递归，保持当前位和边界相同，直到遇到第二种情况
 
+# 树形DP
+
+## 策略
+
+1. 分析父树得到答案，需要子树的哪些信息
+2. 把子树信息的全集定义成递归返回值
+3. 通过递归让子树返回全集信息
+4. 整合子树的全集信息，得到父树的全集信息并返回
+
+```c++
+void dfs(int u, int fa)
+{
+    // 这里是前序位置
+    // 父节点信息传给当前节点
+
+    for (int v : g[u])
+    {
+        if (v == fa)
+            continue;
+
+        // 递归前：父亲向孩子传信息
+        dfs(v, u);
+        // 递归后：孩子向父亲传信息
+    }
+
+    // 这里是后序位置
+    // 汇总所有孩子的信息
+}
+```
+
+## 题目
+
+### Leetcode-968
+
+[968. 监控二叉树 - 力扣（LeetCode）](https://leetcode.cn/problems/binary-tree-cameras/description/)
+
+![](https://img.hailuo4ever.com/notebook_dp/2.jpg)
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int minCameraCover(TreeNode* root) {
+        int res = 0;
+        auto dfs = [&](this auto&& dfs, TreeNode* node) -> int
+        {
+            if (node == nullptr)
+                return 2;
+            
+            int l = dfs(node->left), r = dfs(node->right);
+            if (l == 0 || r == 0)
+            {
+                res++;
+                return 1;
+            }
+
+            if (l == 1 || r == 1)
+                return 2;
+
+            return 0;
+        };
+
+        if (dfs(root) == 0)
+            res++;
+        
+        return res;
+    }
+};
+```
+
+
+
 # 经典题
 
 ## 选择m个不相交区间，使区间和最大

@@ -292,3 +292,147 @@ int main()
 
 ```
 
+# E - Fair and Square
+
+> 关键词：dfs
+
+## 思路
+
+对于三个点 $u,v,w$，树上三条路径 $u \leftrightarrow v,\quad v \leftrightarrow w,\quad w \leftrightarrow u$，三条两两路径中，绝大多数点都会被乘两次，只有一个特殊点会被乘三次。我们把这个点叫做中位点。如下所示，点 $c$ 即为中位点，而有时 $c$ 也可能是 $u,v,w$ 中的某个点。
+
+        u
+        |
+        c
+       / \
+      v   w
+
+题目要求 $p(u,v)\cdot p(v,w)\cdot p(w,u)$ 是完全平方数。考察最小连通子树中的每个顶点出现了几次。
+
+对于中位点 $c$，它同时出现在三条路径中，被乘了三次；而对于其他分支上的顶点，它只会出现在两条不同路径上，因此被乘了两次。所以只需要判断中位点 $c$ 对应的点权 $a_c$ 是否为完全平方数。
+
+**因此，三元组 $\{u,v,w\}$ 是好的，当且仅当它们的树上中位点 $c$ 的点权 $a_c$ 是完全平方数。**
+
+枚举每个中位点 $c$，统计有多少个三元组的树上中位点恰好是 $c$，由于每个三元组都有唯一中位点，所以不会重复计数。
+
+考虑固定点 $c$ 后如何计数，树会分裂成若干个连通块，设它们的大小为 $b_1,b_2,\dots,b_k$。
+
+一个三元组以 $c$ 为中位点，有两种情况：
+
+1. 上图所示，$\{v,c,w\}$ 的情况。为了让 $c$ 成为中位点，$v,w$ 必须来自不同的连通块。贡献为 $\sum_{1\le i<j\le k}b_ib_j$。
+2. 上图所示，$\{u,v,w\}$ 的情况。三个点必须分别来自三个不同连通块。贡献为 $\sum_{1\le i<j<l\le k}b_ib_jb_l$。
+
+## Code
+
+```c++
+// Problem: CF 2241 E
+// Contest: Codeforces - Codeforces Round 1107 (Div. 3)
+// URL: https://codeforces.com/contest/2241/problem/E
+// Time: 2026-07-13 18:05:48
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<int> a(n + 1);
+    vector<bool> sq(n + 1, false);
+
+    auto chk = [&](int x) -> bool
+    {
+        int r = sqrtl(x);
+        return (r * r == x);
+    };
+
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        if (chk(a[i]))
+            sq[i] = true;
+    }
+
+    vector<vector<int>> adj(n + 1);
+    for (int i = 1, u, v; i <= n - 1; i++)
+    {
+        cin >> u >> v;
+        adj[u].eb(v), adj[v].eb(u);
+    }
+
+    vector<int> sz(n + 1, 1), fa(n + 1, 0);
+
+    auto dfs = [&](auto &&self, int u, int p) -> void
+    {
+        for (auto v: adj[u])
+        {
+            if (v == p)
+                continue;
+
+            fa[v] = u;
+            self(self, v, u);
+            sz[u] += sz[v];
+        }
+    };
+
+    dfs(dfs, 1, 0);
+
+    ll res = 0;
+    for (int u = 1; u <= n; u++)
+    {
+        if (!sq[u])
+            continue;
+
+        ll s1 = 0, s2 = 0, s3 = 0;
+        for (auto v: adj[u])
+        {
+            ll c = 0;
+            if (v == fa[u])
+                c = n - sz[u];
+            else
+                c = sz[v];
+
+            s3 += s2 * c;
+            s2 += s1 * c;
+            s1 += c;
+        }
+
+        res += (s2 + s3);
+    }
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
