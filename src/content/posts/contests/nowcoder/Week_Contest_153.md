@@ -5,7 +5,7 @@ description: "Nowcoder Week Contest 153"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
 tags: [算法题解, Nowcoder]
 category: "Algorithm"
-draft: true
+draft: false
 lang: ""
 ---
 
@@ -424,11 +424,275 @@ int main()
 
 ```
 
-# F - 小红的网格图构造
+# F - 小红的网格图构造 2.0
 
 > 关键词：构造
 
 ## 思路
 
-把网格划分成若干个**互不相交的 $2\times2$ 小块**，这是为了推出 $1$ 的数量下界。一共有 $L=\left\lfloor\frac n2\right\rfloor
-\left\lfloor\frac m2\right\rfloor$ 个。保证每个
+> [!NOTE]
+>
+> 约定下标从 $1$ 开始。
+
+把网格划分成若干个**互不相交的 $2\times2$ 小块**，这是为了推出 $1$ 的数量下界，一共有 $L=\left\lfloor\frac n2\right\rfloor
+\left\lfloor\frac m2\right\rfloor$ 个。保证每个小块至少有一个 $1$，有 $k \ge L$；每个小块至少有一个 $0$，有 $nm-k \ge L$。因此有解的必要条件为 $L \le k \le nm-L$。
+
+我们让所有偶数行都变成交替序列 $010101...$，因为任何相邻两行，其中必定有一行是偶数行。由于偶数行填完后已经满足要求，奇数行初始为 $0$，逐个翻转成 $1$。
+
+假如翻转完所有奇数行后还有剩余，说明此时 $m$ 一定是个奇数，把所有的偶数行从 $010101...$ 改成 $101010...$，可以额外增加一个 $1$，完成构造。
+
+>注：奇数行一共可以增加 $\left\lceil\frac n2\right\rceil m$。如果 $m$ 是奇数，还可以通过翻转偶数行增加 $\left\lfloor\frac n2\right\rfloor$。所以最大数量为 $L+
+>\left\lceil\frac n2\right\rceil m+
+>\left\lfloor\frac n2\right\rfloor(m\bmod2)$，可以化简成 $nm-L$。因此所有符合条件的 $k$ 都可被构造出来。
+
+## Code
+
+```c++
+// Problem: 小红的网格图构造 2.0
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/137895/F
+// Time: 2026-07-15 20:45:28
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n, m, k;
+    cin >> n >> m >> k;
+
+    int cnt = (n / 2) * (m / 2);
+
+    if (k < cnt || k > n * m - cnt)
+    {
+        cout << "No" << endl;
+        return;
+    }
+
+    int rest = k - cnt;
+    vector<vector<int>> g(n + 1, vector<int>(m + 1, 0));
+
+    for (int i = 2; i <= n; i += 2)
+        for (int j = 2; j <= m; j += 2)
+            g[i][j] = 1;
+
+    cout << "Yes" << endl;
+    for (int i = 1; i <= n; i += 2)
+    {
+        for (int j = 1; j <= m; j++)
+        {
+            if (rest == 0)
+                goto end;
+
+            g[i][j] = 1;
+            rest--;
+        }
+    }
+
+    if (rest == 0)
+        goto end;
+
+    for (int i = 2; i <= n; i += 2)
+    {
+        for (int j = 1; j <= m; j++)
+            g[i][j] ^= 1;
+
+        rest--;
+
+        if (rest == 0)
+            goto end;
+    }
+
+end:
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+        {
+            cout << g[i][j];
+            if (j == m)
+                cout << endl;
+        }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# G - 小红的网格图构造 1.0
+
+> 关键词：构造
+
+## 思路
+
+> [!NOTE]
+>
+> 约定下标从 $1$ 开始。
+
+连通块最多有 $\left\lceil\frac{nm}{2}\right\rceil$ 个。最大是棋盘黑白格填满。
+
+初始化时在所有偶数行、偶数列放 $1$，每放一个 $1$，就代表多了一个连通块，让 `k--`。
+
+初始化状态如下：
+
+```c++
+0000000
+0101010
+0000000
+0101010
+```
+
+构造初始状态后，$k>0$ 表示当前连通块太少，需要增加。$k=0$ 表示已经完成构造。$k<0$ 表示当前连通块太多，需要合并。
+
+$k>0$ 时，考虑如何增加连通块，代码部分如下：
+
+```c++
+if (k > 0 && !((i ^ j) & 1) && g[i][j] == 0)
+{
+    k--;
+    g[i][j] = 1;
+}
+```
+
+对于表达式 `!((i ^ j) & 1)`，异或的最低位表示奇偶性是否不同。若 $i,j$ 同奇偶，最低位为 $0$；异奇偶，最低位为 $1$。所以这个表达式表示 $i,j$ 奇偶性是否相同。
+
+执行完以上逻辑后，图最多可能变为如下的形式：
+
+```c++
+1010101
+0101010
+1010101
+0101010
+```
+
+$k<0$ 时，考虑如何减少连通块。分为水平桥和竖直桥两种方式。
+
+水平桥：`bool horizontal = (j + 1 <= m && !(i & 1) && (j & 1));` 表示 $i$ 是偶数行，$j$ 是奇数列，右边有格子。用于连接偶数行的相邻岛，每次连接都会让 `k--`。
+
+竖直桥：`bool vertical = (j == 2 && (i & 1) && i + 1 <= n);` 表示 $i$ 是奇数行，固定在第 $2$ 列且下面还有行。用于连接偶数行之间的连通块，每次连接也会让 `k--`。
+
+## Code
+
+```c++
+// Problem: 小红的网格图构造 1.0
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/137895/G
+// Time: 2026-07-19 21:10:20
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n, m, k;
+    cin >> n >> m >> k;
+
+    if (k * 2 > n * m + 1)
+    {
+        cout << "No" << endl;
+        return;
+    }
+
+    vector<vector<int>> g(n + 1, vector<int>(m + 1, 0));
+
+    for (int i = 2; i <= n; i += 2)
+    {
+        for (int j = 2; j <= m; j += 2)
+            k--, g[i][j] = 1;
+    }
+
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            if (k > 0 && !((i ^ j) & 1) && g[i][j] == 0)
+                k--, g[i][j] = 1;
+
+    if (k < 0)
+    {
+        for (int i = 2; i <= n; i++)
+            for (int j = 2; j <= m; j++)
+            {
+                bool col = (j == 2 && (i & 1) && i + 1 <= n);
+                bool row = (j + 1 <= m && !(i & 1) && (j & 1));
+
+                if (k < 0 && (col || row))
+                    k++, g[i][j] = 1;
+            }
+    }
+
+    if (k != 0)
+    {
+        cout << "No" << endl;
+        return;
+    }
+
+    cout << "Yes" << endl;
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= m; j++)
+            cout << g[i][j];
+        cout << endl;
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
