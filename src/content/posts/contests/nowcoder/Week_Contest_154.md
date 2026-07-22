@@ -131,7 +131,115 @@ int main()
 
 ```
 
-# C - 小红的01串
+# C - 小红的序列删除
+
+> 关键词：模拟
+
+## 思路
+
+考虑可能取到最大值的四个方向，即为 `RU, RD, LU, LD`。对于这四个方向，我们把其中的方向字符称作“有利字符”。
+
+我们希望对于某个方向，有利字符尽可能多。设删除 $k$ 个字符后，剩余字符串长度为 $m=n-k$。
+
+最终必须保留 $m$ 个字符。显然应该尽可能多地保留有利字符，因此保留的有利字符数量为 $g=\min(c,m)$，剩下的 $m-g$ 个字符只能从不利字符中选择。
+
+剩下的就是模拟了，要输出子序列。
+
+## Code
+
+```c++
+// Problem: 小红的序列删除
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/138241/C
+// Time: 2026-07-21 17:22:33
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n, k;
+    string s;
+
+    cin >> n >> k >> s;
+    int m = n - k;
+
+    // RU, RD, LU, LD
+
+    map<char, int> mp;
+    for (int i = 0; i < n; i++)
+        mp[s[i]]++;
+
+    int cnt[4] = {mp['R'] + mp['U'], mp['R'] + mp['D'], mp['L'] + mp['U'], mp['L'] + mp['D']};
+    string comb[4] = {"RU", "RD", "LU", "LD"};
+
+    int mx = -1;
+    string c;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (cnt[i] > mx)
+            mx = cnt[i], c = comb[i];
+    }
+
+    // cout << mx << endl;
+
+    if (mx >= m)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            if (s[i] == c[0] || s[i] == c[1])
+                cout << s[i];
+        }
+    }
+    else
+    {
+        int rest = m - mx;
+        for (int i = 0; i < n; i++)
+        {
+            if (s[i] == c[0] || s[i] == c[1])
+                cout << s[i];
+            else if (rest > 0)
+                cout << s[i], rest--;
+        }
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# D - 小红的01串
 
 > 关键词：差分
 
@@ -223,9 +331,17 @@ int main()
 
 ```
 
-# D - 小红的排列构造
+# D' - 小红的排列构造
 
 > 关键词：构造
+
+## 题目
+
+定义一个排列的权值为：每次操作交换任意两个元素，使得排列变为升序的最小交换次数。请你构造一个长为 $n$，权值为 $k$ 的排列 $p_1, p_2,\dots, p_n$，且对于所有 $i \in \left[1, n \right]$，不存在 $p_i = i$。如果不存在合法的排列，请输出 $\texttt{-1}$。 
+
+> [!NOTE]
+>
+> 注：本题为被删除题目。
 
 ## 思路
 

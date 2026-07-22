@@ -5,7 +5,7 @@ description: "Nowcoder Multi-University Training Contest 1"
 image: https://img.hailuo4ever.com/cover/nowcoder.png
 tags: [算法题解, Nowcoder, 暑假多校]
 category: "Algorithm"
-draft: true
+draft: false
 lang: ""
 ---
 
