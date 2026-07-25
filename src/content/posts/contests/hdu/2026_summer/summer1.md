@@ -106,6 +106,151 @@ int main()
 
 ## 思路
 
+正解看不懂，这里贴一个打表的代码。打表后可以观察到只有左右两侧和中间的分子不一样，且分母都为 $6$。
+
+乘上权值算答案。
+
+## Code
+
+```c++
+// Problem: 开关灯
+// Contest: HDOJ
+// URL: https://acm.hdu.edu.cn/contest/problem?cid=1229&pid=1006
+// Time: 2026-07-21 13:08:09
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 2e5 + 2;
+const ll p = 998244353;
+
+ll fact[N];
+
+ll qmi(ll a, ll x)
+{
+    ll res = 1;
+    while (x)
+    {
+        if (x & 1)
+            res = (res * a) % p;
+        a = (a * a) % p;
+        x >>= 1;
+    }
+    return res;
+}
+
+ll inv(ll x)
+{
+    return qmi(x, p - 2);
+}
+
+void solve()
+{
+    ll n;
+    cin >> n;
+
+    vector<ll> a(n);
+    for (int i = 0; i < n; i++)
+        cin >> a[i];
+
+    ll sum = 0;
+    for (int i = 0; i < n; i++)
+        sum = (sum + a[i]) % p;
+
+    ll res = (n + 3) * sum % p;
+    res = (res + a[0] + a[n - 1]) % p;
+    res = res * inv(6) % p;
+
+    cout << res << endl;
+}
+
+void brute(int n)
+{
+    vector<int> order(n);
+    iota(all(order), 0);
+
+    // 固定看编号为 i 的灯
+    // 全排列，枚举所有的开灯顺序
+    // 每种顺序中，记录编号为i的灯打开后，有几个连续段
+    // 最后算期望再取平均
+    // cnt[i] 即表示枚举所有排列后，打开第 i 盏灯时，连续段数量的总和
+    vector<ll> cnt(n, 0);
+    ll ways = 0;
+
+    do
+    {
+        vector<int> on(n, 0);
+        int segs = 0;
+
+        for (auto pos: order)
+        {
+            int l_on = (pos > 0 && on[pos - 1]);
+            int r_on = (pos + 1 < n && on[pos + 1]);
+
+            // 左右都不亮+1，恰好一边亮0，左右都亮-1
+            if (l_on && r_on)
+                segs--;
+            else if (l_on || r_on)
+                segs += 0;
+            else
+                segs++;
+
+            on[pos] = 1;
+
+            cnt[pos] += segs;
+        }
+
+        ways++;
+
+    } while (next_permutation(all(order)));
+
+    cout << "n = " << n << endl;
+    cout << "ways = " << ways << endl;
+
+    // 约分
+    for (int i = 0; i < n; i++)
+    {
+        ll g = gcd(cnt[i], ways);
+        cout << "i = " << i + 1 << ": "; // 第几盏灯
+        cout << cnt[i] / g << "/" << ways / g << endl; // 期望
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    // while (T--)
+    // solve();
+
+    for (int i = 1; i <= 10; i++)
+        brute(i);
+
+    return 0;
+}
+
+```
+
 
 
 # 1010 - 游戏

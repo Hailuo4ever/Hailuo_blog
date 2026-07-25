@@ -161,6 +161,134 @@ int find(int x)
 
 合并相邻格子时要去重，防止多个相邻格子属于同一个连通块时重复计数。先收集相邻格子的根，再排序去重，逐个挂到新节点下面。
 
+```c++
+// Problem: Fish Eating
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/133876/C
+// Time: 2026-07-18 09:22:51
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 0;
+
+void solve()
+{
+    int n, m, q;
+    cin >> n >> m >> q;
+
+    int maxn = n * m;
+
+    vector<int> fa(maxn), sz(maxn), val(maxn);
+    vector<ll> mx(maxn);
+    vector<bool> vis(maxn);
+
+    iota(all(fa), 0);
+
+    auto find = [&](auto &&self, int x) -> int
+    {
+        if (fa[x] == x)
+            return x;
+
+        int p = fa[x];
+
+        fa[x] = self(self, p);
+        mx[x] = max(mx[x], mx[p]);
+
+        return fa[x];
+    };
+
+    auto get = [&](int x, int y) -> int { return x * m + y; };
+
+    ll lst = 0;
+    while (q--)
+    {
+        int op;
+        ll ex, ey;
+
+        cin >> op >> ex >> ey;
+        int x = (ex ^ lst) - 1, y = (ey ^ lst) - 1;
+
+        int u = get(x, y);
+
+        if (op == 1)
+        {
+            int v;
+            cin >> v;
+
+            vis[u] = true, fa[u] = u, sz[u] = 1, val[u] = v, mx[u] = 0;
+
+            vector<int> roots;
+            for (int i = 0; i < 4; i++)
+            {
+                int nx = x + dx[i], ny = y + dy[i];
+
+                if (nx < 0 || nx >= n || ny < 0 || ny >= m)
+                    continue;
+
+                int t = get(nx, ny);
+                if (!vis[t])
+                    continue;
+
+                roots.eb(find(find, t));
+            }
+
+            sort(all(roots));
+            roots.erase(unique(all(roots)), roots.end());
+
+            for (auto r: roots)
+            {
+                fa[r] = u;
+                mx[r] = max(0LL, 1LL * v - sz[r] + 1);
+                sz[u] += sz[r];
+            }
+
+            lst = sz[u] - 1;
+            cout << lst << endl;
+        }
+        else
+        {
+            find(find, u);
+            lst = max(0LL, mx[u] - val[u]);
+            cout << lst << endl;
+        }
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # E - Permutation Evaluation
 
 > 关键词：数学
