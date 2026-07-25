@@ -145,9 +145,162 @@ int main()
 \qquad i<p
 }$，这也比较好理解。对于比 $p$ 小的 $i$，总可以先跳到 $p$，然后从 $p$ 跳到 $n$。
 
-考虑如何处理 $p \le i \le n$ 这段的 $i$。这里应用一个质数密度的技巧。在 $n\le10^7$ 的范围内，相邻质数的最大间隔不超过 $154$，所以尾部长度至多约 $154$。这里可以暴力 $DP$。
+考虑如何处理 $p \le i \le n$ 这段的 $i$。这里应用一个质数密度的技巧。在 $n\le10^7$ 的范围内，相邻质数的最大间隔不超过 $154$，所以尾部长度至多约 $154$。这里可以暴力 $DP$。定义 $dp_i=\operatorname{cost}(i,n)$，初始化 $dp_n=0$。第一步从 $i$ 走到 $j$，其中 $i，于是 $dp_i=\min_{i<j\le n}\left(\gcd(i,j)+dp_j\right)$，从 $n-1$ 倒序计算。
 
 首先考虑前半段如何快速求和。现在需要计算区间 $[L,R]\subseteq[1,p-1]$ 的答案。设其中与 $n$ 互质的数有 $c$ 个，区间长度为 $len=R-L+1$。其中 $c$ 个数贡献 $1$，剩余 $len-c$ 个数贡献 $2$。所以答案为 $c+2(len-c)$。现在的问题是，**如何快速统计区间 $[L,R]$ 中有多少个数和 $n$ 互质。**
+
+这里是一种“区间筛”的想法。我们分解 $n$，得到它的所有不同质因子。对每个质因子 $q$，枚举 $[l,R]$ 内所有 $q$ 的倍数并标记。被标记的数与 $n$ 不互质，前半段贡献为 $2$，未标记的数与 $n$ 互质，前半段贡献为 $1$。
+
+## Code
+
+```c++
+// Problem: GCD Graph
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/133877/G
+// Time: 2026-07-22 12:43:43
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 1e7 + 5;
+
+int primes[N], cnt, sum[N];
+bool st[N];
+
+void get_primes(int n)
+{
+    for (int i = 2; i <= n; i++)
+    {
+        if (!st[i])
+            primes[cnt++] = i;
+
+        for (int j = 0; j < cnt && primes[j] <= n / i; j++)
+        {
+            st[primes[j] * i] = true;
+
+            if (i % primes[j] == 0)
+                break;
+        }
+    }
+}
+
+vector<int> get_factors(int n)
+{
+    vector<int> factors;
+
+    for (int i = 0; i < cnt && 1ll * primes[i] * primes[i] <= n; i++)
+    {
+        int p = primes[i];
+        if (n % p != 0)
+            continue;
+
+        factors.eb(p);
+        while (n % p == 0)
+            n /= p;
+    }
+
+    if (n > 1)
+        factors.eb(n);
+
+    return factors;
+}
+
+// sum[i] = 1 -> gcd(i, n) > 1;
+// sum[i] = 0 -> gcd(i, n) = 1;
+ll get_sum(int l, int r, int n)
+{
+    if (l > r)
+        return 0;
+
+    fill(sum + l, sum + r + 1, 0);
+    vector<int> factors = get_factors(n);
+
+    for (int p: factors)
+    {
+        int start = (l + p - 1) / p * p;
+        for (int i = start; i <= r; i += p)
+            sum[i] = 1;
+    }
+
+    sum[l - 1] = 0;
+    for (int i = l; i <= r; i++)
+        sum[i] = sum[i - 1] + 1 + sum[i];
+
+    return sum[r];
+}
+
+void solve()
+{
+    int l, r, n;
+    cin >> l >> r >> n;
+
+    ll res = 0;
+
+    if (!st[n])
+    {
+        res = (r - l + 1);
+        cout << res << endl;
+        return;
+    }
+
+    int pos = lower_bound(primes, primes + cnt, n) - primes;
+    int p = primes[pos - 1];
+
+    int R = min(r, p);
+    if (l <= R)
+        res += get_sum(l, R, n);
+
+    int L = max(l, p + 1);
+    if (L <= r)
+    {
+        vector<int> dp(n - L + 1, inf);
+        dp[n - L] = 0;
+
+        for (int i = n - 1; i >= L; i--)
+            for (int j = i + 1; j <= n; j++)
+                dp[i - L] = min(dp[i - L], dp[j - L] + gcd(i, j));
+
+        for (int i = L; i <= r; i++)
+            res += dp[i - L];
+    }
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    get_primes(N - 1);
+
+    //  cout << sum[2] << ' ' << sum[3] << ' ' << sum[4] << endl;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
 
 
 
