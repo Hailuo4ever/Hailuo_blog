@@ -203,12 +203,15 @@ void solve()
 
     // cout << mx << endl;
 
-    if (mx >= m)
+    if (m <= mx)
     {
         for (int i = 0; i < n; i++)
         {
             if (s[i] == c[0] || s[i] == c[1])
-                cout << s[i];
+                cout << s[i], m--;
+
+            if (m == 0)
+                break;
         }
     }
     else
@@ -436,5 +439,285 @@ int main()
 
 ```
 
+# E - 小红的子数组删除
 
+> 关键词：滑动窗口，STL
+
+## 思路
+
+对于这道题，比较容易想到滑动窗口枚举删除区间，而中位数又考虑对顶堆。但堆只能删除顶上的元素，没办法动态维护，所以我们用两个 `multiset` 代替对顶堆。
+
+考虑如何用两个 `multiset` 维护中位数，定义 $L$ 存放较小的一半元素，$R$ 存放较大的一半元素。
+
+根据对顶堆的思路，整个过程中我们需要维护两个不变量。一个是 $needL=\left\lceil\frac m2\right\rceil=\frac{m+1}{2}$，维护集合大小 $|L|=needL$，$|R|=m-needL$。一个是顺序不变量，始终满足 $\max(L)\le\min(R)$。
+
+考虑如何获取中位数，$m$ 为奇数时，判断中位数为 `*L.rbegin() == x`；$m$ 为偶数时，判断中位数为 `*L.rbegin() + *R.begin() == 2 * x`。
+
+## Code
+
+```c++
+// Problem: 小红的子数组删除
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/137840/E
+// Time: 2026-07-26 21:25:12
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+const ll mod = 1;
+
+void solve()
+{
+    int n, k;
+    cin >> n >> k;
+
+    ll x;
+    cin >> x;
+
+    vector<ll> a(n);
+    for (int i = 0; i < n; i++)
+        cin >> a[i];
+
+    int m = n - k;
+    if (m == 0)
+    {
+        if (x == 0)
+            cout << 1 << endl;
+        else
+            cout << 0 << endl;
+
+        return;
+    }
+
+    multiset<ll> L, R;
+    int cnt = (m + 1) / 2;
+
+    auto balance = [&](void) -> void
+    {
+        while (L.size() > cnt)
+        {
+            auto it = prev(L.end());
+
+            R.insert(*it), L.erase(it);
+        }
+
+        while ((int) L.size() < cnt && !R.empty())
+        {
+            auto it = R.begin();
+
+            L.insert(*it), R.erase(it);
+        }
+    };
+
+    auto add = [&](ll v) -> void
+    {
+        if (L.empty() || v <= *L.rbegin())
+            L.insert(v);
+        else
+            R.insert(v);
+
+        balance();
+    };
+
+    auto erase = [&](ll v) -> void
+    {
+        auto it = L.find(v);
+
+        if (it != L.end())
+            L.erase(it);
+        else
+            it = R.find(v), R.erase(it);
+
+        balance();
+    };
+
+    for (int i = k; i < n; i++)
+        add(a[i]);
+
+    int res = 0;
+    for (int l = 0; l + k <= n; l++)
+    {
+        if (m & 1)
+            res += (*L.rbegin() == x);
+        else
+            res += (*L.rbegin() + *R.begin() == 2 * x);
+
+        if (l + k == n)
+            break;
+
+        erase(a[l + k]), add(a[l]);
+    }
+
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# F - 艾雅法拉的点燃
+
+> 关键词：线性DP
+
+## 题目简述
+
+题目中有 $n$ 名敌人排成一排，第 $i$ 名敌人的生命值为 $a_i$
+
+有两种攻击方式：
+
+- 普通攻击：对一名敌人造成 $1$ 点伤害，消耗 $x$ 点法力
+- 点燃第 $i$ 名敌人：对第 $i$ 名敌人造成 $2$ 点伤害，并对相邻敌人各造成 $1$ 点伤害，消耗 $y$ 点法力
+
+要求消灭所有敌人的最小法力值。
+
+由于点燃一次会同时影响三个敌人，所以贪心是错的。
+
+## 思路
+
+### 转化题意
+
+我们定义 $b_i$ 为对第 $i$ 名敌人使用点燃的次数。为了方便处理边界，定义 $b_0=b_{n+1}$，考虑第 $i$ 名敌人会受到哪些点燃伤害。
+
+来自左边：对第 $i-1$ 名敌人点燃，第 $i$ 名敌人受到 $1$ 点伤害，因此贡献为 $b_{i-1}$；
+
+来自自己：每次对第 $i$ 名敌人点燃，会造成 $2$ 点伤害，因此贡献为 $2b_i$；
+
+来自右边：每次对第 $i+1$ 名敌人点燃，第 $i$ 名敌人受到 $1$ 点伤害，因此贡献为 $b_{i+1}$。
+
+所以第 $i$ 名敌人受到的点燃总伤害为 $b_{i-1}+2b_i+b_{i+1}$。如果点燃伤害不足，剩余部分必须使用普通攻击补足。因此普通攻击次数为 $\max\left(0,a_i-b_{i-1}-2b_i-b_{i+1}\right)$。
+
+所以题目本质上是在选择 $b_1,b_2,\ldots,b_n$，最小化 $\sum_{i=1}^{n}
+\left[
+b_i y+
+x\cdot
+\max\left(0,a_i-b_{i-1}-2b_i-b_{i+1}\right)
+\right]$。
+
+### DP
+
+定义 $dp[i][p][q]$ 表示第 $1$ 到第 $i-1$ 名敌人的费用已经全部结算，且已经确定了 $b_1,b_2,\ldots,b_i$，$b_{i-1}=p$，$b_i=q$ 情况下的当前最小法力消耗。注意在状态 $dp[i][p][q]$ 中，第 $i$ 名敌人还没有结算，因为第 $i$ 名敌人的伤害还需要知道右边的 $b_{i+1}$。
+
+初始化时，枚举对第 $1$ 名敌人使用点燃的次数，即 $dp[1][0][q]=qy$。
+
+状态转移为：$dp[i+1][q][r]
+=
+\min
+\left(
+dp[i+1][q][r],
+dp[i][p][q]+need\cdot x+r\cdot y
+\right)$。$(p,q)\longrightarrow(q,r)$。
+
+## Code
+
+```c++
+// Problem: 艾雅法拉的点燃
+// Contest: NowCoder
+// URL: https://ac.nowcoder.com/acm/contest/138241/F
+// Time: 2026-07-22 22:27:36
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const ll INF = 4e18;
+const int N = 50;
+
+void solve()
+{
+    ll n, x, y;
+    cin >> n >> x >> y;
+
+    vector<int> a(n + 2, 0);
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+
+    vector<vector<vector<ll>>> dp(n + 2, vector<vector<ll>>(N + 1, vector<ll>(N + 1, INF)));
+
+    for (int q = 0; q <= a[1]; q++)
+        dp[1][0][q] = q * y;
+
+    for (int i = 1; i <= n; i++)
+    {
+        for (int p = 0; p <= N; p++)
+        {
+            for (int q = 0; q <= N; q++)
+            {
+                if (dp[i][p][q] == INF)
+                    continue;
+
+                int limit = (i == n ? 0 : a[i + 1]);
+
+                for (int r = 0; r <= limit; r++)
+                {
+                    ll need = max(0LL, 1LL * a[i] - p - 2LL * q - r);
+                    dp[i + 1][q][r] = min(dp[i + 1][q][r], dp[i][p][q] + need * x + 1LL * r * y);
+                }
+            }
+        }
+    }
+
+    ll res = INF;
+    for (int q = 0; q <= N; q++)
+        res = min(res, dp[n + 1][q][0]);
+    cout << res << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
 
