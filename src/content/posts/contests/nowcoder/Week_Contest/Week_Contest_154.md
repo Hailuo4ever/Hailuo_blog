@@ -628,13 +628,7 @@ x\cdot
 
 初始化时，枚举对第 $1$ 名敌人使用点燃的次数，即 $dp[1][0][q]=qy$。
 
-状态转移为：$dp[i+1][q][r]
-=
-\min
-\left(
-dp[i+1][q][r],
-dp[i][p][q]+need\cdot x+r\cdot y
-\right)$。$(p,q)\longrightarrow(q,r)$。
+状态转移方程为：${dp[i+1][q][r]=\min\left(dp[i+1][q][r],dp[i][p][q]+need\cdot x+r\cdot y\right)}$。$(p,q)\longrightarrow(q,r)$。
 
 ## Code
 
