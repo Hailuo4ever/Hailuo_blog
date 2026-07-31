@@ -328,6 +328,8 @@ int main()
 
 状态转移见图。
 
+![](https://img.hailuo4ever.com/hdu/summer2_1011.jpg)
+
 ## Code
 
 ```c++
