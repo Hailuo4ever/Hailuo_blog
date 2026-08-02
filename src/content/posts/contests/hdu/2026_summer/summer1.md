@@ -2,7 +2,7 @@
 title: 2026 杭电多校1
 published: 2026-07-21
 description: "HDU Multi-University Training Contest 1"
-image: https://img.hailuo4ever.com/cover/nowcoder.png
+image: https://img.hailuo4ever.com/cover/hdu.png
 tags: [算法题解, HDUOJ, 暑假多校]
 category: "Algorithm"
 draft: false
