@@ -35,13 +35,7 @@ D=\sum_{1\le i<j\le y+1}d_i d_j
 
 现在问题变成了，我们现在有 $m=y+1$ 个整数 $d_1,d_2,\ldots,d_m$，满足 $d_1+d_2+\cdots+d_m=n$。需要最大化 $\sum_{i<j}d_i d_j$。
 
-**利用 $\left(\sum d_i\right)^2
-=
-\sum d_i^2+2\sum_{i<j}d_i d_j$，上式可以转化成 $D
-=
-\frac{
-n^2-\sum d_i^2
-}{2}$**。由于 $n$ 已经固定，最大化伤害等于最小化 $d_i$ 的平方和。
+**利用 $\left(\sum d_i\right)^2=\sum d_i^2+2\sum_{i<j}d_i d_j$，上式可以转化成 $D=\frac{n^2-\sum d_i^2}{2}$**。由于 $n$ 已经固定，最大化伤害等于最小化 $d_i$ 的平方和。
 
 > 上述式子是平方和公式的推广。考虑 $(a+b)^2=a^2+ab+ba+b^2$，$ab$ 和 $ba$ 各出现了一次。而对于三个数的情况，$(d_1+d_2+d_3)^2
 > =
