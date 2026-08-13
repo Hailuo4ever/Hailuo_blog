@@ -85,16 +85,6 @@ bool check(area A, area B)
     auto [a1, b1, c1, d1] = A;
     auto [a2, b2, c2, d2] = B;
 
-    // auto chk = [&](int x, int y) -> bool
-    // {
-    // if (x >= a2 && x <= c2 && y >= b2 && y <= d2)
-    // return true;
-    // return false;
-    // };
-    //
-    // if (chk(a1, d1) || chk(c1, d1) || chk(a1, b1) || chk(c1, b1))
-    // return true;
-
     if (c2 < a1 || a2 > c1 || d2 < b1 || b2 > d1)
         return false;
 

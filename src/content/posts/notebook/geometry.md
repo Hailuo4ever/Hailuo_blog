@@ -218,7 +218,7 @@ bool properIntersect(const Point<T> &a, const Point<T> &b, const Point<T> &c, co
 // 1: 严格相交
 // 2: 共线重叠
 // 3: 端点相交
-// 求交点坐标，T 用浮点
+// 求交点坐标，要求 T 用浮点
 template<class T>
 tuple<int, Point<T>, Point<T>> segmentIntersection(const Line<T> &l1, const Line<T> &l2)
 {
@@ -345,13 +345,13 @@ C
 ### 投影点
 
 ```c++
+// 求投影点坐标，p投影到直线l，要求T为浮点，l.a != l.b
 template<class T>
 Point<T> projection(const Point<T> &p, const Line<T> &l)
 {
     auto v = l.b - l.a;
     return l.a + v * (dot(p - l.a, v) / dot(v, v));
 }
-// 由于有除法，用浮点
 ```
 
 设 $H$ 是点 $P$ 在直线 $AB$ 上的投影点。由于直线上的所有点都可以写成 $a+t(b-a)$，我们只需要关注这个 $t$ 是多少。
@@ -369,17 +369,12 @@ Point<T> projection(const Point<T> &p, const Line<T> &l)
 ### 对称点
 
 ```c++
+// 求点p关于直线l的对称点，要求T为浮点，l.a != l.b
 template<class T>
-Point<long double> reflection(Point<T> p, Line<T> l)
+Point<T> reflection(Point<T> p, Line<T> l)
 {
     auto h = projection(p, l);
-
-    Point<long double> q{
-        (long double) p.x,
-        (long double) p.y
-    };
-
-    return h * 2 - q;
+    return h * T(2) - p;
 }
 ```
 
@@ -398,14 +393,14 @@ long double distancePL(const Point<T> &p, const Line<T> &l)
 }
 ```
 
-求点到直线距离，实际上是求一个三角形的高。同样设直线为 $AB$，点为 $P$，显然有 $S_{\triangle ABP}
+求点到直线距离，实际上是求一个三角形的高。同样设直线为 $AB$，点为 $P$，显然有 ${S_{\triangle ABP}
 =
 \frac12
 \left|
 \overrightarrow{AB}
 \times
 \overrightarrow{AP}
-\right|$。所以点到直线距离公式即为 ${
+\right|}$。所以点到直线距离公式即为 ${
 d=
 \frac{
 |\operatorname{cross}(b-a,p-a)|
@@ -499,11 +494,11 @@ T polygonArea2(const vector<Point<T>> &p)
 }
 ```
 
-考虑求三角形的面积，用的是叉积，可以推广到多边形中。假设有多边形 $P_0,P_1,\dots,P_{n-1}$，从顶点 $O$ 向每一条边连接三角形，每个三角形的有向面积为 $\frac12(P_i\times P_{i+1})$，总和 $S
+考虑求三角形的面积，用的是叉积，可以推广到多边形中。假设有多边形 $P_0,P_1,\dots,P_{n-1}$，从顶点 $O$ 向每一条边连接三角形，每个三角形的有向面积为 $\frac12(P_i\times P_{i+1})$，总和 ${S
 =
 \frac12
 \sum_{i=0}^{n-1}
-P_i\times P_{i+1}$ 即为多边形的有向面积，真实面积取绝对值即可。
+P_i\times P_{i+1}}$ 即为多边形的有向面积，真实面积取绝对值即可。
 
 > [!NOTE]
 >
@@ -549,15 +544,15 @@ Point<long double> centroid(const vector<Point<T>> &p)
 
 没啥用。但还是放在板子里吧。
 
-三角形的重心有一个结论，是三个点的向量和并取平均。即 $G_x=
-\frac{x_A+x_B+x_C}{3}$，$G_y=
-\frac{y_A+y_B+y_C}{3}$。
+三角形的重心有一个结论，是三个点的向量和并取平均。即 ${G_x=
+\frac{x_A+x_B+x_C}{3}}$，${G_y=
+\frac{y_A+y_B+y_C}{3}}$。
 
 利用和求面积时相同的推广方式，将多边形拆成三角形，整个图形的重心就是各个小三角形重心按照面积加权。
 
-$G
+${G
 =
-\frac{\sum S_iG_i}{\sum S_i}$，代入 $G
+\frac{\sum S_iG_i}{\sum S_i}}$，代入 ${G
 =
 \frac{
 \sum
@@ -567,7 +562,7 @@ $G
 }{
 \sum
 \frac12(P_i\times P_{i+1})
-}$。消去上下的 $\frac12$ 后，可以得到多边形重心公式：$\boxed{
+}}$。消去上下的 $\frac12$ 后，可以得到多边形重心公式：${\boxed{
 G=
 \frac{
 \sum_{i=0}^{n-1}
@@ -578,15 +573,15 @@ G=
 \sum_{i=0}^{n-1}
 (P_i\times P_{i+1})
 }
-}$。
+}}$。
 
-写成坐标的形式，即为 $G_x=
+写成坐标的形式，即为 ${G_x=
 \frac1{6A}
 \sum
-(x_i+x_{i+1})c_i$，$G_y=
+(x_i+x_{i+1})c_i}$，${G_y=
 \frac1{6A}
 \sum
-(y_i+y_{i+1})c_i$。
+(y_i+y_{i+1})c_i}$。
 
 > [!NOTE]
 >
@@ -731,4 +726,145 @@ sort(p.begin(), p.end(), [](auto a, auto b)
 });
 ```
 
-但这种方法比较慢，而且丢精度。其实我们不需要知道具体角度是多少。只需要判断 $a$ 和 $b$ 谁的角度更小，这其实可以使用叉积解决。
+但这种方法比较慢，而且丢精度。其实我们不需要知道具体角度是多少。只需要判断 $a$ 和 $b$ 谁的角度更小，这其实可以使用叉积解决。但这里还要注意，不能直接用 `cross(a, b) > 0` 来转 $360^\circ$，原因是叉积只能判断两个向量间的相对旋转方向，$cross(a,b)>0$ 只能说明 $b$ 在 $a$ 逆时针不到 $180^\circ$ 的方向上。
+
+因此正确的极角排序要先分半平面。把向量以 $x$ 轴为界，分成上下两部分，负 $x$ 轴划入第二部分。这样角度顺序就是 $0^\circ
+\to
+180^\circ
+\to
+360^\circ$。对于共线向量，即极角完全相同时，一般使用第二关键字，到极点的距离来排序。
+
+```c++
+template<class T>
+bool polarCmp(const Point<T> &a, const Point<T> &b)
+{
+    int ha = half(a);
+    int hb = half(b);
+
+    if (ha != hb)
+        return ha < hb;
+
+    T c = cross(a, b);
+
+    if (c != 0)
+        return c > 0;
+
+    return square(a) < square(b);
+}
+```
+
+# 凸包
+
+## 思路
+
+以下求凸包的方法为 [Andrew 算法 - OI Wiki](https://oi-wiki.org/geometry/convex-hull/#andrew-算法求凸包)
+
+首先把所有点以横坐标为第一关键字，纵坐标为第二关键字排序，然后构造下凸壳和上凸壳，最后拼起来。
+
+一个凸多边形的边界可以拆成如下的两部分：
+
+```c++
+                 上凸壳
+              ↗---------↘
+            /             \
+           L               R
+            \             /
+              ↘---------↗
+                 下凸壳
+```
+
+`Andrew` 算法本质上是在维护一个单调栈。假设当前已经维护了一条凸链 `A → B → C → D`，现在加入一个新点 `E`，我们只需要看最后三个点 $C,D,E$。如果 $D$ 破坏了凸性就弹出，继续检查 $B,C,E$，如果 $C$ 也不合法就接着删。
+
+```c++
+while (当前最后三个点不满足凸性)
+    pop_back();
+
+push_back(新点);
+```
+
+考虑如何判断三个点是否满足凸性。假设依次经过 $A\to B\to C$，我们判断 `cross(B - A, C - A)`，大于 $0$ 左转，小于 $0$ 右转，等于 $0$ 共线。
+
+下凸壳从左到右，连续三个点应该严格左转，即保证 $cross(B-A,C-A)>0$。
+
+假设当前 $A,B$ 已经在下凸壳上，现在加入 $C$，这里 $B$ 在 $AC$ 上方，显然不可能继续作为当前下凸壳的顶点。此时 $cross(B-A,C-A)<0$，将 $B$ 弹出栈。
+
+```c++
+        B
+       /
+      /
+A----------------C
+```
+
+如果三点共线，一般凸包只保留拐点，所以默认也弹出，根据题目要求也可以保留。
+
+上凸壳与下凸壳反过来，和上面同理。有两种写法，一种是先正着求下凸壳，然后倒着求上凸壳，这样的好处是全程左转，判断条件固定。还有一种是 `jiangly` 的写法，从最左点开始同时维护上下凸壳，一个左转一个右转。
+
+## Code
+
+> [!NOTE]
+>
+> 注意，虽然返回上下两个凸壳，但他们并不共享边，但可能有重复点。
+>
+> $hi$ 和 $lo$ 都按 $x$ 递增方向排列，在同一个横坐标 $x$ 上，$hi$ 保留最高点，$lo$ 保留最低点。$hi$ 和 $lo$ 不是一个闭合多边形，而是两条开的链。一般有 `hi.front() != lo.front()`，`hi.back() != lo.back()`。
+>
+> 求完整凸包，拼接起来两部分即可，即 `lo + reverse(hi)`。拼接时先避免相邻的点有重复，然后再判首尾点是否有重复。
+
+模板题链接：[二维凸包 - 题目 - QOJ.ac](https://qoj.ac/contest/3936/problem/218)
+
+```c++
+// 返回上下两条链
+template<class T>
+auto getHull(vector<Point<T>> p)
+{
+    sort(p.begin(), p.end(), [](const auto &a, const auto &b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+
+    vector<Point<T>> hi, lo;
+
+    for (const auto &p: p)
+    {
+        while (hi.size() > 1 && cross(hi.back() - hi[hi.size() - 2], p - hi.back()) >= 0)
+            hi.pop_back();
+
+        while (!hi.empty() && hi.back().x == p.x)
+            hi.pop_back();
+
+        hi.push_back(p);
+
+        while (lo.size() > 1 && cross(lo.back() - lo[lo.size() - 2], p - lo.back()) <= 0)
+            lo.pop_back();
+
+        if (lo.empty() || lo.back().x < p.x)
+            lo.push_back(p);
+    }
+
+    return make_pair(hi, lo);
+}
+
+// 求完整凸包
+template<class T>
+vector<Point<T>> convexHull(vector<Point<T>> p)
+{
+    auto [hi, lo] = getHull(p);
+
+    reverse(hi.begin(), hi.end());
+
+    for (const auto &p: hi)
+    {
+        if (lo.empty() || p != lo.back())
+            lo.push_back(p);
+    }
+
+    if (lo.size() > 1 && lo.front() == lo.back())
+        lo.pop_back();
+
+    return lo;
+}
+
+```
+
+# 旋转卡壳
+
+旋转卡壳在凸包算法的基础上，通过枚举凸包上某一条边的同时维护其他需要的点，能够在线性时间内求解如凸包直径、最小矩形覆盖等和凸包性质相关的问题。
+
+## 平面最远点对（凸包直径）
+
