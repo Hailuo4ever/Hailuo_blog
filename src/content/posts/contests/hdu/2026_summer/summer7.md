@@ -139,6 +139,146 @@ int main()
 
 ```
 
+# 1006 - 今晚吃流年
+
+> 关键词：区间判定
+
+## 思路
+
+题目规定存在 $a_1,a_2$，满足 $1<a_1<a_2<n+1$，并且 $1\sim a_1-1$ 和 $a_2\sim n$ 是一种性别，$a_1\sim a_2-1$ 是一种性别。每一组 $(c_i,p_i)$ 都必须是异性。将中间这一段性别记作 $[L,R]=[a_1,a_2-1]$，题目约束即为：$2\le L\le R\le n-1$ 且对于每一对 $cp$，恰好有一个端点落在 $[L,R]$ 内。
+
+对于一对 $cp$，先让 $l=\min(c,p),\quad r=\max(c,p)$，现在要求 $l$ 和 $r$ 在 $[L,R]$ 区间上必须是一里一外。
+
+固定左端点 $L$，考虑一条 $(l,r),\quad l<r$，实际上只有两种合法可能性。
+
+首先是 $l$ 落在中间区间左端点的左侧，即 $l<L$，此时需要满足 $L\le r\le R$。也就是说，**所有满足 $l<L$ 的边，它们的右端点都必须至少到达 $L$，并且 $R$ 要覆盖它们的所有右端点**。即 $\min r\ge L$ 且 $R\ge \max r$。
+
+然后是 $l$ 落在中间区间，即 $l\ge L$。此时需要满足 ${R\ge l}$ 和 ${R\le r-1}$。因此，对于所有满足 $l\ge L$ 的边，$R\ge \max l$ 且 $R\le \min(r-1)$。
+
+因此，对于固定的 $L$，有 ${R\ge\max\left(L,\,\max_{l<L}r,\,\max_{l\ge L}l\right)}$，${R\le\min\left(n-1,\,
+\min_{l\ge L}(r-1)\right)}$。同时要满足 ${\min_{l<L}r\ge L}$。
+
+再预处理出前缀最大值和后缀最小值，就可以实现在线性时间内判断。
+
+## Code
+
+```c++
+// Problem: 今晚吃流年
+// Contest: HDOJ
+// URL: https://acm.hdu.edu.cn/contest/problem?cid=1235&pid=1006
+// Time: 2026-08-15 15:15:35
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+const ll mod = 1;
+
+void solve()
+{
+    int n, m;
+    cin >> n >> m;
+
+    vector<pii> a(m + 1);
+
+    for (int i = 1; i <= m; i++)
+    {
+        auto &[x, y] = a[i];
+        cin >> x >> y;
+
+        if (x > y)
+            swap(x, y);
+    }
+
+    sort(a.begin() + 1, a.end());
+
+    vector<int> maxy(m + 1), miny(m + 2, inf);
+
+    for (int i = 1; i <= m; i++)
+        maxy[i] = max(maxy[i - 1], a[i].second);
+    for (int i = m; i >= 1; i--)
+        miny[i] = min(miny[i + 1], a[i].second);
+
+    // 所有区间由 a2 穿过
+    if (a[1].first != 1)
+    {
+        int a1 = 2, a2 = miny[1];
+
+        if (a1 < a2 && a2 > a[m].first)
+        {
+            cout << "Yes" << endl;
+            cout << a1 << ' ' << a2 << endl;
+            return;
+        }
+    }
+
+    // 所有区间由 a1 穿过
+    if (maxy[m] != n)
+    {
+        int a1 = a[m].first + 1, a2 = n;
+
+        if (a1 < a2 && miny[1] > a[m].first)
+        {
+            cout << "Yes" << endl;
+            cout << a1 << ' ' << a2 << endl;
+            return;
+        }
+    }
+
+    // 前 i 个区间由 a1 穿过，后 m-i 个区间由 a2 穿过
+    for (int i = 1; i < m; i++)
+    {
+        if (a[i].first == a[i + 1].first)
+            continue;
+
+        int a1 = a[i].first + 1, a2 = miny[i + 1];
+
+        if (a1 < a2 && a1 <= miny[1] && maxy[i] < a2 && a[m].first < a2)
+        {
+            cout << "Yes" << endl;
+            cout << a1 << ' ' << a2 << endl;
+            return;
+        }
+    }
+
+    cout << "No" << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 
 
 # 1008 - 今晚吃NPC
@@ -155,7 +295,7 @@ int main()
 \underbrace{w\&w\&\cdots\&w}_{\text{第一个 AND 块}}
 \quad+\quad
 \text{其余全部 }0
-}$，先把最高优先级运算形成的连续段压缩成一个整体
+}$，先把最高优先级运算形成的连续段压缩成一个整体 $w$，剩下的全部为 $0$ 即可。
 
 ## Code
 
@@ -224,7 +364,7 @@ int main()
 
 # 1012 - 今晚吃 TopTree
 
-> 关键词：树形DP
+> 关键词：树形DP，贪心
 
 ## 思路
 

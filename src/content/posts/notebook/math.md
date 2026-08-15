@@ -279,6 +279,4 @@ $$
 
 ## 平方和
 
-$\left(\sum d_i\right)^2
-=
-\sum d_i^2+2\sum_{i<j}d_i d_j$
+${\left(\sum d_i\right)^2=\sum d_i^2+2\sum_{i<j}d_i d_j}$

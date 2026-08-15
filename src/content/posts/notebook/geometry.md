@@ -393,20 +393,7 @@ long double distancePL(const Point<T> &p, const Line<T> &l)
 }
 ```
 
-求点到直线距离，实际上是求一个三角形的高。同样设直线为 $AB$，点为 $P$，显然有 ${S_{\triangle ABP}
-=
-\frac12
-\left|
-\overrightarrow{AB}
-\times
-\overrightarrow{AP}
-\right|}$。所以点到直线距离公式即为 ${
-d=
-\frac{
-|\operatorname{cross}(b-a,p-a)|
-}
-{|b-a|}
-}$。
+求点到直线距离，实际上是求一个三角形的高。同样设直线为 $AB$，点为 $P$，显然有 ${S_{\triangle ABP}=\frac12\left|\overrightarrow{AB}\times\overrightarrow{AP}\right|}$。所以点到直线距离公式即为 ${d=\frac{|\operatorname{cross}(b-a,p-a)|}{|b-a|}}$。
 
 ### 点到线段距离
 
@@ -444,8 +431,6 @@ long double distanceSS(const Line<T> &l1, const Line<T> &l2)
     return min({distancePS(l1.a, l2), distancePS(l1.b, l2), distancePS(l2.a, l1), distancePS(l2.b, l1)});
 }
 ```
-
-
 
 ## 多边形
 
@@ -494,11 +479,7 @@ T polygonArea2(const vector<Point<T>> &p)
 }
 ```
 
-考虑求三角形的面积，用的是叉积，可以推广到多边形中。假设有多边形 $P_0,P_1,\dots,P_{n-1}$，从顶点 $O$ 向每一条边连接三角形，每个三角形的有向面积为 $\frac12(P_i\times P_{i+1})$，总和 ${S
-=
-\frac12
-\sum_{i=0}^{n-1}
-P_i\times P_{i+1}}$ 即为多边形的有向面积，真实面积取绝对值即可。
+考虑求三角形的面积，用的是叉积，可以推广到多边形中。假设有多边形 $P_0,P_1,\dots,P_{n-1}$，从顶点 $O$ 向每一条边连接三角形，每个三角形的有向面积为 $\frac12(P_i\times P_{i+1})$，总和 ${S=\frac12\sum_{i=0}^{n-1}P_i\times P_{i+1}}$ 即为多边形的有向面积，真实面积取绝对值即可。
 
 > [!NOTE]
 >
@@ -550,38 +531,11 @@ Point<long double> centroid(const vector<Point<T>> &p)
 
 利用和求面积时相同的推广方式，将多边形拆成三角形，整个图形的重心就是各个小三角形重心按照面积加权。
 
-${G
-=
-\frac{\sum S_iG_i}{\sum S_i}}$，代入 ${G
-=
-\frac{
-\sum
-\frac12(P_i\times P_{i+1})
-\cdot
-\frac{P_i+P_{i+1}}3
-}{
-\sum
-\frac12(P_i\times P_{i+1})
-}}$。消去上下的 $\frac12$ 后，可以得到多边形重心公式：${\boxed{
-G=
-\frac{
-\sum_{i=0}^{n-1}
-(P_i+P_{i+1})
-(P_i\times P_{i+1})
-}{
-3
-\sum_{i=0}^{n-1}
-(P_i\times P_{i+1})
-}
-}}$。
+${G=\frac{\sum S_iG_i}{\sum S_i}}$，代入 ${G
+=\frac{\sum\frac12(P_i\times P_{i+1})\cdot\frac{P_i+P_{i+1}}3}{\sum\frac12(P_i\times P_{i+1})
+}}$。消去上下的 $\frac12$ 后，可以得到多边形重心公式：${\boxed{G=\frac{\sum_{i=0}^{n-1}(P_i+P_{i+1})(P_i\times P_{i+1})}{3\sum_{i=0}^{n-1}(P_i\times P_{i+1})}}}$。
 
-写成坐标的形式，即为 ${G_x=
-\frac1{6A}
-\sum
-(x_i+x_{i+1})c_i}$，${G_y=
-\frac1{6A}
-\sum
-(y_i+y_{i+1})c_i}$。
+写成坐标的形式，即为 ${G_x=\frac1{6A}\sum(x_i+x_{i+1})c_i}$，${G_y=\frac1{6A}\sum(y_i+y_{i+1})c_i}$。
 
 > [!NOTE]
 >
@@ -868,16 +822,77 @@ vector<Point<T>> convexHull(vector<Point<T>> p)
 
 ## 平面最远点对（凸包直径）
 
-首先要理解一个结论：**平面点集的最远点对一定出现在凸包顶点上**。
+给定 $n$ 个平面点，求其中距离最远的两个点。也就是求 $\max_{i,j} |P_iP_j|$。
+
+首先要理解一个结论：**平面点集的最远点对一定出现在凸包顶点之间**。
 
 > ```c++
->        A
+>        A        ·Q
 >       / \
->      / P \
+>      / ·P\
 >     /     \
 >    B-------C
 > ```
 >
-> 假设某个点 $P$ 在凸包内部，如果最远点对的一端是点 $P$，另一端为 $Q$（$Q$ 也在凸包内或凸包边界上），显然从 $Q$ 到 $P$ 的方向继续延伸，一定能碰到凸包边界上的点 $R$，所以 $P$ 不可能是最远点对的一端。
+> 假设某个点 $P$ 在凸包内部，如果最远点对的一端是点 $P$，另一端为 $Q$（$Q$ 也在凸包内或凸包边界上），显然从 $Q$ 到 $P$ 的方向继续延伸，一定能碰到凸包边界上的点 $R$，所以 $P$ 不可能是最远点对的一端。因此所有凸包内部点都没有必要作为最远点对的端点。
 >
-> 因此所有凸包内部点都没有必要作为最远点对的端点。
+> 考虑 $Q$，设 $M$ 在线段 $AC$ 上，有 ${|QM|\le \max(|QA|,|QB|)}$，也就是说，在线段上找距离固定点 $Q$ 最远的点，一定可以取线段端点。因此最远点对不会出现在凸包的边上。
+
+经过上面结论的优化，我们已经把 $n$ 个点优化成了凸包上的 $m$ 个点。剩下的问题就是：如何不用 $O(m^2)$ 地枚举所有顶点对。
+
+![](https://oi-wiki.org/geometry/images/rotating-calipers1.png)
+
+考虑固定一条凸包边，假设当前枚举的凸包边是 $P_iP_{i+1}$，我们想找到哪个凸包顶点 $P_j$ 距离直线 $P_iP_{i+1}$ 最远。简单观察可知，等效于让这三个凸包点形成的三角形面积最大，也可以理解成让叉积最大。
+
+我们观察 $j$ 的移动。由于这是一个凸多边形，随着 $j$ 沿凸包移动，面积会出现从小到大再变小的情况，即具有单峰性质。我们可以通过 `while (area(j + 1) > area(j)) j++;` 来找到。
+
+**旋转卡壳的关键在于，枚举下一条边时不重置 $j$**。因为凸多边形的边方向也是连续旋转的，所以对应的最远点也只会沿着凸包继续向前移动。也就是说形如下面的形式，$j$ 不会突然反向退回。
+
+```c++
+边 i       最远点 j
+0            3
+1            3
+2            4
+3            5
+4            5
+5            6
+```
+
+因此 $i$ 最多走一圈，$j$ 也最多走一圈，时间复杂度 $O(n)$。**本质上，旋转卡壳就是凸多边形上的双指针，而双指针成立的原因是凸性产生单调性**。
+
+#### Code
+
+> [!NOTE]
+>
+> 注意：$j$ 初始化成 $0$ 可能导致第一轮比较成 $0<0$，所以初始成 $1$ 是对的。
+
+```c++
+// 旋转卡壳，返回凸包直径的平方
+template<class T>
+T convexDiameter2(const vector<Point<T>> &p)
+{
+    int n = p.size(), j = 1;
+    T res = 0;
+
+    if (n <= 1)
+        return 0;
+    if (n == 2)
+        return square(p[0] - p[1]);
+
+    for (int i = 0; i < n; i++)
+    {
+        int ni = (i + 1) % n;
+        while (area2(p[i], p[ni], p[j]) < area2(p[i], p[ni], p[(j + 1) % n]))
+            j = (j + 1) % n;
+
+        res = max({res, square(p[i] - p[j]), square(p[ni] - p[j])});
+    }
+    return res;
+}
+
+```
+
+## 最小矩形覆盖
+
+![](https://oi-wiki.org/geometry/images/rotating-calipers2.png)
+

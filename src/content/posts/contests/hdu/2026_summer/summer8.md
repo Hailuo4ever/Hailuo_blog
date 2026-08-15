@@ -146,6 +146,255 @@ int main()
 
 ```
 
+# 1007 - 用传送门来让网格连通吧
+
+> 关键词：缩点，图论建模
+
+## 思路
+
+注意到传送门的数量很少，而整张图又很大，这提示我们不要对每个询问 $bfs$，而是先缩点。
+
+首先注意到，每个 $.$ 连通块内部的行走方式不重要，可以直接把整个连通块看作一个点。在这之后，传送门等价于一条从连通块 $A$ 到 $B$ 的有向边。因此问题变成，给定若干个连通块，最多有 $k \le 100$ 条有向边，询问两个连通块之间是否可达。
+
+但这里容易想到对所有连通块跑 $Floyd$，但由于连通块数量最坏是 $O(nm)=5\times10^4$ 的，显然不可行。
+
+我们实际上应该再对含有传送门的连通块做一次缩点，定义特殊联通块为至少包含一个传送门入口或出口的连通块。显然 $S\le2k\le200$。对这个有向图做 $Floyd$ 传递闭包即可。
+
+## Code
+
+> [!NOTE]
+>
+> 注：本题卡常，此做法在不使用快读的前提下无法通过。
+
+```c++
+// Problem: 用传送门来让网格连通吧
+// Contest: HDOJ
+// URL: https://acm.hdu.edu.cn/contest/problem?cid=1236&pid=1007
+// Time: 2026-08-15 12:32:32
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+const ll mod = 1;
+
+namespace FastIO
+{
+    const int S = 1 << 20;
+
+    char buf[S];
+    int idx = 0, len = 0;
+
+    inline char gc()
+    {
+        if (idx >= len)
+        {
+            len = fread(buf, 1, S, stdin);
+            idx = 0;
+
+            if (len == 0)
+                return EOF;
+        }
+
+        return buf[idx++];
+    }
+
+    inline int read()
+    {
+        int x = 0;
+        char c = gc();
+
+        while (c < '0' || c > '9')
+            c = gc();
+
+        while (c >= '0' && c <= '9')
+        {
+            x = x * 10 + c - '0';
+            c = gc();
+        }
+
+        return x;
+    }
+
+    inline string readString()
+    {
+        string s;
+        char c = gc();
+
+        while (c <= ' ')
+            c = gc();
+
+        while (c > ' ')
+        {
+            s += c;
+            c = gc();
+        }
+
+        return s;
+    }
+} // namespace FastIO
+
+using FastIO::read;
+using FastIO::readString;
+
+struct DSU
+{
+    vector<int> fa;
+    vector<int> sz;
+
+    DSU() {}
+
+    DSU(int n)
+    {
+        init(n);
+    }
+
+    void init(int n)
+    {
+        fa.resize(n + 1);
+        sz.assign(n + 1, 1);
+
+        iota(fa.begin(), fa.end(), 0);
+    }
+
+    int find(int x)
+    {
+        if (fa[x] == x)
+            return x;
+
+        return fa[x] = find(fa[x]);
+    }
+
+    bool merge(int x, int y)
+    {
+        x = find(x);
+        y = find(y);
+
+        if (x == y)
+            return false;
+
+        if (sz[x] < sz[y])
+            swap(x, y);
+
+        fa[y] = x;
+        sz[x] += sz[y];
+
+        return true;
+    }
+
+    bool connected(int x, int y)
+    {
+        return find(x) == find(y);
+    }
+
+    int sze(int x)
+    {
+        return sz[find(x)];
+    }
+};
+
+void solve()
+{
+    int n = read(), m = read(), k = read(), q = read();
+
+    vector<string> g(n);
+    for (auto &s: g)
+        s = readString();
+
+    auto id = [&](int x, int y) -> int { return x * m + y; };
+
+    DSU dsu(n * m);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+        {
+            if (g[i][j] == '#')
+                continue;
+
+            if (i + 1 < n && g[i + 1][j] == '.')
+                dsu.merge(id(i, j), id(i + 1, j));
+
+            if (j + 1 < m && g[i][j + 1] == '.')
+                dsu.merge(id(i, j), id(i, j + 1));
+        }
+
+    bool f[205][205] = {};
+    vector<int> idx(n * m, -1);
+    int timer = 0;
+
+    for (int i = 0; i < k; i++)
+    {
+        int x1 = read(), y1 = read(), x2 = read(), y2 = read();
+
+        x1--, y1--, x2--, y2--;
+
+        int u = dsu.find(id(x1, y1)), v = dsu.find(id(x2, y2));
+        if (idx[u] == -1)
+            idx[u] = timer++;
+
+        if (idx[v] == -1)
+            idx[v] = timer++;
+
+        f[idx[u]][idx[v]] = true;
+    }
+
+    for (int i = 1; i < timer; i++)
+        f[i][i] = true;
+
+    for (int k = 0; k < timer; k++)
+        for (int i = 0; i < timer; i++)
+            for (int j = 0; j < timer; j++)
+                f[i][j] |= f[i][k] && f[k][j];
+
+    while (q--)
+    {
+        int x1 = read(), y1 = read(), x2 = read(), y2 = read();
+
+        x1--, y1--, x2--, y2--;
+
+        int u = dsu.find(id(x1, y1)), v = dsu.find(id(x2, y2));
+        if (u == v)
+            cout << 1 << endl;
+        else if (idx[u] == -1 || idx[v] == -1)
+            cout << 0 << endl;
+        else
+            cout << f[idx[u]][idx[v]] << endl;
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = read();
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # 1009 - 价值总是越大越好
 
 > 关键词：贪心，组合计数
