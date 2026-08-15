@@ -458,9 +458,7 @@ long double polygonPerimeter(const vector<Point<T>> &p)
 
 知道了所有顶点以后，多边形的周长就是每条边的和，而由于顶点已经按照边界顺序排列好，所以直接就是相邻点的距离之和。
 
-$L
-=
-\sum_{i=0}^{n-1}|P_iP_{i+1}|$，其中 $P_n=P_0$。
+$L=\sum_{i=0}^{n-1}|P_iP_{i+1}|$，其中 $P_n=P_0$。
 
 ### 面积
 
