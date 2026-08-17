@@ -761,7 +761,7 @@ A----------------C
 >
 > 求完整凸包，拼接起来两部分即可，即 `lo + reverse(hi)`。拼接时先避免相邻的点有重复，然后再判首尾点是否有重复。
 
-模板题链接：[二维凸包 - 题目 - QOJ.ac](https://qoj.ac/contest/3936/problem/218)
+模板题链接：[二维凸包 - 题目 - QOJ.ac](https://qoj.ac/contest/3936/problem/218)，[P2742 【模板】二维凸包 / [USACO5.1] 圈奶牛 Fencing the Cows - 洛谷](https://www.luogu.com.cn/problem/P2742)
 
 ```c++
 // 返回上下两条链
@@ -864,6 +864,12 @@ vector<Point<T>> convexHull(vector<Point<T>> p)
 >
 > 注意：$j$ 初始化成 $0$ 可能导致第一轮比较成 $0<0$，所以初始成 $1$ 是对的。
 
+模板题链接：
+
+凸包直径：[P1452 [USACO03FALL] Beauty Contest G 凸包直径 - 洛谷](https://www.luogu.com.cn/problem/P1452)，[旋转卡壳 - Problem - QOJ.ac](https://qoj.ac/problem/784)
+
+最远点对：[P16223 【模板】旋转卡壳/最远点对 - 洛谷](https://www.luogu.com.cn/problem/P16223)
+
 ```c++
 // 旋转卡壳，返回凸包直径的平方
 template<class T>
@@ -890,7 +896,110 @@ T convexDiameter2(const vector<Point<T>> &p)
 
 ```
 
-## 最小矩形覆盖
+## 最小矩形覆盖（最小外接矩形）
+
+给定平面上的若干点，找一个允许任意旋转的矩形，使它覆盖所有点，并且矩形面积最小。
 
 ![](https://oi-wiki.org/geometry/images/rotating-calipers2.png)
+
+首先仍然要理解一个结论：**最小面积外接矩形至少有一条边和凸包的一条边共线**。
+
+> 这里做一个不太严格的证明。
+>
+> ```c++
+>    ───────────────
+>            •
+>         /     \
+>        / 凸包  \
+>   •   /         \   •
+>       \         /
+>        \       /
+>            •
+>    ───────────────
+> ```
+> 假设四条矩形边没有与任何凸包边重合，那么通常是每条边只接触一个凸包顶点。在这种情况下，我们总可以把整个矩形方向在一个很小的角度范围内稍微旋转一点，而这四个支撑顶点暂时不会改变。
+>
+> 在这段“支撑顶点不变”的角度区间内，矩形面积关于旋转角是局部向下凹的，因此不会在区间内部产生严格的最小值；如果恰好存在平坦情况，那么区间端点也能取得同样的最优面积。因此在这种情况下，我们通常会得到一个面积不增大的矩形。因此至少存在一个同样最优的矩形，使得有一条边与凸包边共线。
+
+考虑固定一条凸包边 $AB$ 之后，如何确定外接矩形。我们需要确定剩下的三条边，分别是离 $AB$ 最远的支撑线（到 $AB$ 的距离即为直径），左侧的边（沿 $AB$ 方向投影最小），右侧的边（沿 $AB$ 方向投影最大）。
+
+使用叉积或三角形面积的指针维护凸包直径作为矩形高度。接下来要找沿当前边方向最左的点和当前边方向最右的点。**这里需要使用点积判断**，因为 $\operatorname{dot} (\vec e,P-P_i)$ 表示 $P-P_i$ 在 $\vec e$ 方向上的投影长度再乘一个 $|\vec e|$。
+
+```c++
+// 维护投影最大点指针
+while (dot(e, p[(k + 1) % n] - p[i]) > dot(e, p[k] - p[i]))
+    k = (k + 1) % n;
+
+// 维护投影最小点指针
+while (dot(e, p[(k + 1) % n] - p[i]) > dot(e, p[k] - p[i]))
+    k = (k + 1) % n;
+```
+
+**注意，旋转卡壳找到的是四条支撑线的位置，并不能确定矩形的四角坐标**。
+
+下面考虑如何计算面积和矩形的四个点。
+
+假设当前枚举凸包的一条边 $P_iP_{i+1}$，令 
+
+#### Code
+
+```c++
+template<class T>
+pair<long double, vector<Point<T>>> minRectangleArea(const vector<Point<T>> &p)
+{
+    int n = p.size();
+    int j = 0, k = 0, l = 0;
+
+    auto e = p[1] - p[0];
+    for (int i = 0; i < n; i++)
+    {
+        if (area2(p[0], p[1], p[i]) > area2(p[0], p[1], p[j]))
+            j = i;
+
+        if (dot(e, p[i] - p[0]) > dot(e, p[k] - p[0]))
+            k = i;
+
+        if (dot(e, p[i] - p[0]) < dot(e, p[l] - p[0]))
+            l = i;
+    }
+
+    long double res = numeric_limits<long double>::infinity();
+    vector<Point<T>> ret(4);
+
+    for (int i = 0; i < n; i++)
+    {
+        int ni = (i + 1) % n;
+        auto e = p[ni] - p[i];
+
+        while (area2(p[i], p[ni], p[j]) < area2(p[i], p[ni], p[(j + 1) % n]))
+            j = (j + 1) % n;
+
+        while (dot(e, p[(k + 1) % n] - p[i]) > dot(e, p[k] - p[i]))
+            k = (k + 1) % n;
+
+        while (dot(e, p[(l + 1) % n] - p[i]) < dot(e, p[l] - p[i]))
+            l = (l + 1) % n;
+
+        auto h = area2(p[i], p[ni], p[j]);
+        auto r = dot(e, p[k] - p[i]);
+        auto le = dot(e, p[l] - p[i]);
+        auto E = square(e);
+
+        long double area = (long double) h * (r - le) / square(e);
+        if (area < res)
+        {
+            res = area;
+            Point<T> v = {-e.y, e.x};
+
+            Point<T> A = p[i] + e * (le / E), B = p[i] + e * (r / E);
+            Point<T> s = v * (h / E);
+            Point<T> C = B + s, D = A + s;
+
+            ret = {A, B, C, D};
+        }
+    }
+
+    return {res, ret};
+}
+```
 
