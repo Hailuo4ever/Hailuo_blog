@@ -671,6 +671,8 @@ int pointCircleRelation(const Point<T> &p, const Circle<T> &c)
 
 一种直观的方法是，先真正求出每个向量的角度，然后按照角度排序。C++ 提供了一个库函数 `atan2(y, x)` 用于求出一个向量 $(x,y)$ 的角度，本质上是计算 `tan = y / x` 的反正切。
 
+**注意，`atan2` 通常落在区间 $[-\pi,\pi]$**。
+
 ```c++
 sort(p.begin(), p.end(), [](auto a, auto b)
 {
@@ -688,10 +690,15 @@ sort(p.begin(), p.end(), [](auto a, auto b)
 
 ```c++
 template<class T>
+int half(const Point<T> &p)
+{
+    return p.y < 0 || (p.y == 0 && p.x < 0);
+}
+
+template<class T>
 bool polarCmp(const Point<T> &a, const Point<T> &b)
 {
-    int ha = half(a);
-    int hb = half(b);
+    int ha = half(a), hb = half(b);
 
     if (ha != hb)
         return ha < hb;
@@ -703,7 +710,17 @@ bool polarCmp(const Point<T> &a, const Point<T> &b)
 
     return square(a) < square(b);
 }
+
 ```
+
+> 注：`half(p) == 0` 包括 $y>0$ 以及 $y=0,\ x\ge0$，即 $0^\circ\le\theta<180^\circ$。
+>
+> ```c++
+>         ↑
+>       ↖   ↗
+>      /     \
+> ←?  O------→
+> ```
 
 # 凸包
 
@@ -822,6 +839,8 @@ vector<Point<T>> convexHull(vector<Point<T>> p)
 
 给定 $n$ 个平面点，求其中距离最远的两个点。也就是求 $\max_{i,j} |P_iP_j|$。
 
+#### 思路
+
 首先要理解一个结论：**平面点集的最远点对一定出现在凸包顶点之间**。
 
 > ```c++
@@ -902,6 +921,8 @@ T convexDiameter2(const vector<Point<T>> &p)
 
 ![](https://oi-wiki.org/geometry/images/rotating-calipers2.png)
 
+#### 思路
+
 首先仍然要理解一个结论：**最小面积外接矩形至少有一条边和凸包的一条边共线**。
 
 > 这里做一个不太严格的证明。
@@ -939,7 +960,40 @@ while (dot(e, p[(k + 1) % n] - p[i]) > dot(e, p[k] - p[i]))
 
 下面考虑如何计算面积和矩形的四个点。
 
-假设当前枚举凸包的一条边 $P_iP_{i+1}$，令 
+##### 如何计算面积？
+
+假设当前枚举凸包的一条边 $P_iP_{i+1}$，由于凸包是逆时针的，因此矩形位于这条有向边的左侧。**由于叉积的正负性，区分左右侧是有必要的**。旋转卡壳会找到三个点：$j$：距离当前边最远的点；$k$：沿 $\vec e$ 方向投影最大的点；$l$：沿 $\vec e$ 方向投影最小的点。
+
+```c++
+auto e = p[ni] - p[i]; // 当前枚举的边的向量
+auto h = area2(p[i], p[ni], p[j]); // 三角形面积，用于求矩形高度（除以底边模长）
+auto r = dot(e, p[k] - p[i]); // 两个向量的点积，用于求投影长度（除以底边模长）
+auto le = dot(e, p[l] - p[i]); // 同 r
+auto E = square(e); // 底边模长
+```
+
+矩形宽度为 ${W=\frac{r-le}{|e|}}$，${H=\frac h{|e|}}$。因此矩形面积为 ${S=\frac{h(r-le)}{|e|^2}}$。
+
+##### 如何计算点坐标？
+
+考虑矩形左下角的点，它有两个关系：左边这条矩形边经过 $P_l$ 并垂直于 $\vec e$。
+
+```c++
+        P_l ●
+            |
+            |
+            |
+        A ● ---------->
+              e
+```
+
+容易知道 $\vec e\cdot(P_l-A)=0$，所以 $\vec e\cdot(A-P_i)=\vec e\cdot(P_l-P_i)$。右边已经定义为了 $le$。
+
+假设 $A=P_i+t\vec e$，那么 $A-P_i=t\vec e$，所以 $\vec e\cdot(A-P_i)=t(\vec e\cdot\vec e)=tE$，$tE=le$，有 $t=\frac{le}{E}$。
+
+**因此 $$\boxed{A=P_i+\vec e\frac{le}{E}}$$**。用同样的方法，得到 $\boxed{B=P_i+\vec e\frac rE}$。
+
+现在需要将 $A,B$ 沿矩形向上平移，即可找到 $C,D$，这里需要将底边 $\vec e$ 逆时针旋转 $90 ^\circ$ 得到方向向量 $\vec v$，而平移向量的长度需要用 $h$ 来计算，为 $\boxed{\vec s=\vec v\frac hE}$。然后直接 $\boxed{C=B+\vec s}$，$\boxed{D=A+\vec s}$。并且这里的 $ABCD$ 是满足逆时针排列的。
 
 #### Code
 
@@ -1002,4 +1056,6 @@ pair<long double, vector<Point<T>>> minRectangleArea(const vector<Point<T>> &p)
     return {res, ret};
 }
 ```
+
+# 平面最近点对
 
