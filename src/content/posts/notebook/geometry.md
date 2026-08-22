@@ -489,7 +489,7 @@ T polygonArea2(const vector<Point<T>> &p)
 \sum cross(p[i],p[i+1])
 }$**。
 
-### 重心(useless)
+### 重心
 
 ```c++
 // 计算多边形的重心，返回重心点坐标
@@ -521,8 +521,6 @@ Point<long double> centroid(const vector<Point<T>> &p)
 }
 ```
 
-没啥用。但还是放在板子里吧。
-
 三角形的重心有一个结论，是三个点的向量和并取平均。即 ${G_x=
 \frac{x_A+x_B+x_C}{3}}$，${G_y=
 \frac{y_A+y_B+y_C}{3}}$。
@@ -535,9 +533,13 @@ ${G=\frac{\sum S_iG_i}{\sum S_i}}$，代入 ${G
 
 写成坐标的形式，即为 ${G_x=\frac1{6A}\sum(x_i+x_{i+1})c_i}$，${G_y=\frac1{6A}\sum(y_i+y_{i+1})c_i}$。
 
+或者 $\boxed{ G_x= \frac{ \sum_i(x_i+x_{i+1})c_i }{ 3S } }$，$\boxed{ G_y= \frac{ \sum_i(y_i+y_{i+1})c_i }{ 3S } }$。其中 $S$ 为二倍的有向面积。
+
 > [!NOTE]
 >
 > 注意，多边形的重心并不能看作对所有三角形的重心取平均。例如两个三角形 $S_1=100$，$S_2=1$。显然 $S1$ 的重心会对整个多边形的重心影响更大。
+
+相关题目：[F - Centroid of a Slice](https://atcoder.jp/contests/abc472/tasks/abc472_f)
 
 ### 点在多边形内
 

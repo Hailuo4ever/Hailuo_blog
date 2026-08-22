@@ -241,6 +241,34 @@ int main()
 }
 ```
 
+## 求最大/最小子段和
+
+```c++
+auto get = [&](int l, int r) -> pii
+{
+    int x = a[l], mn = a[l];
+    int y = a[l], mx = a[l];
+
+    for (int i = l + 1; i <= r; i++)
+    {
+        x = min(a[i], x + a[i]);
+        mn = min(mn, x);
+
+        y = max(a[i], y + a[i]);
+        mx = max(mx, y);
+    }
+
+    return {mn, mx};
+};
+
+```
+
+定义 $x$ 为必须以当前位置结尾的最小子段和，$mn$ 表示到目前为止出现过的最小子段和。
+
+同理 $y$ 为必须以当前位置结尾的最大子段和，$mx$ 表示到目前为止出现过的最大子段和。
+
+即 $x$ 和 $y$ 是 $DP$ 状态，$mn$ 和 $mx
+
 # Trick
 
 ## 末尾追加数字的模数转移
