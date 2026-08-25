@@ -280,3 +280,96 @@ $$
 ## 平方和
 
 ${\left(\sum d_i\right)^2=\sum d_i^2+2\sum_{i<j}d_i d_j}$
+
+# 矩阵快速幂
+
+矩阵快速幂用来优化多次重复的线性递推。对于递推次数比较大的 $dp$ 或图论问题，写出初始矩阵和转移矩阵后可以套模板。
+
+## 模板代码（Matrix）
+
+```c++
+struct Matrix
+{
+    int r, c;
+    vector<vector<ll>> mat;
+
+    Matrix(int r, int c) : r(r), c(c), mat(r, vector<ll>(c, 0)) {}
+
+    Matrix operator*(const Matrix &other) const
+    {
+        Matrix res(r, other.c);
+
+        for (int i = 0; i < r; i++)
+        {
+            for (int k = 0; k < c; k++)
+            {
+                if (mat[i][k] == 0)
+                    continue;
+                for (int j = 0; j < other.c; j++)
+                {
+                    res.mat[i][j] = (res.mat[i][j] + mat[i][k] * other.mat[k][j]) % mod;
+                }
+            }
+        }
+        return res;
+    }
+
+    Matrix power(ll k) const
+    {
+        assert(r == c);
+        Matrix res(r, c);
+
+        for (int i = 0; i < r; i++)
+            res.mat[i][i] = 1;
+
+        Matrix base = *this;
+        while (k > 0)
+        {
+            if (k & 1)
+                res = res * base;
+            base = base * base;
+            k >>= 1;
+        }
+        return res;
+    }
+};
+
+```
+
+## 两个矩阵的写法
+
+下面以斐波那契数列为例。
+
+![](https://img.hailuo4ever.com/notebook_maths/matrix1.jpg)
+
+我们首先定义状态 $S_n$，这里不能只保存一个 $f_n$，因为算下一个数还需要 $f_{n-1}$。所以我们定义状态 $S_n= \begin{bmatrix} f_n\\ f_{n-1} \end{bmatrix}$。我们设转移矩阵为 $A= \begin{bmatrix} a&b\\ c&d \end{bmatrix}$，现在希望 $S_n=A S_{n-1}$，而 $S_{n-1} = \begin{bmatrix} f_{n-1}\\ f_{n-2} \end{bmatrix}$，由图中推导过程，可以推出转移矩阵。考虑初始状态，这里找的是 $f_1$ 和 $f_2$，也有题目从 $0$ 开始找。
+
+> [!NOTE]
+>
+> 矩阵的阶数是**为了让下一步可以由当前状态推出，需要保存的状态数**。如果需要保存 $k$ 个状态，状态向量就是 $k \times 1$。
+>
+> 我们考虑 $k$ 阶递推的情况，例如 $f_n = c_1f_{n-1} +c_2f_{n-2} +\cdots +c_kf_{n-k}$，要计算下一项需要保存 $f_{n-1},f_{n-2},\dots,f_{n-k}$，所以定义 $S_{n-1} = \begin{bmatrix} f_{n-1}\\ f_{n-2}\\ \vdots\\ f_{n-k} \end{bmatrix}$。转移矩阵自然是 $k \times k$。
+>
+> 但如果斐波那契还要求 $S_n=f_1+f_2+\cdots+f_n$，那么仅保存 $f_n$ 和 $f_{n-1}$ 就不够了，状态就可能变成 $\begin{bmatrix} f_n\\ f_{n-1}\\ S_n \end{bmatrix}$，此时转移矩阵为 $3\times 3$。
+
+### 有常数项的递推
+
+考虑带有常数项的递推，例如 $x_{n+1}=ax_n+b$，解决办法是人为增加一个永远等于 $1$ 的状态，即 $S_n= \begin{bmatrix} x_n\\ 1 \end{bmatrix}$。于是 $\begin{bmatrix} x_{n+1}\\ 1 \end{bmatrix} = \begin{bmatrix} a&b\\ 0&1 \end{bmatrix} \begin{bmatrix} x_n\\ 1 \end{bmatrix}$。
+
+## 图论应用
+
+写出一张图的邻接矩阵。一个结论是：**$(A^k)_{ij}$ 是从 $i$ 到 $j$ 恰好走 $k$ 条边的方案数**。
+
+考虑矩阵乘法 $(A^2)_{ij} = \sum_k A_{ik}A_{kj}$，它实际上是枚举一个中间点 $k$，看是否存在 $i\to k$ 和 $k\to j$。如果都有，说明找到了一条长度为 $2$ 的路径 $i\to k\to j$。综上，矩阵乘法相当于枚举中间状态，把两段路径拼起来。
+
+但需要注意的是，**矩阵快速幂采用的是列向量的写法**，如果图上有一条边 $u\to v$，那么我们应该让 $T[v][u]=1$，也就是把矩阵转置。此外，根据不同题目，还可以设置虚拟源点作为特殊状态。例如 [P3758 [TJOI2017] 可乐 - 洛谷](https://www.luogu.com.cn/problem/P3758)。
+
+```c++
+Matrix trans(n, n);
+
+for (每条边 u -> v)
+    trans.mat[v][u]++;
+
+trans.mat[i][i]++; // 表示可以在某点停留
+```
+
