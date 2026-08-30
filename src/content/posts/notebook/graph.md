@@ -509,3 +509,103 @@ struct SCC
 **我们可以将已知条件建模成一张蕴含图**。考虑 $A\lor B$ 只有在 $A=0$ 且 $B=0$ 时取到假，**因此存在等价关系 ${A\lor B\iff(\neg A\Rightarrow B)\land(\neg B\Rightarrow A)}$**。显然一个变量需要两个点，我们在这个 $2n$ 节点的图上直接建边。边 $A\rightarrow B$ 表示如果选择 $A$，就一定要选择 $B$。
 
 > 这里的思路是：首先把非法情况写出来，然后取反这个非法情况，得到一个含有 $OR$ 的表达式，然后建图。
+
+考虑到这张蕴含图，由上所述，边 $A\rightarrow B$ 表示如果选择 $A$，就一定要选择 $B$。这启发我们对这张图缩点并跑强联通分量，不难发现 $x_i,\neg x_i$ 不能互相推出，否则必然存在逻辑矛盾。
+
+因此，**`2-SAT` 有解的充要条件是：$\forall i,\; SCC(x_i)\neq SCC(\neg x_i)$**。
+
+考虑如何构造解集，我们根据缩点后的有向无环图的拓扑顺序来选。如果某个状态推出另一个状态，那么我们不能把前者设为“选中”，同时把后者设为“不选”。由于求强联通分量时，编号是按照弹栈顺序的，也就是缩点有向无环图的逆拓扑序，因此按照这个顺序构造即可。
+
+## 常用建模
+
+| 题意               | 逻辑式                             | 写法                                            |
+| ------------------ | ---------------------------------- | ----------------------------------------------- |
+| $x,y$ 至少一个为真 | $x\lor y$                          | `addClause(x,1,y,1)`                            |
+| $x,y$ 不能同时真   | $\neg x\lor\neg y$                 | `addClause(x,0,y,0)`                            |
+| $x,y$ 至多一个真   | 同上                               | `addClause(x,0,y,0)`                            |
+| $x,y$ 恰好一个真   | $(x\lor y)\land(\neg x\lor\neg y)$ | 两个 clause                                     |
+| $x,y$ 相同         | $x\leftrightarrow y$               | `addClause(x, 0, y, 1); addClause(x, 1, y, 0);` |
+| $x,y$ 不同         | $x\oplus y$                        | `addClause(x, 1, y, 1); addClause(x, 0, y, 0);` |
+| $x\Rightarrow y$   | $\neg x\lor y$                     | `addClause(x,0,y,1)`                            |
+| 强制 $x=1$         | $x\lor x$                          | `addClause(x,1,x,1)`                            |
+| 强制 $x=0$         | $\neg x\lor\neg x$                 | `addClause(x,0,x,0)`                            |
+
+## 模板代码
+
+```c++
+struct TwoSat
+{
+    int n;
+    vector<vector<int>> e;
+    vector<bool> ans;
+    TwoSat(int n) : n(n), e(2 * n + 1), ans(n + 1) {}
+
+    void addClause(int u, bool f, int v, bool g)
+    {
+        e[2 * u - 1 + !f].push_back(2 * v - 1 + g);
+        e[2 * v - 1 + !g].push_back(2 * u - 1 + f);
+    }
+
+    bool satisfiable()
+    {
+        vector<int> id(2 * n + 1, -1), dfn(2 * n + 1, -1), low(2 * n + 1, -1);
+        vector<int> stk;
+        int now = 0, cnt = 0;
+
+        auto tarjan = [&](auto &&self, int u) -> void
+        {
+            stk.push_back(u);
+            dfn[u] = low[u] = now++;
+
+            for (auto v: e[u])
+            {
+                if (dfn[v] == -1)
+                {
+                    self(self, v);
+                    low[u] = min(low[u], low[v]);
+                }
+                else if (id[v] == -1)
+                    low[u] = min(low[u], dfn[v]);
+            }
+
+            if (dfn[u] == low[u])
+            {
+                int v;
+                do
+                {
+                    v = stk.back();
+                    stk.pop_back();
+                    id[v] = cnt;
+                } while (v != u);
+                ++cnt;
+            }
+        };
+
+        for (int i = 1; i <= 2 * n; i++)
+            if (dfn[i] == -1)
+                tarjan(tarjan, i);
+
+        for (int i = 1; i <= n; i++)
+        {
+            if (id[2 * i - 1] == id[2 * i])
+                return false;
+
+            ans[i] = id[2 * i - 1] > id[2 * i];
+        }
+
+        return true;
+    }
+};
+
+```
+
+# 欧拉路径
+
+给定一张图，如果存在一条路径，使得图中的每一条边都恰好经过一次，那么这条路径就叫欧拉路径。
+
+| 问题       | 要求                         |
+| ---------- | ---------------------------- |
+| 欧拉路径   | 每条**边**恰好一次           |
+| 欧拉回路   | 每条**边**恰好一次且回到起点 |
+| 哈密顿路径 | 每个**点**恰好一次           |
+| 哈密顿回路 | 每个**点**恰好一次且回到起点 |
