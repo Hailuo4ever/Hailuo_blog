@@ -281,6 +281,10 @@ $$
 
 ${\left(\sum d_i\right)^2=\sum d_i^2+2\sum_{i<j}d_i d_j}$
 
+## 二进制
+
+$\left\lfloor\frac n2\right\rfloor+\left\lfloor\frac n4\right\rfloor+\left\lfloor\frac n8\right\rfloor+\cdots=n-\operatorname{popcount}(n)$
+
 # 矩阵快速幂
 
 矩阵快速幂用来优化多次重复的线性递推。对于递推次数比较大的 $dp$ 或图论问题，写出初始矩阵和转移矩阵后可以套模板。

@@ -599,7 +599,7 @@ struct TwoSat
 
 ```
 
-# 欧拉路径
+# 欧拉路径 / 欧拉回路
 
 给定一张图，如果存在一条路径，使得图中的每一条边都恰好经过一次，那么这条路径就叫欧拉路径。
 
@@ -609,3 +609,183 @@ struct TwoSat
 | 欧拉回路   | 每条**边**恰好一次且回到起点 |
 | 哈密顿路径 | 每个**点**恰好一次           |
 | 哈密顿回路 | 每个**点**恰好一次且回到起点 |
+
+## 判定定理
+
+### 无向图
+
+如果存在欧拉回路，显然当我们经过任意一个点时，只要进入了这个点，就必须通过另外一条边离开这个点。**因此边一定是成对出现的**。
+
+所以普通点的度数一定是偶数。且由于能从起点回到原点，因此起终点也不存在只进不出或者只出不进的情况。
+
+因此，**无向图存在欧拉回路，当且仅当所有有边的点连通，并且所有点度数均为偶数**。
+
+我们考虑欧拉路径。欧拉路径和欧拉回路的区别在于允许起点和终点不相同。考虑起点和终点的度数，一个只出一次，一个只进一次，显然是奇度的。因此，**无向图存在欧拉路径，当且仅当所有有边的点连通，并且奇度顶点数量为 $0$ 或 $2$**。
+
+### 有向图
+
+有向图需要分别考虑入度和出度。考虑欧拉回路，如果要回到起点，每个点都必须满足入度和出度相同。因此，**有向图存在欧拉回路，当且仅当所有有边的点连通，并且对所有点，有 $in[u]=out[u]$**。
+
+考虑有向图的欧拉路径，起点比普通点多出去一次，有 $out[S]=in[S]+1$；终点比普通点多进来一次，有 $in[T]=out[T]+1$。其余点均有 $in[u]=out[u]$。因此，**有向图存在非闭合欧拉路径时，恰好有一个起点的 `out - in = 1`，恰好有一个终点的 `in = out - 1`，其余点 `in = out`**。
+
+## Hierholzer 算法
+
+Hierholzer 的本质是特殊一些的 DFS，核心是**确定一条边在最终欧拉路中的位置**。
+
+在 DFS 过程中，如果简单地看到没走过的边就走，容易直接进循环，但并没有验证完其他的边。因此我们需要**一直走没走过的边，直到无路可走时，再把当前点加入答案**。大致思路如下：
+
+```c++
+dfs(u)
+{
+    while (u 还有没有走过的边)
+    {
+        取一条 u -> v
+        删除这条边
+        dfs(v)
+    }
+
+    ans.push_back(u);
+}
+```
+
+> [!NOTE]
+>
+> 1. 由于 DFS 的递归是从深到浅 `return` 的，所以最终答案需要反转。
+>
+> 2. 对于无向图，我们需要给两条边赋予相同编号，防止重复走。
+> 3. 如果每次 DFS 都从头扫一遍每个点的邻接情况，可能会导致复杂度变差，因此记录 `cur[u]` 表示 $u$ 的邻接表已经扫描到哪里。
+
+[记录详情 - 洛谷 | P7771 有向图欧拉路径](https://www.luogu.com.cn/record/296325313)
+
+[记录详情 - 洛谷 | P2731 无向图欧拉路径](https://www.luogu.com.cn/record/296322944)
+
+## 模板代码
+
+```c++
+struct Euler
+{
+    int n, m = 0, type = 0;
+    bool dir; // true 有向图，false 无向图
+    vector<vector<pii>> adj;
+    vector<int> deg;
+
+    Euler(int n, bool dir) : n(n), dir(dir), adj(n + 1), deg(n + 1) {}
+
+    void addEdge(int u, int v)
+    {
+        adj[u].eb(v, ++m);
+
+        if (dir)
+            deg[u]++, deg[v]--;
+        else
+            adj[v].eb(u, m), deg[u]++, deg[v]++;
+    }
+
+    int getStart()
+    {
+        if (!m)
+            return type = 2, 1;
+
+        if (dir)
+        {
+            int s = -1, cntS = 0, cntT = 0;
+
+            for (int u = 1; u <= n; u++)
+            {
+                if (deg[u] == 1)
+                    cntS++, s = u;
+                else if (deg[u] == -1)
+                    cntT++;
+                else if (deg[u] != 0)
+                    return -1;
+            }
+
+            if (cntS == 1 && cntT == 1)
+                return type = 1, s;
+
+            if (cntS || cntT)
+                return -1;
+        }
+        else
+        {
+            int s = -1, cnt = 0;
+
+            for (int u = 1; u <= n; u++)
+                if (deg[u] & 1)
+                {
+                    cnt++;
+                    if (s == -1)
+                        s = u;
+                }
+
+            if (cnt == 2)
+                return type = 1, s;
+
+            if (cnt)
+                return -1;
+        }
+
+        type = 2;
+        for (int u = 1; u <= n; u++)
+            if (!adj[u].empty())
+                return u;
+
+        return -1;
+    }
+
+    vector<int> work()
+    {
+        type = 0;
+        int s = getStart();
+
+        if (s == -1)
+            return {};
+
+        for (int u = 1; u <= n; u++)
+            sort(all(adj[u]));
+
+        vector<int> cur(n + 1), ans;
+        vector<char> vis(m + 1);
+
+        auto dfs = [&](auto &&self, int u) -> void
+        {
+            while (cur[u] < adj[u].size())
+            {
+                auto [v, id] = adj[u][cur[u]++];
+
+                if (vis[id])
+                    continue;
+
+                vis[id] = true;
+                self(self, v);
+            }
+
+            ans.eb(u);
+        };
+
+        dfs(dfs, s);
+
+        if (ans.size() != m + 1)
+            return type = 0, vector<int>{};
+
+        reverse(all(ans));
+        return ans;
+    }
+};
+
+```
+
+```c++
+Euler e(n, false); // 无向图
+Euler e(n, true); // 有向图
+
+for (int i = 1; i <= m; i++)
+{
+    int u, v;
+    cin >> u >> v;
+    e.addEdge(u, v);
+}
+
+auto ans = e.work();
+```
+
