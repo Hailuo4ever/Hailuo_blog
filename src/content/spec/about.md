@@ -20,7 +20,7 @@ QQ: 3175947757
 
 # About This Site
 
-目前的技术方案：使用 Astro + Fuwari 搭建，并托管在 Cloudflare Pages 上，由于我对前端知识了解不多，所以欢迎大家指导hhh
+目前的技术方案：使用 Astro + Firefly 搭建，并托管在 Cloudflare Workers 上，由于我对前端知识了解不多，所以欢迎大家指导hhh
 
 本站会记录一些我平常的想法，可能是技术笔记，也可能是一些随笔和日记。希望自己可以对技术和生活保持热爱，一直一直更新下去。
 

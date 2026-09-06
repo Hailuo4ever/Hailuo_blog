@@ -1,76 +1,45 @@
 # Hailuo4ever
 
-[中文](#中文) | [English](#english)
+Hailuo 的个人博客，使用 Astro + [Firefly](https://github.com/CuteLeaf/Firefly) 构建，部署在 Cloudflare Workers。
 
-Hailuo4ever is Hailuo's personal blog, built with Astro and Fuwari, and deployed on Cloudflare Pages.
+在线地址：[blog.hailuo4ever.com](https://blog.hailuo4ever.com/)
 
-## 中文
+记录算法学习、竞赛题解、课程笔记、随笔和日常生活。提供 Firefly 原生归档、标签与分类筛选、Pagefind 全文搜索、响应式目录、代码高亮、LaTeX 和 Giscus 评论。
 
-这是 Hailuo 的个人博客，用来记录技术学习、算法训练、竞赛题解、课程笔记、随笔日记和一些平常的想法。网站基于 Astro + Fuwari 搭建，并在原模板基础上加入了归档视图、题目搜索、文章状态、阅读体验和 Cloudflare 部署相关改造。
+## 本地开发
 
-在线地址: <https://blog.hailuo4ever.com/>
-
-### 主要内容
-
-- 算法笔记: AcWing 基础课与提高课、常见算法专题整理。
-- 竞赛题解: Codeforces、AtCoder、Nowcoder、蓝桥杯、洛谷、ICPC/CCPC 等比赛记录。
-- 课程笔记: 离散数学、TRIZ 等学校课程内容。
-- 生活记录: 日记、随笔、个人想法和成长记录。
-- 使用说明: 一些工具、网络和站点相关教程。
-
-### 页面与功能
-
-- 主页: 展示最新文章、个人简介、标签、分类和个人链接。
-- 归档: 支持时间线、文件夹、日历三种查看方式，并区分正在编辑的文章。
-- 关于: 包含个人介绍、联系方式、站点说明和更新日志。
-- 友链: 展示朋友博客链接。
-- 搜索: 使用 Pagefind 做全文搜索，并额外支持竞赛题目关键词搜索。
-- 文章页: 支持右侧目录、Giscus 评论、阅读时间、LaTeX、代码高亮、标题折叠、GitHub 卡片、提示块和音乐播放器等扩展。
-
-### 技术栈
-
-- Astro
-- Svelte
-- Tailwind CSS
-- Fuwari
-- Pagefind
-- Expressive Code
-- KaTeX
-- Giscus
-- Cloudflare Pages / Wrangler
-
-### 本地开发
-
-需要 Node.js 20 或更高版本，并使用 pnpm 安装依赖。
+使用 Node.js 24（见 `.node-version`）和 `package.json` 锁定的 pnpm 11.22.0。
 
 ```sh
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-常用命令:
-
-| 命令 | 说明 |
+| 命令 | 用途 |
 | --- | --- |
-| `pnpm dev` | 启动本地开发服务器 |
-| `pnpm build` | 构建生产版本，生成搜索索引，并校验文章输出 |
-| `pnpm preview` | 构建后使用 Wrangler 本地预览 |
-| `pnpm deploy` | 构建并部署到 Cloudflare |
-| `pnpm check` | 运行 Astro 检查 |
-| `pnpm format` | 使用 Biome 格式化 `src` 目录 |
-| `pnpm lint` | 使用 Biome 检查并修复 `src` 目录 |
-| `pnpm new-post <filename>` | 创建一篇新文章 |
-| `pnpm verify:posts` | 校验文章生成结果和归档数据 |
+| `pnpm check` | Astro 类型与组件检查 |
+| `pnpm type-check` | TypeScript 检查 |
+| `pnpm build` | 清理缓存、生成静态页面及搜索索引、核对文章产物 |
+| `pnpm preview` | 构建后启动本地 Wrangler 预览 |
+| `pnpm deploy` | 构建并发布到现有 `hailuoblog` Worker |
+| `pnpm new-post <filename>` | 创建文章，支持多级目录 |
+| `pnpm test:build-safety` | 缓存清理与文章完整性回归测试 |
+| `pnpm test:luogu-format` | 洛谷格式化工具测试 |
+| `pnpm test:markdown-compat` | 旧标题锚点与音乐指令回归测试 |
+| `pnpm verify:posts` | 比对源码、路由、归档、RSS 和站点地图 |
+| `pnpm verify:migration` | 一次性核对 Fuwari 迁移基线；后续正常修改旧文章会导致此项失败 |
+| `pnpm luogu:format` / `pnpm luogu:format:gui` | 保留的洛谷格式化工具 |
 
-### 写作格式
+Windows 下重新构建前，应先停止正在使用 `dist` 的 Wrangler 预览，避免文件锁阻止缓存清理。Pagefind 需要生产构建，请使用 `pnpm preview` 验证实际搜索。
 
-文章存放在 `src/content/posts/` 下，支持多级目录。新文章默认处于 `editing` 状态，可以在完成后改为 `published`。
+## 写作与配置
+
+文章仍位于 `src/content/posts/`，支持 Markdown / MDX 与多级目录。现有正文、图片路径和文件名保持原样。
 
 ```yaml
 ---
 title: 文章标题
-published: 2026-06-10
-status: editing
+published: 2026-09-06
 description: ''
 image: ''
 tags: []
@@ -80,118 +49,24 @@ lang: ''
 ---
 ```
 
-字段说明:
+`draft: true` 的文章不进入生产产物。历史 `status: editing` 字段保留为元数据，不再显示独立状态，也不影响公开范围。旧音乐指令继续支持 `title`、`artist`、`cover`、`mp3`、`flac` 和 `src`。
 
-- `title`: 文章标题。
-- `published`: 发布时间。
-- `status`: `editing` 或 `published`。
-- `description`: 文章描述。
-- `image`: 封面图片。
-- `tags`: 标签列表。
-- `category`: 分类，例如 `Algorithm`、`Diary`、`Instructions`、`school_lecture`。
-- `draft`: 是否为草稿。
-- `lang`: 当文章语言与站点默认语言不同时填写。
+个人设置位于 `src/config/`：站点、头像、横幅、导航、友链、评论和侧栏分别管理。默认采用现有绿色主题、头像与横幅，关闭演示页面、广告、看板娘、背景视频、全站音乐和随机封面。
 
-### 部署
+文章 URL 保留原 Astro 5 的 slug 规则；Giscus 沿用 `Hailuo4ever/Hailuo_blog` 的 `pathname` 映射。不要在迁移后重新命名现有文章目录，否则会改变链接及评论关联。
 
-站点使用 Astro Cloudflare adapter。`pnpm build` 会生成 `dist/`，修正 Cloudflare 路由，生成 Pagefind 搜索索引，并执行文章校验。`pnpm deploy` 会在构建完成后通过 Wrangler 部署。
+## 部署与迁移记录
 
-### 许可
+站点全部静态生成，由 Cloudflare Workers Static Assets 提供服务；配置文件为 `wrangler.jsonc`，服务名称 `hailuoblog`。不需要 KV、数据库或新的云端凭据。
 
-项目代码继承 MIT License。站内文章和图片等内容版权归作者所有，除非另有说明。
+- [迁移说明](docs/migration/firefly-migration.md)
+- [构建安全与发布流程](docs/cloudflare-build-safety.md)
+- [迁移前内容与 URL 基线](docs/migration/fuwari-baseline.json)
 
-## English
+保留 `public/_headers` 中现有的缓存与 `X-Robots-Tag` 设置。GitHub Actions 对主分支执行检查和构建，只有已配置 Cloudflare 凭据时才执行部署。
 
-This is Hailuo's personal blog for technical notes, algorithm training, contest solutions, course notes, diaries, and everyday thoughts. It is built with Astro + Fuwari and customized with archive views, problem search, post status tracking, reading improvements, and Cloudflare deployment support.
+## License / English
 
-Site: <https://blog.hailuo4ever.com/>
+Hailuo's personal blog, built with Astro and Firefly and hosted on Cloudflare Workers. It contains algorithm notes, contest solutions, study notes, and personal writing. Use Node.js 24 and the pinned pnpm version; run `pnpm preview` to test the production search index locally.
 
-### Content
-
-- Algorithm notes: AcWing courses and algorithm topic notes.
-- Contest solutions: Codeforces, AtCoder, Nowcoder, Lanqiao Cup, Luogu, ICPC/CCPC, and more.
-- Course notes: Discrete Mathematics, TRIZ, and other school courses.
-- Life records: diaries, essays, personal thoughts, and growth logs.
-- Instructions: tutorials related to tools, network setup, and this site.
-
-### Pages and Features
-
-- Home: latest posts, profile, tags, categories, and profile links.
-- Archive: timeline, folder, and calendar views, with a visible editing status for unfinished posts.
-- About: personal introduction, contact information, site notes, and update log.
-- Friend Links: links to friends' blogs.
-- Search: Pagefind full-text search plus keyword search for contest problems.
-- Post page: table of contents, Giscus comments, reading time, LaTeX, code highlighting, collapsible headings, GitHub cards, admonitions, and a music player.
-
-### Tech Stack
-
-- Astro
-- Svelte
-- Tailwind CSS
-- Fuwari
-- Pagefind
-- Expressive Code
-- KaTeX
-- Giscus
-- Cloudflare Pages / Wrangler
-
-### Local Development
-
-Node.js 20 or later is required. Dependencies are managed with pnpm.
-
-```sh
-pnpm install
-pnpm dev
-```
-
-Common commands:
-
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the local development server |
-| `pnpm build` | Build the production site, generate the search index, and verify posts |
-| `pnpm preview` | Build and preview locally with Wrangler |
-| `pnpm deploy` | Build and deploy to Cloudflare |
-| `pnpm check` | Run Astro checks |
-| `pnpm format` | Format the `src` directory with Biome |
-| `pnpm lint` | Check and fix the `src` directory with Biome |
-| `pnpm new-post <filename>` | Create a new post |
-| `pnpm verify:posts` | Verify generated post routes and archive data |
-
-### Writing
-
-Posts are stored under `src/content/posts/` and can use nested folders. New posts are created with the `editing` status and can be changed to `published` when finished.
-
-```yaml
----
-title: Post Title
-published: 2026-06-10
-status: editing
-description: ''
-image: ''
-tags: []
-category: ''
-draft: false
-lang: ''
----
-```
-
-Field notes:
-
-- `title`: post title.
-- `published`: publish date.
-- `status`: `editing` or `published`.
-- `description`: post description.
-- `image`: cover image.
-- `tags`: tag list.
-- `category`: category, such as `Algorithm`, `Diary`, `Instructions`, or `school_lecture`.
-- `draft`: whether the post is a draft.
-- `lang`: set this only when the post language differs from the site language.
-
-### Deployment
-
-The site uses the Astro Cloudflare adapter. `pnpm build` outputs `dist/`, patches Cloudflare routes, generates the Pagefind index, and verifies post output. `pnpm deploy` builds the site and deploys it through Wrangler.
-
-### License
-
-The project code follows the MIT License. Site articles and images belong to the author unless otherwise stated.
+Theme code follows the MIT License, retaining the Fuwari and Firefly copyright notices. Articles and personal images belong to their respective authors unless otherwise stated.

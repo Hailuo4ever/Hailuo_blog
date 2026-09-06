@@ -1,57 +1,36 @@
 # Cloudflare 构建安全约定
 
-## 必须保持的不变量
+## 当前部署结构
 
-- Cloudflare Workers Builds 的构建命令必须是 `pnpm run build`，不要直接调用 `astro build`。
-- 生产与非生产触发器的 **Build caching** 必须关闭。Cloudflare 的构建缓存是项目级共享状态，曾恢复过期的 Astro 内容数据。
-- Astro 的活动缓存目录必须保持为 `./.astro-build-cache`，不能改回默认的 `node_modules/.astro`。
-- 在 `src/content/config.ts` 仍使用旧式 `type: "content"`，且页面仍调用 `entry.slug` / `entry.render()` 期间，`astro.config.mjs` 必须保持 `legacy.collections: true`。删除它会重新启用 Astro 5 的 Content Layer 兼容桥，Cloudflare 冷构建可能只看到部分文章。
-- 每次构建前必须删除 `.astro-build-cache`、`node_modules/.astro` 和 `dist`。
-- 每次 `pnpm run build` 必须先通过 `prebuild` 中的构建安全测试。
-- 部署前，`verify-posts` 输出的源码文章、生成路由、归档条目和状态条目数量必须相等。
+博客已迁移到 Firefly，使用显式内容 loader、`entry.id` 和 `render(entry)`，不再使用 Astro 5 旧式集合兼容桥。所有启用页面均静态生成到 `dist/`，由 `hailuoblog` Worker 的 Static Assets 托管，不再依赖 `dist/_worker.js` 或 `_routes.json` 补丁。
 
-这些约束分别由以下文件执行：
+## 必须保持的约束
 
-- `astro.config.mjs`
-- `scripts/prepare-build.js`
-- `scripts/prepare-build.test.js`
-- `scripts/verify-posts.js`
-- `package.json`
-- `.github/workflows/build.yml`
+- Cloudflare Workers Builds 构建命令为 `pnpm run build`。
+- 生产与非生产触发器的 Build caching 均保持关闭；该项目曾因恢复过期内容缓存而漏文章。
+- 活动缓存目录保持 `./.astro-build-cache`。
+- 每次构建前清理 `.astro-build-cache`、`node_modules/.astro` 和 `dist`；清理失败立即终止。
+- 保留 `prebuild` 中的构建安全测试。
+- 每次构建后按公开源码集合核对文章路由、归档、RSS 与站点地图；数量相同之外，URL 集合也必须一致。
+- `draft: true` 不生成公开文章页面；`status: editing` 不等同于草稿。
+- 本地、GitHub Actions 和 Cloudflare 使用 Node.js 24、锁定的 pnpm 与 `pnpm install --frozen-lockfile`。
 
-## 发布前检查
+`verify-posts` 不再读取旧 Svelte 序列化数据或检查状态徽章，而是解析 Firefly 的归档链接并比对实际产物。迁移基线检查 `verify:migration` 只用于此次主题迁移，不加入未来日常构建，避免阻止正常文章编辑。
 
-运行：
+## 发布流程
 
-```sh
-pnpm run build
-```
+1. 在迁移分支完成 `pnpm check`、`pnpm type-check`、相关测试和 `pnpm build`。
+2. 通过 Wrangler 本地预览检查文章直达、分页、搜索、RSS、评论和 404。
+3. 确认待发布提交及最近正常的生产部署版本。
+4. 在 Cloudflare 中保持 Build caching 关闭，首次迁移发布前执行 Clear build cache。
+5. 通过现有流水线或 `pnpm deploy` 发布已验证的提交。
+6. 复查线上首页、深层文章、搜索资源、RSS 与 Giscus 关联；如有文章丢失或路由故障，回滚到迁移前生产版本。
 
-成功日志的最后部分必须包含类似下面的内容；具体数字会随文章增加而变化，但四个数字必须相等：
+此次开发只进行本地验收，不执行生产发布或修改云端设置。
 
-```text
-[verify-posts] 83 visible source posts, 83 generated routes, 83 archive entries, 83 tracked statuses.
-```
+## 构建失败处理
 
-如果构建未运行安全测试、未清理缓存或四个数字不相等，不得部署。
-
-## 数量不一致时的恢复步骤
-
-1. 停止当前部署，不要删除或绕过 `verify-posts`。
-2. 在 Cloudflare Dashboard 打开 **Workers & Pages → hailuoblog → Settings → Builds**。
-3. 确认构建命令仍为 `pnpm run build`，并确认 **Build caching** 处于关闭状态。
-4. 确认 `astro.config.mjs` 仍设置了 `legacy.collections: true`；除非已经完整迁移到显式 loader、`entry.id` 和 `render(entry)`，否则不得删除。
-5. 执行 **Clear build cache**。
-6. 对同一个 Git commit 重新构建；不要通过额外提交掩盖平台缓存问题。
-7. 只有在四项文章清单数量一致后才允许部署。
-
-## 何时必须主动清理 Cloudflare 构建缓存
-
-出现以下任一改动后，在下一次生产构建前清理一次：
-
-- Astro 或 `@astrojs/cloudflare` 的主版本升级；
-- `cacheDir`、内容集合 loader/schema 或构建命令发生变化；
-- Cloudflare 的 Build caching 被重新启用过；
-- 日志出现恢复 `node_modules/.astro` 或构建产物缓存的迹象。
-
-Cloudflare 将构建缓存定义为项目级共享缓存，详见 [Workers Builds build caching](https://developers.cloudflare.com/workers/ci-cd/builds/build-caching/)。
+- 数量或 URL 集合不一致时，不绕过校验；停止发布，清理平台缓存，并在同一提交重建。
+- 升级 Astro、修改 loader 或缓存目录后，在下一次生产构建前清理 Cloudflare 缓存。
+- Windows 上出现清理 `dist` 的 EPERM 时，先停止 Wrangler 预览，再重建。
+- `wrangler dev` 的 workerd 必须支持配置中的兼容日期；目前锁定工具支持 `2026-09-04`。

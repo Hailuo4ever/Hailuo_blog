@@ -1,0 +1,6 @@
+packages:
+  - '.'
+storeDir: .pnpm-store/firefly-migration
+allowBuilds:
+  esbuild: true
+  workerd: true
