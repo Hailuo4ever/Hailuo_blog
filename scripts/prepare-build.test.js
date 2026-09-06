@@ -67,7 +67,7 @@ test("runs cache preparation before Astro without relying on --force", () => {
 
 	assert.match(
 		packageJson.scripts.build,
-		/^node scripts\/prepare-build\.js && astro build &&/,
+		/^node scripts\/prepare-build\.js && .*astro build &&/,
 	);
 	assert.doesNotMatch(packageJson.scripts.build, /astro build --force/);
 });
@@ -108,22 +108,18 @@ test("runs build safety tests automatically before every package build", () => {
 	);
 });
 
-test("uses the native legacy collection runtime for the legacy entry API", () => {
+test("uses an explicit loader instead of the removed legacy collection bridge", () => {
 	const astroConfig = fs.readFileSync(
 		new URL("../astro.config.mjs", import.meta.url),
 		"utf8",
 	);
 	const contentConfig = fs.readFileSync(
-		new URL("../src/content/config.ts", import.meta.url),
+		new URL("../src/content.config.ts", import.meta.url),
 		"utf8",
 	);
 
-	assert.match(contentConfig, /type:\s*["']content["']/);
-	assert.match(
-		astroConfig,
-		/legacy:\s*{[\s\S]*?collections:\s*true[\s\S]*?}/,
-		"legacy collection definitions must not use Astro's Content Layer compatibility bridge",
-	);
+	assert.match(contentConfig, /loader:\s*glob\(/);
+	assert.doesNotMatch(astroConfig, /legacy:\s*{/);
 });
 
 test("ignores the project-local pnpm store", () => {

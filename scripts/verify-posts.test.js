@@ -3,114 +3,74 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { verifyPosts } from "./verify-posts.js";
 
-const verifyModule = await import("./verify-posts.js");
-
-assert.equal(
-	typeof verifyModule.verifyPosts,
-	"function",
-	"verify-posts should export a testable verifyPosts function",
-);
-
-const { PostVerificationError, verifyPosts } = verifyModule;
-
-function createFixture() {
-	return fs.mkdtempSync(path.join(os.tmpdir(), "hailuo-verify-posts-"));
-}
-
-function writePost(rootDir, id, status = "published") {
-	const postPath = path.join(
-		rootDir,
-		"src",
-		"content",
-		"posts",
-		...id.split("/"),
+function fixture(t) {
+	const root = fs.mkdtempSync(path.join(os.tmpdir(), "firefly-posts-"));
+	t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+	const write = (file, value) => {
+		const dest = path.join(root, file);
+		fs.mkdirSync(path.dirname(dest), { recursive: true });
+		fs.writeFileSync(dest, value);
+	};
+	write(
+		"src/content/posts/Notes/Hello World.md",
+		"---\ntitle: Test\npublished: 2026-01-01\nstatus: editing\ndraft: false\n---\nVisible",
 	);
-	fs.mkdirSync(path.dirname(postPath), { recursive: true });
-	fs.writeFileSync(
-		postPath,
-		[
-			"---",
-			`title: ${id}`,
-			`status: ${status}`,
-			"draft: false",
-			"---",
-			"",
-			"Fixture body.",
-		].join("\n"),
+	write(
+		"src/content/posts/private.md",
+		"---\ntitle: Private\npublished: 2026-01-01\ndraft: true\n---\nHidden",
 	);
-}
-
-function writeGeneratedPage(rootDir, slug) {
-	const pagePath = path.join(
-		rootDir,
-		"dist",
-		"posts",
-		...slug.split("/"),
-		"index.html",
+	write("dist/posts/notes/hello-world/index.html", "<h1>Test</h1>");
+	write(
+		"dist/archive/index.html",
+		'<a class="archive-post" href="/posts/notes/hello-world/">Test</a>',
 	);
-	fs.mkdirSync(path.dirname(pagePath), { recursive: true });
-	fs.writeFileSync(pagePath, "<!doctype html>");
+	write(
+		"dist/rss.xml",
+		"<rss><channel><item><link>https://blog.hailuo4ever.com/posts/notes/hello-world/</link></item></channel></rss>",
+	);
+	write(
+		"dist/sitemap-0.xml",
+		"<urlset><url><loc>https://blog.hailuo4ever.com/posts/notes/hello-world/</loc></url></urlset>",
+	);
+	return { root, write };
 }
-
-function writeArchive(rootDir, entries) {
-	const archivePath = path.join(rootDir, "dist", "archive", "index.html");
-	const serializedEntries = entries
-		.map(
-			({ id, slug, status = "published" }) =>
-				`&quot;sourcePath&quot;:[0,&quot;${id}&quot;]` +
-				`&quot;status&quot;:[0,&quot;${status}&quot;]` +
-				`&quot;slug&quot;:[0,&quot;${slug}&quot;]`,
-		)
-		.join("");
-
-	fs.mkdirSync(path.dirname(archivePath), { recursive: true });
-	fs.writeFileSync(archivePath, serializedEntries);
-}
-
-test("accepts a complete set of generated post routes", () => {
-	const rootDir = createFixture();
-
-	try {
-		writePost(rootDir, "kept.md");
-		writePost(rootDir, "nested/second.md", "editing");
-		writeGeneratedPage(rootDir, "kept");
-		writeGeneratedPage(rootDir, "nested/second");
-		writeArchive(rootDir, [
-			{ id: "kept.md", slug: "kept" },
-			{ id: "nested/second.md", slug: "nested/second", status: "editing" },
-		]);
-
-		assert.deepEqual(verifyPosts(rootDir), {
-			sourceCount: 2,
-			generatedCount: 2,
-			archiveCount: 2,
-			statusCount: 2,
-		});
-	} finally {
-		fs.rmSync(rootDir, { recursive: true, force: true });
-	}
+test("editing stays public, draft stays private, legacy case/space URL survives", (t) => {
+	assert.equal(verifyPosts(fixture(t).root).sourceCount, 1);
 });
-
-test("reports every missing source post when generated output is incomplete", () => {
-	const rootDir = createFixture();
-
-	try {
-		writePost(rootDir, "kept.md");
-		writePost(rootDir, "missing.md");
-		writeGeneratedPage(rootDir, "kept");
-		writeArchive(rootDir, [{ id: "kept.md", slug: "kept" }]);
-
-		assert.throws(
-			() => verifyPosts(rootDir),
-			(error) => {
-				assert.ok(error instanceof PostVerificationError);
-				assert.match(error.message, /1 generated, 2 source/);
-				assert.match(error.message, /missing\.md/);
-				return true;
-			},
-		);
-	} finally {
-		fs.rmSync(rootDir, { recursive: true, force: true });
-	}
+test("rejects stale routes from removed posts and leaked draft pages", (t) => {
+	const { root, write } = fixture(t);
+	write("dist/posts/private/index.html", "leak");
+	assert.throws(() => verifyPosts(root), /unexpected \/posts\/private\//);
+});
+test("rejects newly added posts missing from cached build", (t) => {
+	const { root, write } = fixture(t);
+	write("src/content/posts/new.md", "---\ntitle: New\n---\nNew");
+	assert.throws(() => verifyPosts(root), /missing \/posts\/new\//);
+});
+test("rejects missing archive entries without depending on island serialization", (t) => {
+	const { root, write } = fixture(t);
+	write("dist/archive/index.html", "<archive-panel></archive-panel>");
+	assert.throws(() => verifyPosts(root), /Archive: missing/);
+});
+test("rejects RSS omissions and stale sitemap URLs", (t) => {
+	const { root, write } = fixture(t);
+	write("dist/rss.xml", "<rss/>");
+	write(
+		"dist/sitemap-0.xml",
+		"<urlset><loc>https://blog.hailuo4ever.com/posts/deleted/</loc></urlset>",
+	);
+	assert.throws(
+		() => verifyPosts(root),
+		/RSS: missing[\s\S]*Sitemap: unexpected/,
+	);
+});
+test("rejects two source files mapping to one legacy slug", (t) => {
+	const { root, write } = fixture(t);
+	write(
+		"src/content/posts/collision.md",
+		"---\ntitle: Duplicate\nslug: notes/hello-world\n---\nDuplicate",
+	);
+	assert.throws(() => verifyPosts(root), /colliding URLs/);
 });
