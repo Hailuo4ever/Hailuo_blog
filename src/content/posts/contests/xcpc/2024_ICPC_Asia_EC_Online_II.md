@@ -1,5 +1,5 @@
 ---
-title: 2024 icpc EC 网络赛 II
+title: 2024 icpc Asia EC 网络赛 II
 published: 2026-09-05
 description: "The 2024 ICPC Asia East Continent Online Contest (II)"
 image: https://img.hailuo4ever.com/cover/xcpc.png
