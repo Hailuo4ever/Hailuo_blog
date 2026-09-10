@@ -2,6 +2,26 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
+	[Key.searchDevNotice]:
+		"検索には本番用インデックスが必要です。pnpm build の後に pnpm exec astro preview を実行してください。",
+	[Key.searchError]: "検索を読み込めませんでした。",
+	[Key.searchRetry]: "再試行",
+	[Key.searchResultCount]: "{count} 件の記事",
+	[Key.searchAllResults]: "すべての検索結果",
+	[Key.searchCategory]: "カテゴリー",
+	[Key.searchAllCategories]: "すべてのカテゴリー",
+	[Key.searchSort]: "並び順",
+	[Key.searchRelevance]: "関連度",
+	[Key.searchNewest]: "新しい順",
+	[Key.searchOldest]: "古い順",
+	[Key.searchTags]: "タグ（すべて一致）",
+	[Key.searchClearFilters]: "絞り込みを解除",
+	[Key.searchPartial]: "一部のキーワードに一致する結果です。",
+	[Key.searchStrict]: "すべての語で検索",
+	[Key.searchRelax]: "いずれかの語で検索",
+	[Key.searchPagination]: "検索結果のページ",
+	[Key.searchPrevious]: "前へ",
+	[Key.searchNext]: "次へ",
 	[Key.home]: "ホーム",
 	[Key.about]: "について",
 	[Key.archive]: "アーカイブ",

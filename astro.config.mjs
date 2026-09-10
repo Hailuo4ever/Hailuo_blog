@@ -140,6 +140,8 @@ export default defineConfig({
 			resolveUrl: (url) => url,
 			animateHistoryBrowsing: false,
 			skipPopStateHandling: (event) => {
+				// The mounted search island restores its own query/filter history.
+				if (document.getElementById("full-search-input") && window.location.pathname.endsWith("/search/")) return true;
 				// 跳过锚点链接的处理，让浏览器原生处理
 				return event.state?.url?.includes("#");
 			},

@@ -1,3 +1,5 @@
+glob: "posts/**/*.html"
+force_language: zh-cn
 exclude_selectors:
   - "span.katex"
   - "span.katex-display"

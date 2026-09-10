@@ -2,6 +2,26 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const en: Translation = {
+	[Key.searchDevNotice]:
+		"Search requires a production index. Run pnpm build, then pnpm exec astro preview.",
+	[Key.searchError]: "Search failed to load. Please retry.",
+	[Key.searchRetry]: "Retry",
+	[Key.searchResultCount]: "Found {count} articles",
+	[Key.searchAllResults]: "View all search results",
+	[Key.searchCategory]: "Category",
+	[Key.searchAllCategories]: "All categories",
+	[Key.searchSort]: "Sort",
+	[Key.searchRelevance]: "Relevance",
+	[Key.searchNewest]: "Newest first",
+	[Key.searchOldest]: "Oldest first",
+	[Key.searchTags]: "Tags (match all)",
+	[Key.searchClearFilters]: "Clear filters",
+	[Key.searchPartial]: "Showing partial keyword matches.",
+	[Key.searchStrict]: "Require all keywords",
+	[Key.searchRelax]: "Match any keyword",
+	[Key.searchPagination]: "Search pagination",
+	[Key.searchPrevious]: "Previous",
+	[Key.searchNext]: "Next",
 	[Key.home]: "Home",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",

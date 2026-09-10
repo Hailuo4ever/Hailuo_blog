@@ -2,6 +2,26 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ko: Translation = {
+	[Key.searchDevNotice]:
+		"검색에는 프로덕션 색인이 필요합니다. pnpm build 후 pnpm exec astro preview를 실행하세요.",
+	[Key.searchError]: "검색을 불러오지 못했습니다.",
+	[Key.searchRetry]: "다시 시도",
+	[Key.searchResultCount]: "게시글 {count}개",
+	[Key.searchAllResults]: "전체 검색 결과",
+	[Key.searchCategory]: "카테고리",
+	[Key.searchAllCategories]: "모든 카테고리",
+	[Key.searchSort]: "정렬",
+	[Key.searchRelevance]: "관련도",
+	[Key.searchNewest]: "최신순",
+	[Key.searchOldest]: "오래된순",
+	[Key.searchTags]: "태그 (모두 일치)",
+	[Key.searchClearFilters]: "필터 지우기",
+	[Key.searchPartial]: "일부 검색어와 일치하는 결과입니다.",
+	[Key.searchStrict]: "모든 검색어 일치",
+	[Key.searchRelax]: "하나 이상의 검색어 일치",
+	[Key.searchPagination]: "검색 결과 페이지",
+	[Key.searchPrevious]: "이전",
+	[Key.searchNext]: "다음",
 	[Key.home]: "홈",
 	[Key.about]: "소개",
 	[Key.archive]: "아카이브",

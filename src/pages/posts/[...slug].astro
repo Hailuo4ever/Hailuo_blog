@@ -250,6 +250,12 @@ const seriesData = await getSeriesPosts(entry);
         {},
       ]}
     >
+      <div hidden data-pagefind-body>
+        <span data-pagefind-meta="description" data-pagefind-weight="3">{entry.data.description}</span>
+        <span data-pagefind-filter="category" data-pagefind-meta="category" data-pagefind-weight="3">{entry.data.category || ""}</span>
+        {entry.data.tags.map(tag => <span data-pagefind-filter="tag" data-pagefind-weight="3">{tag}</span>)}
+        <time data-pagefind-meta="date[datetime]" data-pagefind-sort="date[datetime]" datetime={entry.data.published.toISOString()} />
+      </div>
       {
         usePostCoverOverlay && processedImage && (
           <div class="-mx-6 md:-mx-9 -mt-6 mb-6 h-48 md:h-64 relative onload-animation">

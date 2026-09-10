@@ -1,6 +1,6 @@
 ---
 title: 2026 icpc Asia EC 网络赛 I
-published: 2026-09-05
+published: 2026-09-06
 description: "The 2026 ICPC Asia East Continent Online Contest (I)"
 image: https://img.hailuo4ever.com/cover/xcpc.png
 tags: [算法题解, icpc, 网络赛]
@@ -175,7 +175,7 @@ int main()
 
 每条信息 $q_1,q_2,\ldots,q_k$ 表示 $p_{q_1}<p_{q_2}<\cdots<p_{q_k}$，我们可以将上述约束看成有向边，即 $q_1\to q_2\to\cdots\to q_k$。按照拓扑序给所有的约束填数，但注意要使用小根堆。因为当有多个当前可以放置的点时，需要优先选择编号更小的位置。这样才能保证逆序对数量尽可能小。
 
-在拓扑排序过程中，一个节点的 ${res[u]\neq0}$ 表示点 $u$ 成功进入过拓扑序，并且已经给它分配了排列值。而有环的点不可能进入拓扑排序，因此最后没被处理过的点一定入度 $\ge 1$，根据这个条件判断无解。
+在拓扑排序过程中，一个节点的 ${res[u]\neq0}$ 表示点 $u$ 成功进入过拓扑序，并且已经给它分配了排列值。而有环的点不可能进入拓扑排序，因此最后没被处理过的点一定入度 $\ge 1$，根据这个条件判断无解。即如果参与过约束，但没有被赋值，说明他在环里，整个图无解。
 
 ## Code
 
@@ -368,6 +368,169 @@ int main()
 }
 
 ```
+
+# L -Longest Common Prefix
+
+> 关键词：字典树
+
+## 思路
+
+题目给出 $n$ 个小写字符串。对于每个 $1\le j\le i\le n$，$f_{i,j}$ 表示：从前 $i$ 个字符串中**恰好选择 $j$ 个**，使这 $j$ 个字符串的最长公共前缀尽可能长，这个最大长度就是 $f_{i,j}$。对每个 $i$，要求输出 $\sum_{j=1}^{i}(f_{i,j}\oplus j)$。
+
+看到公共前缀，我们考虑使用字典树，因为在字典树里每个节点天然代表一个前缀。
+
+> ```c++
+> abc
+> abd
+> abe
+> xy
+>     
+>     root
+> ├── a
+> │   └── b
+> │       ├── c
+> │       ├── d
+> │       └── e
+> └── x
+>     └── y
+> ```
+>
+> 对于节点 `ab`，有 $dep(ab)=2$，$cnt(ab)=3$。这意味着有 $3$ 个字符串拥有共同的长度为 $2$ 的前缀 `ab`。因此从这 $3$ 个字符串里选 $1,2,3$ 个均可以，这个节点能够证明：$f_{4,1}\ge2$，$f_{4,2}\ge2$，$f_{4,3}\ge2$。
+
+推广上述情况，设字典树中某个节点为 $u$，它满足 $dep(u)=d$，$cnt(u)=c$。其中 $cnt(u)$ 表示前 $i$ 个字符串中，有多少个字符串经过节点 $u$。因为这个节点代表一个长度为 $d$ 的公共前缀，所以只要 $cnt(u)\ge j$，就可以从这些字符串中挑 $j$ 个，它们都具有这个长度为 $d$ 的公共前缀。因此 $f_{i,j}\ge dep(u)$，对所有这样的节点取最大值，即 $\boxed{f_{i,j}=\max_{cnt(u)\ge j}dep(u)}$。
+
+但这样太慢了，我们考虑如何在线性时间内求解。定义数组 $f[j]$ 表示当前加入的第 $i$ 个字符串的 $f[i][j]$，也就是从目前已经插入 Trie 的所有字符串中，任选 $j$ 个字符串，它们最长公共前缀的最大可能长度。加入一个新字符串时，考虑一个字典树上节点的 $cnt$ 如何变化。插入前，这个节点满足 $cnt(u)=c$，它已经可以作为 $f[1],f[2],\ldots,f[c]$ 的候选答案，插入后，$cnt(u)=c+1$，它能作为 $f[1],f[2],\ldots,f[c],f[c+1]$ 的候选答案。因此真正新增加的资格只有 $j=c+1$。
+
+> [!NOTE]
+>
+> 为什么不用重新更新 $f[1]\sim f[c]$？
+>
+> 假设 $dep(u)=5$，原来 $cnt(u)=3$，那么在这次插入前，这个节点早已经满足 $cnt(u)\ge1$，$cnt(u)\ge2$，$cnt(u)\ge3$，所以它的深度 $5$ 已经参与过了 $f[1],f[2],f[3]$ 的竞争，必然有 $f[1]\ge5$，$f[2]\ge5$，$f[3]\ge5$。
+>
+> 现在从 $3$ 变成 $4$，唯一的新信息是：原来只有 $3$ 个字符串具有这个前缀，现在第一次有 $4$ 个了，所以只需要 $f[4]\gets\max(f[4],5)$。
+
+因此插入时，假设当前走到节点 $u$，深度为 $dep$。插入前 `cnt[u] = c`，新获得资格的是 $j=c+1$，所以更新 `f[j] = max(f[j], dep);`。
+
+同时维护 `res` 的增量即可。
+
+## Code
+
+```c++
+// Problem: L. Longest Common Prefix
+// Contest: QOJ - The 2026 ICPC Asia East Continent Online Contest (I)
+// URL: https://qoj.ac/contest/4071/problem/20027
+// Time: 2026-09-08 09:22:06
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 5e5 + 10;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution{l, r}(rnd);
+}
+
+int f[N];
+ll res;
+
+struct Trie
+{
+    vector<array<int, 26>> son{{}};
+    vector<int> cnt{0};
+
+    void add(string s)
+    {
+        int u = 0, dep = 0;
+        for (char c: s)
+        {
+            int x = c - 'a';
+            dep++;
+            if (!son[u][x])
+            {
+                son[u][x] = son.size();
+                son.push_back({});
+                cnt.push_back(0);
+            }
+            u = son[u][x];
+
+            int j = cnt[u] + 1, t = f[j];
+            f[j] = max(f[j], dep);
+
+            if (f[j] != t)
+                res -= t ^ j, res += f[j] ^ j;
+
+            cnt[u]++;
+        }
+    }
+
+    int query(string s)
+    {
+        int u = 0;
+        for (char c: s)
+        {
+            int x = c - 'a';
+            if (!son[u][x])
+                return 0;
+            u = son[u][x];
+        }
+        return cnt[u];
+    }
+};
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    Trie tr;
+
+    for (int i = 1; i <= n; i++)
+    {
+        string s;
+        cin >> s;
+
+        res += i;
+        tr.add(s);
+        cout << res << endl;
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
 
 # M - Check In
 

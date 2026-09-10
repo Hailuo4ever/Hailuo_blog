@@ -2,6 +2,26 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ru: Translation = {
+	[Key.searchDevNotice]:
+		"Поиск требует готового индекса. Запустите pnpm build, затем pnpm exec astro preview.",
+	[Key.searchError]: "Не удалось загрузить поиск.",
+	[Key.searchRetry]: "Повторить",
+	[Key.searchResultCount]: "Найдено статей: {count}",
+	[Key.searchAllResults]: "Все результаты поиска",
+	[Key.searchCategory]: "Категория",
+	[Key.searchAllCategories]: "Все категории",
+	[Key.searchSort]: "Сортировка",
+	[Key.searchRelevance]: "Релевантность",
+	[Key.searchNewest]: "Сначала новые",
+	[Key.searchOldest]: "Сначала старые",
+	[Key.searchTags]: "Теги (все совпадают)",
+	[Key.searchClearFilters]: "Сбросить фильтры",
+	[Key.searchPartial]: "Показаны частичные совпадения.",
+	[Key.searchStrict]: "Все ключевые слова",
+	[Key.searchRelax]: "Любое ключевое слово",
+	[Key.searchPagination]: "Страницы результатов",
+	[Key.searchPrevious]: "Назад",
+	[Key.searchNext]: "Далее",
 	[Key.home]: "Главная",
 	[Key.about]: "О нас",
 	[Key.archive]: "Архив",

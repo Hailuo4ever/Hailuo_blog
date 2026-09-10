@@ -2,6 +2,26 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_TW: Translation = {
+	[Key.searchDevNotice]:
+		"搜尋需要正式索引，請執行 pnpm build 後使用 pnpm exec astro preview 驗證。",
+	[Key.searchError]: "搜尋載入失敗，請重試。",
+	[Key.searchRetry]: "重試",
+	[Key.searchResultCount]: "找到 {count} 篇文章",
+	[Key.searchAllResults]: "查看完整搜尋結果",
+	[Key.searchCategory]: "分類",
+	[Key.searchAllCategories]: "全部分類",
+	[Key.searchSort]: "排序",
+	[Key.searchRelevance]: "相關度",
+	[Key.searchNewest]: "最新發佈",
+	[Key.searchOldest]: "最早發佈",
+	[Key.searchTags]: "標籤（同時符合）",
+	[Key.searchClearFilters]: "清除篩選",
+	[Key.searchPartial]: "目前顯示部分關鍵字符合的結果。",
+	[Key.searchStrict]: "恢復嚴格搜尋",
+	[Key.searchRelax]: "符合任一關鍵字",
+	[Key.searchPagination]: "搜尋結果分頁",
+	[Key.searchPrevious]: "上一頁",
+	[Key.searchNext]: "下一頁",
 	[Key.home]: "首頁",
 	[Key.about]: "關於我",
 	[Key.archive]: "歸檔",
