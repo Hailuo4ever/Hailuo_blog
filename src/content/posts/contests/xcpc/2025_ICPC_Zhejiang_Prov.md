@@ -110,7 +110,143 @@ int main()
 
 正难则反，我们考虑什么时候答案是 $NO$，我们发现，一条路径如果颜色不相异，当且仅当这条路径上存在两个不同顶点 $u\neq v$ 满足 $c_u=c_v$。因此我们真正要找的是，是否存在两个同色点 $u,v$，使得 $u$ 能在足够少的边数内到达 $v$。这里注意简单路径的定义，我们要找的是 ${\operatorname{dist}(u,v)\le k-1}$，而显然我们只关心最短路。
 
-由于颜色最多只有 $50$ 种，我们可以固定一种颜色，然后把这种颜色的所有点一起处理，
+由于颜色最多只有 $50$ 种，我们可以固定一种颜色，然后把这种颜色的所有点一起处理。但普通的多源 $BFS$ 是不够用的。
+
+>如果多源 $BFS$ 初始化成：
+>
+>```c++
+>dist[1] = 0;
+>dist[5] = 0;
+>
+>q.push(1);
+>q.push(5);
+>```
+>
+>如果 $5$ 一开始被访问成 `dist[5] = 0`，之后从 $1$ 搜到 $5$ 时，普通 $BFS$ 的 `vis[v]` 会直接把 $5$ 给 `continue` 掉，但我们其实想知道路径 $1\to5$ 存在。
+
+我们不仅要知道 $u$ 有没有访问过，还要知道是谁访问了 $u$。我们定义 $from[u][0],from[u][1]$ 表示最多记录两个同色源点，可以在合法距离范围内到达节点 $u$，其中第一个来源是他自己，另一个是任意一个点，我们实际上只需要保存一个来源，因为多了也没什么差别。而根据 $BFS$ 的性质，我们得到的来源就是最短的。
+
+对于每一个颜色，我们最后检查所有同色点的 `from[u][1]`。如果不等于 $0$，说明存在 $s\neq u$ 且 $c_s=c_u=t$，同时 $s\to u$ 存在一条不超过 $k-1$ 条边的路径，所以原断言一定为假。
+
+## Code
+
+```c++
+// Problem: F. Challenge NPC III
+// Contest: QOJ - The 3rd Universal Cup. Stage 36: Wulin
+// URL: https://qoj.ac/contest/2021/problem/10728/statement/zh_cn
+// Time: 2026-09-10 16:58:00
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution{l, r}(rnd);
+}
+
+void solve()
+{
+    int n, m, k;
+    cin >> n >> m >> k;
+
+    vector<vector<int>> g(n + 1), color(51);
+    vector<int> co(n + 1);
+
+    for (int i = 1; i <= n; i++)
+        cin >> co[i], color[co[i]].eb(i);
+
+    for (int i = 1, u, v; i <= m; i++)
+        cin >> u >> v, g[u].eb(v);
+
+    for (int c = 1; c <= 50; c++)
+    {
+        if (color[c].size() <= 1)
+            continue;
+
+        vector<array<int, 2>> from(n + 1);
+        queue<array<int, 3>> q;
+
+        for (auto x: color[c])
+            from[x][0] = x, q.push({x, x, 0});
+
+        while (!q.empty())
+        {
+            auto [u, s, dis] = q.front();
+            q.pop();
+
+            if (dis >= k - 1)
+                continue;
+
+            for (auto v: g[u])
+            {
+                if (from[v][0] && from[v][1])
+                    continue;
+
+                if (from[v][0])
+                {
+                    if (from[v][0] == s || v == s)
+                        continue;
+
+                    from[v][1] = s;
+                }
+                else
+                    from[v][0] = s;
+
+                q.push({v, s, dis + 1});
+            }
+        }
+
+        for (auto u: color[c])
+        {
+            // cerr << "u = " << u << ' ' << from[u][1] << endl;
+            if (from[u][1])
+            {
+                cout << "NO" << endl;
+                return;
+            }
+        }
+    }
+
+    cout << "YES" << endl;
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
 
 # I - Version Number
 

@@ -1,0 +1,8 @@
+# Match Biome's LF output on Windows and Linux without touching binary assets.
+*.ts text eol=lf
+*.mts text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.svelte text eol=lf
+*.astro text eol=lf
+*.json text eol=lf

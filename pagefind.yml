@@ -1,8 +1,0 @@
-glob: "posts/**/*.html"
-force_language: zh-cn
-exclude_selectors:
-  - "span.katex"
-  - "span.katex-display"
-  - "[data-pagefind-ignore]"
-  - ".search-panel"
-  - "#search-panel"

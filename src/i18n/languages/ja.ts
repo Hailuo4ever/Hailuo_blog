@@ -2,6 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
+	[Key.searchProblems]: "問題",
+	[Key.searchArticles]: "記事",
+	[Key.searchProblemHint]: "問題名・番号・アルゴリズムを検索",
+	[Key.searchProblemCount]: "{count} 件の問題",
+	[Key.searchProblemSource]: "出典：",
 	[Key.searchDevNotice]:
 		"検索には本番用インデックスが必要です。pnpm build の後に pnpm exec astro preview を実行してください。",
 	[Key.searchError]: "検索を読み込めませんでした。",

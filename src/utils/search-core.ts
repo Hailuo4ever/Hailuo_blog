@@ -1,6 +1,8 @@
 /** Query state is independent of the UI and Pagefind loader. */
 export type SearchSort = "relevance" | "newest" | "oldest";
+export type SearchType = "problem" | "article";
 export interface SearchState {
+	type: SearchType;
 	q: string;
 	category: string;
 	tags: string[];
@@ -12,6 +14,11 @@ export interface ArticleSearchResult {
 	url: string;
 	excerpt: string;
 	meta: {
+		type?: SearchType;
+		sourceTitle?: string;
+		problemCode?: string;
+		platform?: string;
+		problemId?: string;
 		title: string;
 		date?: string;
 		category?: string;
@@ -51,6 +58,7 @@ export function createSearchLoader(
 	};
 }
 export const emptySearch = (): SearchState => ({
+	type: "problem",
 	q: "",
 	category: "",
 	tags: [],
@@ -62,6 +70,7 @@ export function readSearch(params: URLSearchParams): SearchState {
 	const sort = params.get("sort");
 	const page = Number(params.get("page"));
 	return {
+		type: params.get("type") === "article" ? "article" : "problem",
 		q: (params.get("q") || "").trim(),
 		category: params.get("category") || "",
 		tags: [...new Set(params.getAll("tag").filter(Boolean))],
@@ -72,6 +81,7 @@ export function readSearch(params: URLSearchParams): SearchState {
 }
 export function searchParams(state: SearchState): string {
 	const params = new URLSearchParams();
+	if (state.type === "article") params.set("type", "article");
 	if (state.q.trim()) params.set("q", state.q.trim());
 	if (state.category) params.set("category", state.category);
 	for (const tag of [...new Set(state.tags)]) params.append("tag", tag);
@@ -88,7 +98,7 @@ export async function findArticles(
 	api: PagefindAPI,
 	state: SearchState,
 ): Promise<SearchHit[]> {
-	const filters: Record<string, string | string[]> = {};
+	const filters: Record<string, string | string[]> = { type: state.type };
 	if (state.category) filters.category = state.category;
 	if (state.tags.length) filters.tag = state.tags;
 	const sort =

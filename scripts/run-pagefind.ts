@@ -1,17 +1,66 @@
-// 在 astro build 之后运行 Pagefind。
-// 之前直接在 package.json 里写 `pagefind --site dist`，在 Cloudflare Pages（产物在
-// dist/client）上会索引出 /client/... 的假路径，并且索引输出到 dist/pagefind，
-// 根本不会随站点部署 —— 线上搜索一直是 404。这里对准真正的站点根目录再跑，
-// 索引会输出到 <root>/pagefind，随站点一起上传。
-
-import { spawnSync } from "node:child_process";
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import * as pagefind from "pagefind";
+import {
+	articleGlob,
+	extractProblems,
+	indexOptions,
+	problemHTML,
+} from "./problem-search.mjs";
 import { resolveSiteRoot } from "./site-root";
 
+function verify(result: { errors?: string[] }): void {
+	if (result.errors?.length) throw new Error(result.errors.join("\n"));
+}
+async function htmlFiles(directory: string): Promise<string[]> {
+	const paths: string[] = [];
+	for (const entry of await readdir(directory, { withFileTypes: true })) {
+		const path = join(directory, entry.name);
+		if (entry.isDirectory()) paths.push(...(await htmlFiles(path)));
+		else if (entry.name.endsWith(".html")) paths.push(path);
+	}
+	return paths;
+}
 const siteRoot = resolveSiteRoot();
-
-const result = spawnSync("pagefind", ["--site", siteRoot], {
-	stdio: "inherit",
-	// Windows 下 .bin 里是 .cmd 包装，需要 shell 才能解析到
-	shell: process.platform === "win32",
-});
-process.exit(result.status ?? 1);
+try {
+	const created = await pagefind.createIndex(indexOptions);
+	verify(created);
+	if (!created.index) throw new Error("Pagefind did not create an index");
+	const index = created.index;
+	const articles = await index.addDirectory({
+		path: siteRoot,
+		glob: articleGlob,
+	});
+	verify(articles);
+	let problemCount = 0;
+	const diagnostics: string[] = [];
+	for (const path of await htmlFiles(join(siteRoot, "posts"))) {
+		const extracted = extractProblems(await readFile(path, "utf8"));
+		diagnostics.push(...extracted.diagnostics);
+		for (const record of extracted.records) {
+			verify(
+				await index.addHTMLFile({
+					url: record.url,
+					content: problemHTML(record),
+				}),
+			);
+			problemCount++;
+		}
+	}
+	verify(await index.writeFiles({ outputPath: join(siteRoot, "pagefind") }));
+	const report = {
+		articles: articles.page_count,
+		problems: problemCount,
+		diagnostics,
+	};
+	await writeFile(
+		join(siteRoot, "pagefind", "extraction-report.json"),
+		JSON.stringify(report, null, 2),
+	);
+	console.log(
+		`[search] Indexed ${report.articles} articles and ${problemCount} problems; ${diagnostics.length} extraction notices.`,
+	);
+	for (const notice of diagnostics) console.warn(`[search] ${notice}`);
+} finally {
+	await pagefind.close();
+}

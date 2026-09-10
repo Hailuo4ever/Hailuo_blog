@@ -50,6 +50,9 @@ jobs:
       - name: Test Markdown compatibility
         run: pnpm test:markdown-compat
 
+      - name: Test search and problem extraction
+        run: pnpm test:search && pnpm test:problem-search
+
   build:
     strategy:
       matrix:
@@ -78,6 +81,9 @@ jobs:
 
       - name: Run Astro Build
         run: pnpm run build
+
+      - name: Verify rendered problem extraction
+        run: pnpm test:search-index
 
   deploy:
     runs-on: ubuntu-latest

@@ -2,6 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ko: Translation = {
+	[Key.searchProblems]: "문제",
+	[Key.searchArticles]: "게시글",
+	[Key.searchProblemHint]: "문제 이름, 번호, 알고리즘 검색",
+	[Key.searchProblemCount]: "문제 {count}개",
+	[Key.searchProblemSource]: "출처: ",
 	[Key.searchDevNotice]:
 		"검색에는 프로덕션 색인이 필요합니다. pnpm build 후 pnpm exec astro preview를 실행하세요.",
 	[Key.searchError]: "검색을 불러오지 못했습니다.",

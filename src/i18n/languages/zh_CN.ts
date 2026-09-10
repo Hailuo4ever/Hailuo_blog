@@ -2,6 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_CN: Translation = {
+	[Key.searchProblems]: "题目",
+	[Key.searchArticles]: "文章",
+	[Key.searchProblemHint]: "输入题名、题号或算法关键词",
+	[Key.searchProblemCount]: "找到 {count} 道题",
+	[Key.searchProblemSource]: "来源：",
 	[Key.searchDevNotice]:
 		"搜索需要生产索引，请运行 pnpm build 后使用 pnpm exec astro preview 验证。",
 	[Key.searchError]: "搜索加载失败，请重试。",

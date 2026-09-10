@@ -68,8 +68,13 @@ export function getFileDirFromPath(filePath: string): string {
 	return filePath.replace(/^src\//, "").replace(/\/[^/]+$/, "");
 }
 
-export function getSearchUrl(query: string): string {
-	return url(`/search/?q=${encodeURIComponent(query.trim())}`);
+export function getSearchUrl(
+	query: string,
+	type: "problem" | "article" = "problem",
+): string {
+	return url(
+		`/search/?q=${encodeURIComponent(query.trim())}${type === "article" ? "&type=article" : ""}`,
+	);
 }
 
 // 生成 canonical URL：仅对客户端筛选路由（/archive/ 与 /search/）剥离查询串，

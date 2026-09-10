@@ -8,6 +8,8 @@
   "packageManager": "pnpm@11.22.0",
   "scripts": {
     "test:search": "node scripts/search.test.js",
+    "test:problem-search": "node scripts/problem-search.test.js",
+    "test:search-index": "node scripts/problem-search.test.js --built",
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",

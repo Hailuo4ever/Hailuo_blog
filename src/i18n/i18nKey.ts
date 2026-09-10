@@ -1,4 +1,9 @@
 enum I18nKey {
+	searchProblems = "searchProblems",
+	searchArticles = "searchArticles",
+	searchProblemHint = "searchProblemHint",
+	searchProblemCount = "searchProblemCount",
+	searchProblemSource = "searchProblemSource",
 	searchDevNotice = "searchDevNotice",
 	searchError = "searchError",
 	searchRetry = "searchRetry",

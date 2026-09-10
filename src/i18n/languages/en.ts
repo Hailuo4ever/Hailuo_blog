@@ -2,6 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const en: Translation = {
+	[Key.searchProblems]: "Problems",
+	[Key.searchArticles]: "Articles",
+	[Key.searchProblemHint]: "Search problem names, IDs or algorithms",
+	[Key.searchProblemCount]: "Found {count} problems",
+	[Key.searchProblemSource]: "Source: ",
 	[Key.searchDevNotice]:
 		"Search requires a production index. Run pnpm build, then pnpm exec astro preview.",
 	[Key.searchError]: "Search failed to load. Please retry.",

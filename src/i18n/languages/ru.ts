@@ -2,6 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ru: Translation = {
+	[Key.searchProblems]: "Задачи",
+	[Key.searchArticles]: "Статьи",
+	[Key.searchProblemHint]: "Название, номер задачи или алгоритм",
+	[Key.searchProblemCount]: "Найдено задач: {count}",
+	[Key.searchProblemSource]: "Источник: ",
 	[Key.searchDevNotice]:
 		"Поиск требует готового индекса. Запустите pnpm build, затем pnpm exec astro preview.",
 	[Key.searchError]: "Не удалось загрузить поиск.",

@@ -39,6 +39,7 @@ test("unknown Latin words cannot shorten to variables; quoted groups remain sepa
 
 test("URL state round trips Chinese, repeated tags, sorting, page and partial mode", () => {
 	const state = {
+		type: "article",
 		q: '线段树 "dynamic programming"',
 		category: "Algorithm",
 		tags: ["题解", "icpc"],
@@ -74,11 +75,14 @@ test("strict queries preserve AND tags, phrases, and native date ordering", asyn
 	await findArticles(api, { ...emptySearch(), category: "Algorithm" });
 	assert.deepEqual(calls[0], [
 		'"动态规划" ICPC',
-		{ filters: { category: "Algorithm", tag: ["A", "B"] } },
+		{ filters: { type: "problem", category: "Algorithm", tag: ["A", "B"] } },
 	]);
 	assert.deepEqual(calls[1], [
 		null,
-		{ filters: { category: "Algorithm" }, sort: { date: "desc" } },
+		{
+			filters: { type: "problem", category: "Algorithm" },
+			sort: { date: "desc" },
+		},
 	]);
 });
 test("relaxation ranks by matched term count then reciprocal rank without hydration", async () => {
@@ -135,7 +139,9 @@ test("partial date order is global and preserves filters", async () => {
 	assert.ok(
 		calls.every(
 			(options) =>
-				options.filters.tag[0] === "x" && options.sort.date === "asc",
+				options.filters.type === "problem" &&
+				options.filters.tag[0] === "x" &&
+				options.sort.date === "asc",
 		),
 	);
 });

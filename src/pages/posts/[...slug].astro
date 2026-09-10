@@ -245,12 +245,20 @@ const seriesData = await getSeriesPosts(entry);
   >
     <div
       id="post-container"
+      data-problem-search={!entry.data.draft && !entry.data.password && (entry.filePath || "").replaceAll("\\", "/").includes("src/content/posts/contests/") ? JSON.stringify({
+        sourceTitle: entry.data.title,
+        url: getPostUrlBySlug(entry.id),
+        date: entry.data.published.toISOString(),
+        category: entry.data.category || "",
+        tags: entry.data.tags,
+      }) : undefined}
       class:list={[
         "card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
         {},
       ]}
     >
       <div hidden data-pagefind-body>
+        <span data-pagefind-filter="type" data-pagefind-meta="type">article</span>
         <span data-pagefind-meta="description" data-pagefind-weight="3">{entry.data.description}</span>
         <span data-pagefind-filter="category" data-pagefind-meta="category" data-pagefind-weight="3">{entry.data.category || ""}</span>
         {entry.data.tags.map(tag => <span data-pagefind-filter="tag" data-pagefind-weight="3">{tag}</span>)}
