@@ -1,6 +1,6 @@
 ---
 title: 2025 icpc 浙江省赛
-published: 2026-09-21
+published: 2026-09-08
 description: "The 2025 ICPC China Zhejiang Province Programming Contest (22nd)"
 image: https://img.hailuo4ever.com/cover/xcpc.png
 tags: [算法题解, icpc, 省赛]
@@ -85,6 +85,112 @@ void solve()
             cout << res << endl;
         }
     }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# D - Too Clever by Half
+
+> 关键词：思维、贪心、构造
+
+## 思路
+
+考察每条边被跨过几次。定义 $x_i$ 为机器人从 $i-1$ 向右跨过这条边的次数，也就是 $i-1\xrightarrow{R}i$ 发生了 $x_i$ 次。
+
+显然如果对于某个点向右跨过了 $x_i$ 次，一定也会向左跨过 $x_i$ 次。考虑一个点 $i$，机器人到达 $i$ 有两种方式，一种是从左边进，对应 $x_i$，一种是从右边进，对应 $x_{i+1}$，所以对于非端点的点，有 $\boxed{c_i=x_i+x_{i+1}}$。考虑两个端点，对于位置 $0$，只能从右边的 $1$ 过来；对于位置 $n$，只能从左边的 $n-1$ 过来，所以 $\boxed{c_0=x_1}$，$\boxed{c_n=x_n}$。
+
+观察 $c_i$ 的表达式，发现可以从右向左递推，因此 $x_i$ 是被给定的 $c_i$ 唯一确定的。通过检查 $x_1=c_0$，且所有的 $x_i>0$ 判断无解。
+
+考虑如何构造，如果我们想从 $i-1$ 走到 $i$，它需要 $x_i$ 次向右跨越，我们可以做 $x_i-1$ 次 $RL$，然后最后再 $R$。因为要求字典序最小，我们当然希望 $L$ 出现的尽可能早。走到最后，我们再把 $n$ 个 $L$ 补回来。
+
+## Code
+
+```c++
+// Problem: D. Too Clever by Half
+// Contest: QOJ - The 3rd Universal Cup. Stage 36: Wulin
+// URL: https://qoj.ac/contest/2021/problem/10726/statement/zh_cn
+// Time: 2026-09-10 20:49:29
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution{l, r}(rnd);
+}
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<ll> c(n + 1), x(n + 1);
+    for (int i = 0; i <= n; i++)
+        cin >> c[i];
+
+    x[n] = c[n];
+    for (int i = n - 1; i >= 0; i--)
+        x[i] = c[i] - x[i + 1];
+
+    bool flag = true;
+
+    if (c[0] != x[1])
+        flag = false;
+
+    for (int i = 1; i <= n; i++)
+        if (x[i] <= 0)
+            flag = false;
+
+    if (!flag)
+    {
+        cout << "Impossible" << endl;
+        return;
+    }
+
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= x[i] - 1; j++)
+            cout << "RL";
+        cout << "R";
+    }
+
+    for (int i = 1; i <= n; i++)
+        cout << "L";
+    cout << endl;
 }
 
 int main()
