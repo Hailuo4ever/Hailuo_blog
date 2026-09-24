@@ -1,6 +1,6 @@
 ---
 title: 2025 icpc 西安区域赛
-published: 2026-09-05
+published: 2026-09-14
 description: "The 2025 ICPC Asia Xi'an Regional Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
 tags: [算法题解, icpc, 区域赛]
