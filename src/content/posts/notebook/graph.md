@@ -830,3 +830,677 @@ while (top[u] != top[v]) // 只要不在同一条链，就继续拆
 ```
 
 跨过轻边以后，处理最后一段区间，按照正常 $dfn$ 处理即可。
+
+## Code
+
+### 模板
+
+```c++
+struct HLD
+{
+    int n, cur;
+
+    vector<vector<int>> g;
+    vector<int> fa, dep, siz, son, top, dfn;
+
+    HLD() {}
+
+    HLD(int n)
+    {
+        init(n);
+    }
+
+    void init(int n)
+    {
+        this->n = n;
+        cur = 0;
+
+        g.assign(n + 1, {});
+        fa.assign(n + 1, 0);
+        dep.assign(n + 1, 0);
+        siz.assign(n + 1, 0);
+        son.assign(n + 1, 0);
+        top.assign(n + 1, 0);
+        dfn.assign(n + 1, 0);
+    }
+
+    void addEdge(int u, int v)
+    {
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+
+    void dfs1(int u, int p)
+    {
+        fa[u] = p;
+        dep[u] = dep[p] + 1;
+        siz[u] = 1;
+
+        for (auto v: g[u])
+        {
+            if (v == p)
+                continue;
+
+            dfs1(v, u);
+
+            siz[u] += siz[v];
+
+            if (!son[u] || siz[v] > siz[son[u]])
+                son[u] = v;
+        }
+    }
+
+    void dfs2(int u, int tp)
+    {
+        top[u] = tp;
+        dfn[u] = ++cur;
+
+        if (son[u])
+            dfs2(son[u], tp);
+
+        for (auto v: g[u])
+        {
+            if (v == fa[u] || v == son[u])
+                continue;
+
+            dfs2(v, v);
+        }
+    }
+
+    void work(int root = 1)
+    {
+        dfs1(root, 0);
+        dfs2(root, root);
+    }
+
+    int lca(int u, int v)
+    {
+        while (top[u] != top[v])
+        {
+            if (dep[top[u]] < dep[top[v]])
+                swap(u, v);
+
+            u = fa[top[u]];
+        }
+
+        return dep[u] < dep[v] ? u : v;
+    }
+
+    bool isAncestor(int u, int v)
+    {
+        return dfn[u] <= dfn[v] && dfn[v] <= dfn[u] + siz[u] - 1;
+    }
+};
+```
+
+### 模板（洛谷 P3384）
+
+[R299689230 - 记录详情 - 洛谷](https://www.luogu.com.cn/record/299689230)
+
+```c++
+// Problem: Luogu P3384
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P3384
+// Time: 2026-09-25 21:51:31
+#include <bits/stdc++.h>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+ll mod;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution{l, r}(rnd);
+}
+
+struct HLD
+{
+    int n, cur;
+
+    vector<vector<int>> g;
+    vector<int> fa, dep, siz, son, top, dfn;
+
+    HLD() {}
+
+    HLD(int n)
+    {
+        init(n);
+    }
+
+    void init(int n)
+    {
+        this->n = n;
+        cur = 0;
+
+        g.assign(n + 1, {});
+        fa.assign(n + 1, 0);
+        dep.assign(n + 1, 0);
+        siz.assign(n + 1, 0);
+        son.assign(n + 1, 0);
+        top.assign(n + 1, 0);
+        dfn.assign(n + 1, 0);
+    }
+
+    void addEdge(int u, int v)
+    {
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+
+    void dfs1(int u, int p)
+    {
+        fa[u] = p;
+        dep[u] = dep[p] + 1;
+        siz[u] = 1;
+
+        for (auto v: g[u])
+        {
+            if (v == p)
+                continue;
+
+            dfs1(v, u);
+
+            siz[u] += siz[v];
+
+            if (!son[u] || siz[v] > siz[son[u]])
+                son[u] = v;
+        }
+    }
+
+    void dfs2(int u, int tp)
+    {
+        top[u] = tp;
+        dfn[u] = ++cur;
+
+        if (son[u])
+            dfs2(son[u], tp);
+
+        for (auto v: g[u])
+        {
+            if (v == fa[u] || v == son[u])
+                continue;
+
+            dfs2(v, v);
+        }
+    }
+
+    void work(int root = 1)
+    {
+        dfs1(root, 0);
+        dfs2(root, root);
+    }
+
+    int lca(int u, int v)
+    {
+        while (top[u] != top[v])
+        {
+            if (dep[top[u]] < dep[top[v]])
+                swap(u, v);
+
+            u = fa[top[u]];
+        }
+
+        return dep[u] < dep[v] ? u : v;
+    }
+
+    bool isAncestor(int u, int v)
+    {
+        return dfn[u] <= dfn[v] && dfn[v] <= dfn[u] + siz[u] - 1;
+    }
+};
+
+template<class Info, class Tag>
+struct LazySegmentTree
+{
+    int n;
+    vector<Info> info;
+    vector<Tag> tag;
+
+    LazySegmentTree() : n(0) {}
+
+    LazySegmentTree(int n_, Info v = Info())
+    {
+        init(n_, v);
+    }
+
+    template<class T>
+    LazySegmentTree(const vector<T> &a)
+    {
+        init(a);
+    }
+
+    void init(int n_, Info v = Info())
+    {
+        vector<Info> a(n_ + 1, v);
+        init(a);
+    }
+
+    template<class T>
+    void init(const vector<T> &a)
+    {
+        n = (int) a.size() - 1;
+
+        info.assign(n * 4 + 5, Info());
+        tag.assign(n * 4 + 5, Tag());
+
+        if (n)
+            build(1, 1, n, a);
+    }
+
+    template<class T>
+    void build(int i, int l, int r, const vector<T> &a)
+    {
+        if (l == r)
+        {
+            info[i] = a[l];
+            return;
+        }
+
+        int mid = (l + r) >> 1;
+
+        build(i << 1, l, mid, a);
+        build(i << 1 | 1, mid + 1, r, a);
+
+        pull(i);
+    }
+
+    void pull(int i)
+    {
+        info[i] = info[i << 1] + info[i << 1 | 1];
+    }
+
+    void apply(int i, const Tag &v)
+    {
+        info[i].apply(v);
+        tag[i].apply(v);
+    }
+
+    void push(int i)
+    {
+        apply(i << 1, tag[i]);
+        apply(i << 1 | 1, tag[i]);
+
+        tag[i] = Tag();
+    }
+
+    void modify(int pos, const Info &v)
+    {
+        modify(1, 1, n, pos, v);
+    }
+
+    void modify(int i, int l, int r, int pos, const Info &v)
+    {
+        if (l == r)
+        {
+            info[i] = v;
+            tag[i] = Tag();
+            return;
+        }
+
+        push(i);
+
+        int mid = (l + r) >> 1;
+
+        if (pos <= mid)
+            modify(i << 1, l, mid, pos, v);
+        else
+            modify(i << 1 | 1, mid + 1, r, pos, v);
+
+        pull(i);
+    }
+
+    void rangeApply(int l, int r, const Tag &v)
+    {
+        rangeApply(1, 1, n, l, r, v);
+    }
+
+    void rangeApply(int i, int l, int r, int ql, int qr, const Tag &v)
+    {
+        if (ql <= l && r <= qr)
+        {
+            apply(i, v);
+            return;
+        }
+
+        push(i);
+
+        int mid = (l + r) >> 1;
+
+        if (ql <= mid)
+            rangeApply(i << 1, l, mid, ql, qr, v);
+
+        if (qr > mid)
+            rangeApply(i << 1 | 1, mid + 1, r, ql, qr, v);
+
+        pull(i);
+    }
+
+    Info query(int l, int r)
+    {
+        return query(1, 1, n, l, r);
+    }
+
+    Info query(int i, int l, int r, int ql, int qr)
+    {
+        if (ql <= l && r <= qr)
+            return info[i];
+
+        push(i);
+
+        int mid = (l + r) >> 1;
+
+        if (qr <= mid)
+            return query(i << 1, l, mid, ql, qr);
+
+        if (ql > mid)
+            return query(i << 1 | 1, mid + 1, r, ql, qr);
+
+        return query(i << 1, l, mid, ql, qr) + query(i << 1 | 1, mid + 1, r, ql, qr);
+    }
+
+    template<class F>
+    int findFirst(int l, int r, F &&pred)
+    {
+        return findFirst(1, 1, n, l, r, pred);
+    }
+
+    template<class F>
+    int findFirst(int i, int l, int r, int ql, int qr, F &pred)
+    {
+        if (r < ql || qr < l)
+            return -1;
+
+        if (ql <= l && r <= qr && !pred(info[i]))
+            return -1;
+
+        if (l == r)
+            return l;
+
+        push(i);
+
+        int mid = (l + r) >> 1;
+
+        int res = findFirst(i << 1, l, mid, ql, qr, pred);
+
+        if (res == -1)
+            res = findFirst(i << 1 | 1, mid + 1, r, ql, qr, pred);
+
+        return res;
+    }
+
+    template<class F>
+    int findLast(int l, int r, F &&pred)
+    {
+        return findLast(1, 1, n, l, r, pred);
+    }
+
+    template<class F>
+    int findLast(int i, int l, int r, int ql, int qr, F &pred)
+    {
+        if (r < ql || qr < l)
+            return -1;
+
+        if (ql <= l && r <= qr && !pred(info[i]))
+            return -1;
+
+        if (l == r)
+            return l;
+
+        push(i);
+
+        int mid = (l + r) >> 1;
+
+        int res = findLast(i << 1 | 1, mid + 1, r, ql, qr, pred);
+
+        if (res == -1)
+            res = findLast(i << 1, l, mid, ql, qr, pred);
+
+        return res;
+    }
+};
+
+struct Tag
+{
+    ll add = 0;
+    void apply(const Tag &v)
+    {
+        add = (add + v.add) % mod;
+    }
+};
+
+struct Info
+{
+    ll sum = 0, len = 1;
+    void apply(const Tag &v)
+    {
+        sum = (sum + v.add * len) % mod;
+    }
+};
+
+Info operator+(const Info &a, const Info &b)
+{
+    Info c;
+    c.sum = (a.sum + b.sum) % mod;
+    c.len = a.len + b.len;
+    return c;
+}
+
+void solve()
+{
+    int n, m, r;
+    cin >> n >> m >> r >> mod;
+
+    vector<ll> a(n + 1);
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+
+    HLD hld(n);
+    for (int i = 1, u, v; i <= n - 1; i++)
+        cin >> u >> v, hld.addEdge(u, v);
+
+    hld.work(r);
+
+    vector<Info> b(n + 1);
+    for (int i = 1; i <= n; i++)
+        b[hld.dfn[i]].sum = a[i] % mod;
+
+    LazySegmentTree<Info, Tag> seg(b);
+
+    auto pathAdd = [&](int x, int y, ll z) -> void
+    {
+        z %= mod;
+
+        while (hld.top[x] != hld.top[y])
+        {
+            if (hld.dep[hld.top[x]] < hld.dep[hld.top[y]])
+                swap(x, y);
+
+            seg.rangeApply(hld.dfn[hld.top[x]], hld.dfn[x], Tag{z});
+            x = hld.fa[hld.top[x]];
+        }
+
+        if (hld.dep[x] > hld.dep[y])
+            swap(x, y);
+
+        seg.rangeApply(hld.dfn[x], hld.dfn[y], Tag{z});
+    };
+
+    auto pathQuery = [&](int x, int y) -> ll
+    {
+        ll res = 0;
+
+        while (hld.top[x] != hld.top[y])
+        {
+            if (hld.dep[hld.top[x]] < hld.dep[hld.top[y]])
+                swap(x, y);
+
+            res = (res + seg.query(hld.dfn[hld.top[x]], hld.dfn[x]).sum) % mod;
+
+            x = hld.fa[hld.top[x]];
+        }
+
+        if (hld.dep[x] > hld.dep[y])
+            swap(x, y);
+
+        res = (res + seg.query(hld.dfn[x], hld.dfn[y]).sum) % mod;
+        return res;
+    };
+
+    while (m--)
+    {
+        int op;
+        cin >> op;
+
+        if (op == 1)
+        {
+            ll x, y, z;
+            cin >> x >> y >> z;
+            pathAdd(x, y, z);
+        }
+        else if (op == 2)
+        {
+            int x, y;
+            cin >> x >> y;
+            cout << pathQuery(x, y) << endl;
+        }
+        else if (op == 3)
+        {
+            ll x, z;
+            cin >> x >> z;
+            seg.rangeApply(hld.dfn[x], hld.dfn[x] + hld.siz[x] - 1, Tag{z});
+        }
+        else
+        {
+            int x;
+            cin >> x;
+            cout << seg.query(hld.dfn[x], hld.dfn[x] + hld.siz[x] - 1).sum << endl;
+        }
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# 笛卡尔树
+
+笛卡尔树可以理解为一种把**数组的下标顺序**和**堆的大小关系**同时编码进一棵二叉树的数据结构。常和单调栈、RMQ、树形DP、区间贡献计算、LCA、一些“以区间最小值/最大值为分界点”的分治问题等内容一起出现。
+
+**笛卡尔树 = 中序遍历保持原数组顺序 + 节点权值满足堆性质**。
+
+## 建树方式
+
+> 例如数组 $[3,2,6,1,9]$，对其建立小根笛卡尔树，由于 $a_4=1$ 是最小值，所以 $4$ 一定是根。左边区间是 $3,2,6$，所以 $2$ 是 $4$ 的左儿子。以此类推，最终建树如下：
+>
+> ```c++
+>         4(1)
+>        /    \
+>     2(2)    5(9)
+>    /   \
+> 1(3)   3(6)
+> ```
+> 
+> 可以发现，对上面的树做中序遍历，正好是原数组的下标顺序。
+
+笛卡尔树有一个重要的性质：对于节点 $u$，它左子树中的所有下标都小于 $u$，右子树中的所有下标都大于 $u$，这个性质使得笛卡尔树可以表示数组中的连续区间结构。
+
+根据这个性质，我们可以递归建树。假设当前处理区间 $[l,r]$，设当前处理区间的最小值为 $p$，那么 $p$ 是当前区间的根，$[l,p-1]$ 建左子树，$[p+1,r]$ 建右子树。但这样是很慢的，最坏可能达到 $O(n^2)$。
+
+正确的做法是，使用单调栈 $O(n)$ 地建树。对于**小根笛卡尔树**，维护一个单调递增的栈，我们从左到右处理每个位置 $i$。
+
+> 仍然以 $[3,2,6,1,9]$ 为例，首先向栈里加入 $3$，然后加入 $2$，此时 $3$ 不可能是 $2$ 的祖先，所以弹掉 $3$，现在 $2$ 会成为 $3$ 的父亲，所以从下标角度 `ls[2] = 1`，栈变成 $2$。加入 $6$ 时，$6$ 可以成为 $2$ 的右儿子，即 `rs[2] = 3`，栈变成 $2,6$。加入 $1$ 时，弹掉 $6,2$，被弹出的节点中，最后弹出的 $2$ 会成为 $1$ 的左儿子，即 `ls[4] = 2`。加入 $9$ 后，直接成为 $1$ 的右儿子。
+
+单调栈维护当前笛卡尔树的右链。插入新节点 $i$ 时，把右链末尾所有比 $a_i$ 大的节点弹掉，最后弹出的节点作为 $i$ 的左儿子，而弹完后剩下的栈顶把 $i$ 作为右儿子。
+
+> [!NOTE]
+>
+> 作为左儿子的原因是，前面弹出的节点下标都比新来的节点 $i$ 要小，为了满足中序遍历的性质，必须在 $i$ 的左边。
+
+## 性质
+
+数组区间 $[l,r]$ 中的最小值位置是笛卡尔树中节点 $l,r$ 的 $LCA$。
+
+对于笛卡尔树中的任意节点 $u$，它整棵子树对应原数组的某个连续区间 $[L_u,R_u]$。
+
+## Code
+
+```c++
+void solve()
+{
+    int n;
+    cin >> n;
+
+    vector<int> a(n + 1);
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+
+    vector<int> ls(n + 1, 0), rs(n + 1, 0), stk;
+    for (int i = 1; i <= n; i++)
+    {
+        int lst = 0;
+        while (!stk.empty() && a[stk.back()] > a[i])
+            lst = stk.back(), stk.pop_back();
+
+        if (!stk.empty())
+            rs[stk.back()] = i;
+
+        if (lst)
+            ls[i] = lst;
+
+        stk.push_back(i);
+    }
+}
+```
+
+# 差分约束
+
+差分约束系统，是有很多变量 $x_1,x_2,\dots,x_n$，限制条件基本是 $x_i-x_j\le c$，例如 $\begin{cases} x_2-x_1\le 3\\ x_3-x_2\le 5\\ x_3-x_1\le 10 \end{cases}$。
+
+我们的目标通常是：判断这些条件能否同时满足 / 求一组可行解 / 求某个变量差的最大或最小值
+
+## 原理
+
+考虑一个最短路的性质。假设有边 $u\xrightarrow{w}v$，最短路数组 $dis$ 一定满足 $dis[v]\le dis[u]+w$，移项后 $dis[v]-dis[u]\le w$。
+
+所以我们可以直接对应 $\boxed{x_v-x_u\le c}$ 建边 $\boxed{u\rightarrow v,\quad w=c}$，这就是差分约束的建图思想。
+
+也可以按照最短路的松弛理解，`dis[v] = min(dis[v], dis[u] + c);` 对应 ${x_v\le x_u+c}$，建边 ${u\to v,\ c}$。
+
+> 常见的建边方式：
+>
+> $x_v-x_u\le c$ 对应 $u\to v,\ c$；
+>
+> $x_v-x_u\ge c$ 对应 ${v\to u,\ -c}$；
+>
+> $x_v-x_u=c$ 对应 $\begin{cases} x_v-x_u\le c\\ x_v-x_u\ge c \end{cases}$，即 $u\to v,c$，$v\to u,-c$。
