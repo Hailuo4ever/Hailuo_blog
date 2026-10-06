@@ -1504,3 +1504,116 @@ void solve()
 > $x_v-x_u\ge c$ 对应 ${v\to u,\ -c}$；
 >
 > $x_v-x_u=c$ 对应 $\begin{cases} x_v-x_u\le c\\ x_v-x_u\ge c \end{cases}$，即 $u\to v,c$，$v\to u,-c$。
+
+考虑把所有约束条件左右两边相加，可以得到一个性质：**存在负环是差分约束无解的充要条件**。
+
+考虑到原图并不一定是联通的，我们不妨设 $0$ 号点为超级源点，这样方便跑完整张图。
+
+由于存在负权边，使用 $SPFA$ 是比较方便的。
+
+## Code
+
+[R301438252 - 记录详情 - 洛谷](https://www.luogu.com.cn/record/301438252)
+
+```c++
+// Problem: Luogu P5960
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P5960
+// Time: 2026-10-06 14:38:37
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define fastio() ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+void solve()
+{
+    int n, m;
+    cin >> n >> m;
+
+    vector<vector<pii>> g(n + 1);
+    for (int i = 1, v, u, w; i <= m; i++)
+        cin >> v >> u >> w, g[u].eb(v, w);
+
+    for (int i = 1; i <= n; i++)
+        g[0].eb(i, 0);
+
+    queue<int> q;
+    vector<int> cnt(n + 1), dis(n + 1, inf);
+    vector<bool> vis(n + 1, false);
+    bool fl = false;
+
+    dis[0] = 0, cnt[0] = 0, q.push(0), vis[0] = true;
+    while (!q.empty())
+    {
+        auto u = q.front();
+        q.pop(), vis[u] = false;
+
+        for (auto [v, w]: g[u])
+        {
+            if (dis[v] > dis[u] + w)
+            {
+                dis[v] = dis[u] + w, cnt[v] = cnt[u] + 1;
+
+                if (!vis[v])
+                    vis[v] = true, q.push(v);
+            }
+
+            if (cnt[v] > n)
+            {
+                fl = true;
+                goto end;
+            }
+        }
+    }
+
+end:
+    if (fl)
+        cout << "NO" << endl;
+    else
+    {
+        for (int i = 1; i <= n; i++)
+            cout << dis[i] << " \n"[i == n];
+    }
+}
+
+int main()
+{
+    fastio();
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
