@@ -35,7 +35,7 @@ lang: ""
 
 ## Trick
 
-加法与异或恒等式：对于任意两个非负整数，有 $X+Y=(X\oplus Y)+2(X\mathbin{\&}Y)$。
+加法与异或恒等式：对于任意两个非负整数，有 $X+Y=(X\oplus Y)+2(X\mathbin{\&}Y)$，${(a\mathbin{\&}b)+(a\mathbin{|}b)=a+b}$。
 
 ## 异或前缀和
 

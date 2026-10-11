@@ -1617,3 +1617,28 @@ int main()
 
 ```
 
+# 树上拓扑序计数
+
+树上拓扑序计数的核心思想是将整棵树的合法拓扑序，拆分为各棵子树内部的合法拓扑序，以及不同子树之间的排列交错方案。
+
+这类问题有一个公式：$\boxed{ans=\frac{n!}{\displaystyle\prod_{u=1}^n siz[u]}}$，称作树的钩长公式。
+
+## 原理
+
+我们考虑拓扑序的一个规律，就是在同一棵有根树中，根节点一定是拓扑序里的第一个节点，但是根节点不同子树之间的节点，往往没有先后限制，从这一点入手。
+
+假设一棵树的根为 $u$，它有三棵子树 $A,B,C$，大小分别为 $s_1=2,s_2=3,s_3=1$。整棵树 $siz[u]=1+2+3+1=7$，有七个位置。
+
+首先根节点一定排在第一个位置，剩余 $6$ 个位置可以分配给三棵子树。我们先考虑：不同子树之间是可以相互排列的。也就是将 $6$ 个位置分配给长度分别为 $2,3,1$ 的三个序列，一共有多少种分配方式。答案是 $\binom{6}{2}\binom{4}{3}\binom{1}{1}=\frac{6!}{2!3!1!}=60$。
+
+一般地，若根节点的儿子为 $v_1,v_2,\ldots,v_k$，其子树大小为 $s_1,s_2,\ldots,s_k$，那么交错方案数为 $\boxed{\frac{(siz[u]-1)!}{s_1!s_2!\cdots s_k!}}$。
+
+每棵子树内部本身也有多个合法拓扑序，这可以通过一种树形 $DP$ 的方式描述。设 $dp[u]$ 为以 $u$ 为根的子树合法拓扑序数量，那么 $\boxed{dp[u]=\frac{(siz[u]-1)!}{\displaystyle\prod_{v\in son(u)}siz[v]!}\prod_{v\in son(u)}dp[v]}$。
+
+由于所有的 $dp[v]$ 也都满足公式 $dp[v]=\frac{siz[v]!}{\displaystyle\prod_{x\in subtree(v)}siz[x]}$，代入上面式子里，可以发现所有儿子的 $siz[v]!$ 都被约掉了，得到 $dp[u]=\frac{(siz[u]-1)!}{\displaystyle\prod_{x\in subtree(u),x\ne u}siz[x]}$。再把分子分母同时乘上 $siz[u]$，有 $dp[u]=\frac{siz[u]!}{\displaystyle\prod_{x\in subtree(u)}siz[x]}$。
+
+综上，对于一棵有 $n$ 个节点的有根树，$\boxed{ans=\frac{n!}{siz[1]siz[2]\cdots siz[n]}}$。
+
+## 题目
+
+[F-Permutation of RBS_牛客小白月赛138](https://ac.nowcoder.com/acm/contest/141374/F) 通过代码：[代码查看](https://ac.nowcoder.com/acm/contest/view-submission?submissionId=84934330)
