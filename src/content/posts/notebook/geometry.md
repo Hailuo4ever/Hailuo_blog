@@ -1059,5 +1059,5 @@ pair<long double, vector<Point<T>>> minRectangleArea(const vector<Point<T>> &p)
 }
 ```
 
-# 平面最近点对
+
 
