@@ -494,6 +494,47 @@ struct SCC
 // auto bel = scc.work();
 // int cnt = scc.cnt;
 
+
+// -------------------------------------------------------------
+
+vector<int> stk;
+vector<int> dfn(n + 1, -1), low(n + 1), bel(n + 1, -1);
+int cur = 0, cnt = 0;
+
+auto tarjan = [&](auto &&self, int x) -> void
+{
+    dfn[x] = low[x] = cur++;
+    stk.push_back(x);
+
+    for (auto y: g[x])
+    {
+        if (dfn[y] == -1)
+        {
+            self(self, y);
+            low[x] = min(low[x], low[y]);
+        }
+        else if (bel[y] == -1)
+            low[x] = min(low[x], dfn[y]);
+    }
+
+    if (dfn[x] == low[x])
+    {
+        int y;
+        do
+        {
+            y = stk.back();
+            stk.pop_back();
+            bel[y] = cnt;
+        } while (y != x);
+
+        cnt++;
+    }
+};
+
+for (int i = 1; i <= n; i++)
+    if (dfn[i] == -1)
+        tarjan(tarjan, i);
+
 ```
 
 # 2 - SAT
