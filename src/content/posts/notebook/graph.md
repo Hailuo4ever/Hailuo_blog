@@ -1,10 +1,10 @@
 ---
 title: 图论 (Notebook)
-published: 2024-01-01
+published: 2026-10-29
 description: "Graph Theory"
 image: https://img.hailuo4ever.com/cover/notebook.png
 tags: [算法笔记, Notebook]
-category: "Algorithm"
+category: "Algo_Notes"
 draft: false
 lang: ""
 ---
@@ -322,6 +322,10 @@ struct LCA
 如果一个点集中的任意两个点都互相可达，那么这个点集就是一个强联通分量，简称 $SCC$。
 
 强联通分量具有重要的意义，由于内部所有点互相可达，因此这些点本质上可以缩成一个点。而**一个重要的性质是，把一张有向图的所有 $SCC$ 缩点后，得到的图一定是一张有向无环图**。缩点后可以进行 $DP$ 或拓扑序。
+
+> [!NOTE]
+>
+> 强联通分量一般用有向图 `tarjan` 求解。
 
 ## Tarjan 缩点
 
@@ -1710,3 +1714,21 @@ int main()
 经过重心 $c$ 的距离可以转化为 ${dis(u,v)=dis(u,c)+dis(c,v)}$，不经过重心的路径，它的两个端点一定在删除 $c$ 后的同一个连通块中。因此可以递归处理那个连通块，重新收集信息、找到重心、统计答案。
 
 由于连通块的大小会不断折半，因此点分治的递归深度是 $O(\log n)$ 的。
+
+## 题目
+
+24南京 G：[Binary Tree - 题目 - QOJ.ac](https://qoj.ac/contest/1828/problem/9570)
+
+# 割点与桥（无向图 Tarjan）
+
+割点与桥的定义不做说明。简单来说，一个是点，一个是边，删除他们都会让原图的连通性增加。
+
+## 思路
+
+首先，在无向图的 `Tarjan` 里，`dfn[u]` 的定义仍然是 $DFS$ 第一次访问节点 $u$ 的时间戳，但 `low[u]` 的定义有所不同。
+
+`low[u]` 表示：从 \(u\) 的 DFS 子树中某个节点出发，允许经过若干条 DFS 树边向下，再经过至多一条返祖边，所能到达的最小 `dfn` 值。
+
+> 在无向图的 DFS 树中，我们把边分成两种。一种叫树边，是 DFS 首次访问新节点时使用的边；一种叫返祖边，是连接某个节点和它的祖先的非树边。
+
+![](https://img.hailuo4ever.com/notebook_graph/tarjan_1.png)

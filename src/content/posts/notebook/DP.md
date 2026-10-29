@@ -1,10 +1,10 @@
 ---
 title: 动态规划 (Notebook)
-published: 2024-01-01
+published: 2026-10-27
 description: "Dynamic Programming"
 image: https://img.hailuo4ever.com/cover/notebook.png
 tags: [算法笔记, Notebook]
-category: "Algorithm"
+category: "Algo_Notes"
 draft: false
 lang: ""
 ---
@@ -214,6 +214,235 @@ public:
 
 [R300582838 - 记录详情 - 洛谷](https://www.luogu.com.cn/record/300582838)
 
+# 期望DP
+
+普通 DP 通常考虑：从当前状态可以转移到哪些状态，如何取最大值、最小值，或者累加方案数。
+
+期望 DP 考虑的是：**从当前状态开始，到达终止状态，平均还需要多少代价**。
+
+## 思路
+
+假设当前状态为 $u$，一次操作会转移到 $v_1,v_2,\ldots,v_k$，转移概率分别为 \(p_1,p_2,\ldots,p_k\)。如果每次操作的代价都是 $1$，就有 $\boxed{dp[u]=1+\sum_{i=1}^{k}p_i\,dp[v_i]}$​。无论这一步转移到哪里，我们都已经执行了一次操作，因此需要 \(+1\)。执行一次操作后，还要承担新状态的期望代价。因为新状态是随机的，所以要按照概率计算加权平均。
+
+## 题目
+
+### Atcoder DP I
+
+由于盘子的编号不重要，我们定义 $dp[i][j][k]$ 表示从这个状态开始，直到吃完全部寿司所需要的期望操作次数。
+
+$i$ 代表有多少个盘子剩下 $1$ 个寿司，$j$ 代表有多少个盘子剩下 $2$ 个寿司，$k$ 代表有多少个盘子剩下 $3$ 个寿司。剩下的 $n-i-j-k$ 个盘子都是空盘子。从当前状态 $(i,j,k)$ 出发，一次随机选择后会有四种情况。
+
+$\begin{aligned}E={}&1\\&+\frac{i}{n}dp[i-1][j][k]\\&+\frac{j}{n}dp[i+1][j-1][k]\\&+\frac{k}{n}dp[i][j+1][k-1]\\&+\frac{n-i-j-k}{n}E\end{aligned}$
+
+对于自环的部分，我们可以通过移项来解决，最终推导出 ${dp[i][j][k]=\frac{n+i\,dp[i-1][j][k]+j\,dp[i+1][j-1][k]+k\,dp[i][j+1][k-1]}{i+j+k}}$。
+
+可以通过记忆化搜索来解决。
+
+```c++
+// Problem: AT DP J
+// Contest: AtCoder - Educational DP Contest
+// URL: https://atcoder.jp/contests/dp/tasks/dp_j
+// Time: 2026-10-22 13:55:54
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+// clang-format off
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+// clang-format on
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 310;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+ld dp[N][N][N];
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    int c1 = 0, c2 = 0, c3 = 0;
+    for (int i = 1, x; i <= n; i++)
+    {
+        cin >> x;
+        if (x == 1)
+            c1++;
+        else if (x == 2)
+            c2++;
+        else
+            c3++;
+    }
+
+    auto dfs = [&](this auto &&self, int i, int j, int k) -> ld
+    {
+        if (dp[i][j][k])
+            return dp[i][j][k];
+
+        if (i + j + k == 0)
+            return 0;
+
+        ld ret1 = 0, ret2 = 0, ret3 = 0;
+        if (i)
+            ret1 = self(i - 1, j, k);
+        if (j)
+            ret2 = self(i + 1, j - 1, k);
+        if (k)
+            ret3 = self(i, j + 1, k - 1);
+
+        return dp[i][j][k] = (n + i * ret1 + j * ret2 + k * ret3) / (i + j + k);
+    };
+
+    ld res = dfs(c1, c2, c3);
+    cout << fixed << setprecision(20) << res << endl;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+# SOSDP
+
+>SOS DP（Sum Over Subsets DP，子集和 DP）是一种经典的状压 DP 优化技巧，主要用于快速计算每个集合的所有子集或超集的信息。
+>
+>一般来讲，SOSDP 的状态数组用零下标，因为二进制。
+
+## 背景
+
+假设有一个长度为 \(2^n\) 的数组 \(a\)，下标从 \(0\) 到 \(2^n-1\)。现在我们希望对于每个 `mask`，计算：$\displaystyle f[mask]=\sum_{sub\subseteq mask}a[sub]$。
+
+这里的 $sub\subseteq mask$ 表示二进制意义上的子集，包括 `mask` 本身和空集。
+
+例如，$n=3$，$mask=101$。$101$ 有四个子集，分别是 $000,001,100,101$，因此 $f[5]=a[0]+a[1]+a[4]+a[5]$。
+
+**判断二进制子集的条件是 `(sub & mask) == sub`。**
+
+暴力枚举的方法如下：
+
+```c++
+int S = 1 << n;
+vector<ll> f(S);
+
+for (int mask = 0; mask < S; mask++)
+{
+    for (int sub = mask; ; sub = (sub - 1) & mask)
+    {
+        f[mask] += a[sub];
+        if (sub == 0) break;
+    }
+}
+```
+
+## 原理
+
+SOSDP 的核心原理是：**逐位放宽限制**。仍然考虑 $f[mask]=\sum_{sub\subseteq mask}a[sub]$，我们不一次性枚举所有子集，而是从低位到高位，**逐个决定哪些二进制位允许从 $1$ 变成 $0$**。
+
+首先我们定义 $dp_i[mask]$ 表示只允许 `mask` 的第 \(0\) 到第 \(i\) 位由 1 变为 0，其余高位必须保持不变时，所有能够得到的状态的 \(a\) 值之和。
+
+初始时显然 $dp_{-1}[mask]=a[mask]$，现在考虑第 $i$ 位。如果第 $i$ 位是 $0$，直接继承上一轮的状态，即 $dp_i[mask]=dp_{i-1}[mask]$；如果第 $i$ 位是 $1$，所有合法子集可以分为互不相交的两组，第 $i$ 位保留 $1$ 贡献 $dp_{i-1}[mask]$，改成 $0$ 贡献 $dp_{i-1}[mask\oplus 2^i]$。
+
+还可以优化掉第二维的 $i$，直接原地更新 `mask`。
+
+```c++
+// 初始 f[mask] = a[mask]
+
+for (int i = 0; i < n; i++)
+{
+    for (int mask = 0; mask < (1 << n); mask++)
+    {
+        if (mask & (1 << i))
+            f[mask] += f[mask ^ (1 << i)];
+    }
+}
+```
+
+> [!NOTE]
+>
+> 不能交换 $i$ 和 `mask` 两层循环，因为同一个 `mask` 在处理后面的位时，可能读到已经沿其他位更新过的状态，造成重复计数。
+>
+> **外层枚举二进制位，内层枚举 `mask`**。
+
+## 子集与超集
+
+对于子集 SOSDP，定义 $f[mask]=\sum_{sub\subseteq mask}a[sub]$，转移同上。
+
+```c++
+void sosSubset(vector<ll> &f, int n)
+{
+    int S = 1 << n;
+    for (int i = 0; i < n; i++)
+        for (int mask = 0; mask < S; mask++)
+            if (mask >> i & 1)
+                f[mask] += f[mask ^ (1 << i)];
+}
+```
+
+对于超集 SOSDP，定义 $f[mask]=\sum_{sup\supseteq mask}a[sup]$，区别在于我们希望枚举所有包含 `mask` 的集合，对于超集，我们应该允许原本是 $0$ 的二进制位变成 $1$。所以要将原来的转移方向反过来。
+
+```c++
+void sosSuperset(vector<ll> &f, int n)
+{
+    int S = 1 << n;
+    for (int i = 0; i < n; i++)
+        for (int mask = 0; mask < S; mask++)
+            if ((mask >> i & 1) == 0)
+                f[mask] += f[mask | (1 << i)];
+}
+```
+
+## 题目
+
+### 2024 湖南省赛 E
+
+> 给定长度为 \(n\) 的数组 \(a\)，满足：\(1\le n\le 10^6\)，\(1\le a_i\le 18\)。
+>
+> 我们可以选取两个互不重叠的连续子数组，并按原顺序拼接，要求最终每种数字最多出现一次。
+
+容易想到用一个 $18$ 位的掩码表示状态。两个部分可以合并当且仅当 `S & T == 0`，合并后大小即为两个部分的 `popcount` 之和。但两个集合可以合并，不代表他们对应的子数组可以按要求拼接，因此我们还需要记录子数组的位置。
+
+我们考虑**定义 $L[mask]$ 代表集合表示为 $mask$ 的合法子数组的最早结束位置，$R[mask]$ 代表集合表示为 $mask$ 的合法子数组的最晚开始位置**。如果某一个 $mask$ 无法通过一个合法的连续子数组得到，就让 $L[mask]=n+1$，$R[mask] = 0$。那么假设我们想选集合为 $S$ 的子数组作为第一段，$T$ 作为第二段，只需要满足 $L[S]<R[T]$。这样就代表存在不重叠的两段。
+
+这两个信息可以通过直接枚举求得，固定右端点后向左枚举 $18$ 个位置，时间复杂度 $O(18n)$。
+
+接下来，我们考虑枚举第一段集合 $S$，我们知道 $L[S]$ 表示第一段集合最早的结束位置，**我们需要找到在剩余数字中，长度尽可能大，且开始位置比 $L[S]$ 晚的连续子数组**。
+
+显然第二段集合必须满足 $T\subseteq \overline S$，其中 $\overline S$ 是 $S$ 的补集。而肯定不能枚举 $\overline S$ 的所有子集里来寻找 $T$，此时我们考虑使用 $SOSDP$。
+
+> [!NOTE]
+>
+> 但我们不能只定义一维的 $DP$ 数组，比如我们想找最靠右开始的子数组，可以只用 $dp[S]$。但最晚开始的子数组不一定是最长的。因此考虑往状态里加一维。
+
+**定义 $dp[k][S]$ 表示：在所有 $S$ 的子集里，并且恰好包含 $k$ 种数字的合法连续子数组中，最晚能从什么位置开始**。使用子集的转移方式处理出 $dp$ 数组，之后直接查询并回答询问即可。
+
 # 经典题
 
 ## 选择m个不相交区间，使区间和最大
@@ -350,29 +579,4 @@ auto get = [&](int l, int r) -> pii
 
 即 $x$ 和 $y$ 是 $DP$ 状态，$mn$ 和 $mx
 
-# Trick
-
-## 末尾追加数字的模数转移
-
-> 常用于子序列计数、数位DP、整除性统计
-
-若当前数字为 $x$，且 $x \bmod m=r$，在十进制数 $x$ 的末尾追加数字 $d$ 后，新数字为：$x' = 10 \cdot x + d$。
-
-因此新余数为 $r' = (10 \cdot r + d) \bmod m$，更一般地，在 $B$ 进制下有 $r' = (B \cdot r + d) \bmod m$。
-
-一般使用这个方法时，对后续转移而言，相同余数的数字是等价的。
-
-## 子序列DP的常用优化
-
-对于以下形式的子序列 DP：
-
-```
-dp[i] = max(dp[j] + 1)
-要求 j < i，并且 a[i] 与 a[j] 满足某种数值关系
-```
-
-思考三个问题：
-
-1. 能否由 $a_i$ 直接推导出合法的 $a_j$ 数值？
-2. 合法前驱数值的数量是否很少？
-3. 能否使用数组或哈希表维护每个数值对应的历史最优状态？
+3. 

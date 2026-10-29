@@ -4,7 +4,7 @@ published: 2024-01-01
 description: "C++ 常用库函数"
 image: https://img.hailuo4ever.com/cover/notebook.png
 tags: [算法笔记, Notebook]
-category: "Algorithm"
+category: "Algo_Notes"
 draft: false
 lang: ""
 ---
