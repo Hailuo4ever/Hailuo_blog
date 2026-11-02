@@ -1,6 +1,6 @@
 ---
 title: 2024 ccpc 河北省赛
-published: 2026-11-1
+published: 2026-11-01
 description: "2024 CCPC Hebei Provincial Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
 tags: [算法题解, ccpc, 省赛]
