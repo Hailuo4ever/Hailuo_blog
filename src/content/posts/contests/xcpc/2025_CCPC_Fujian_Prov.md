@@ -1,6 +1,6 @@
 ---
 title: 2025 ccpc 福建省赛
-published: 2026-11-2
+published: 2026-11-02
 description: "2025 CCPC Fujian Provincial Contest"
 image: https://img.hailuo4ever.com/cover/xcpc.png
 tags: [算法题解, ccpc, 省赛]
