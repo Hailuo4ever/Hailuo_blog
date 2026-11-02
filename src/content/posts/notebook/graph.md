@@ -1727,8 +1727,14 @@ int main()
 
 首先，在无向图的 `Tarjan` 里，`dfn[u]` 的定义仍然是 $DFS$ 第一次访问节点 $u$ 的时间戳，但 `low[u]` 的定义有所不同。
 
-`low[u]` 表示：从 \(u\) 的 DFS 子树中某个节点出发，允许经过若干条 DFS 树边向下，再经过至多一条返祖边，所能到达的最小 `dfn` 值。
+`low[u]` 表示：从 \(u\) 的 DFS 子树中某个节点出发，允许经过若干条 DFS 树边向下，再**经过至多一条返祖边**，所能到达的最小 `dfn` 值。
 
 > 在无向图的 DFS 树中，我们把边分成两种。一种叫树边，是 DFS 首次访问新节点时使用的边；一种叫返祖边，是连接某个节点和它的祖先的非树边。
 
 ![](https://img.hailuo4ever.com/notebook_graph/tarjan_1.png)
+
+对于 $DFS$ 树中的节点 $u$，遍历它的邻居 $v$。
+
+第一种情况：$v$ 没有访问过，此时说明这条边 $(u,v)$ 一定是树边，先 $DFS$ 到 $v$，然后更新 $low$ 值：$\operatorname{low}[u] =\min(\operatorname{low}[u],\operatorname{low}[v])$。
+
+第二种情况：
