@@ -425,6 +425,104 @@ int main()
 
 ```
 
+# L - 众数
+
+> 关键词：结论证明
+
+## 思路
+
+存在可被证明的结论：对于一个前缀 $a$，$min(a)+max(a)$ 一定是一个众数。下面证明这个结论。
+
+首先假定数组里至少有两个不同的数，固定两个下标 $a,b$，其中 $a$ 为最小值，$b$ 为最大值，把这两个下标拿出去，剩下的所有下标构成集合 $U$，考虑从 $U$ 中任意选择一个子集 $T$。我们先假设 $T$ 非空，$c=\min(T),\quad d=\max(T)$。存在 $a\le c\le d\le b$。
+
+| 选择的元素                   | \(f(S)\) |
+| ---------------------------- | -------- |
+| 只选择 \(T\)                 | \(c+d\)  |
+| \(T\) 加上固定的最小值 \(a\) | \(a+d\)  |
+| \(T\) 加上固定的最大值 \(b\) | \(c+b\)  |
+| \(T\) 同时加上 \(a,b\)       | \(a+b\)  |
+
+结论是，无论 $T$ 是什么，$a+b$ 的出现次数都不小于这四种选择产生的任何其他值，也包括 $T$ 是空集的情况。
+
+由于题目要求最大的众数，所以即使 $a+b$ 是众数也不一定是最终答案。我们需要考虑是否存在某个 $z>a+b$，使得它与 $a+b$ 的出现次数相同。我们考虑使用 $T$ 为空的情况来证明，此时集合 $S$ 只有 $2a,a+b,2b$，其中大于的值只有 $2b$，所以比 $a+b$ 更大的众数只能是 $2b$。
+
+考虑什么时候 $2b$ 也能成为众数，现在我们只需要比较 $\operatorname{cnt}(a+b)$，$\operatorname{cnt}(2b)$。假设存在一个其他元素 $c<b$，考虑只选这个元素作为 $T$，这组产生的集合是 $2c,a+c,b+c,a+b$，但这四个结果显然全部小于 $2b$，但至少有一个等于 $a+b$，所以在这一组中 $a+b$ 的出现次数满足大于 $2b$。这意味着，只要除了选出的最小值之外还有任何元素小于最大值 $b$，就不能输出 $2b$。
+
+## Code
+
+```c++
+// Problem: L
+// Contest: QOJ - FJCPC 2025
+// URL: https://qoj.ac/contest/2182/problem/12376/statement/zh_cn
+// Time: 2026-11-03 08:11:02
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+void solve()
+{
+    int n;
+    cin >> n;
+
+    map<ll, int> mp;
+    int mx = 0;
+
+    for (ll i = 1, x; i <= n; i++)
+    {
+        cin >> x, mp[x]++, mx = max(mx, mp[x]);
+        if (mp.size() == 1)
+            cout << x * 2 << " \n"[i == n];
+        else
+        {
+            if (mp.begin()->second == 1 && mp.size() == 2)
+                cout << mp.rbegin()->first * 2 << " \n"[i == n];
+            else
+                cout << mp.begin()->first + mp.rbegin()->first << " \n"[i == n];
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # M - 致谢
 
 > 关键词：签到
