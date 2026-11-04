@@ -13,6 +13,123 @@ lang: ""
 >
 > 比赛链接：[The 2024 ICPC China Sichuan Provincial Programming Contest - Dashboard - Contest - QOJ.ac](https://qoj.ac/contest/1862)
 
+# B - Link Summon
+
+> 关键词：贪心
+
+## 思路
+
+在前期我们可以进行一次贪心，即尝试用两个数来凑 $6$，比如 $1,5$，$2,4$，$3,3$。因为每个数可以当成 $1$，所以 $5$ 是万能的，也就是还有 $2,5$，$3,5$，$4,5$，我们在这个地方尽可能地去把 $5$ 用掉。
+
+考虑能用三个数凑成 $6$ 的方式，可以归成两类。
+
+1. $4+1+1$ 型：用一个 $4$，然后让另外随便两个数贡献 $1$。如果之前 $4$ 还剩下，说明 $2$ 肯定没了，所以可以把剩下的 $1,3,4$ 作为资源变成 $1$。设可以凑出 $k$ 对这种类型。首先每次要消耗一个 $4$，$k \le d$，其次每次都需要三个数，即 $3k \le a+c+d$。所以 $\boxed{k=\min\left(d,\left\lfloor\frac{a+c+d}{3}\right\rfloor\right)}$。然后优先消耗 $1$，再消耗 $3$，最后消耗 $4$。
+2. $3+2+1$ 型：进行上面 $4+1+1$ 的配对后，$3$ 最多剩一个，也就是说最多只能凑出一对这样的。
+
+最后处理剩下的，只需要考虑 $1,2,3$，剩余情况就是 $\boxed{\left\lfloor\frac{a+2b+3c}{6}\right\rfloor}$。
+
+## Code
+
+```c++
+// Problem: B
+// Contest: QOJ - The 2024 ICPC China Sichuan Provincial Programming Contest
+// URL: https://qoj.ac/contest/1862/problem/9664/statement/zh_cn
+// Time: 2026-11-03 15:35:07
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+void solve()
+{
+    ll a, b, c, d, e;
+    cin >> a >> b >> c >> d >> e;
+
+    ll res = 0;
+
+    ll k = min(a, e);
+    a -= k, e -= k, res += k;
+
+    k = min(b, d);
+    b -= k, d -= k, res += k;
+
+    k = c / 2;
+    c -= k * 2, res += k;
+
+    k = min(b, e);
+    b -= k, e -= k, res += k;
+
+    k = min(c, e);
+    c -= k, e -= k, res += k;
+
+    k = min(d, e);
+    d -= k, e -= k, res += k;
+
+    k = e / 2;
+    e -= k * 2, res += k;
+
+    // cerr << "res = " << res << "   " << a << ' ' << b << ' ' << c << ' ' << d << ' ' << e << endl;
+    k = min(d, (a + c + d) / 3);
+    d -= k, res += k;
+
+    ll need = 2 * k; // 1, 3, 4
+
+    ll t = min(a, need);
+    a -= t, need -= t;
+
+    t = min(c, need);
+    c -= t, need -= t;
+
+    d -= need;
+
+    if (b > 0 && c > 0 && a + b + c >= 3)
+        b--, c--, res++, a > 0 ? a-- : b--;
+
+    res += (a + 2 * b + 3 * c) / 6;
+
+    cout << res << endl;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # E - L-Covering Checker
 
 > 关键词：模拟
@@ -188,6 +305,104 @@ int main()
 实际上这个限制是一个矩形，我们可以把原来的矩形缩小一下。在这里可以首先检验这个矩形的合法性。
 
 然后可以发现，圆心可能的坐标取值是一条射线，从给定圆心开始，沿着给定向量，经过参数时间 $t$ 后，圆心的位置为 $\begin{cases} p_x=x+tv_x\\ p_y=y+tv_y \end{cases} \qquad t\ge 0$。
+
+将圆心坐标代入两个约束中，可以得到两个不等式。我们需要解出这两个关于 $t$ 的不等式，判断他们是否有交集。
+
+维护两个不等式的最右左端点和最左右端点即可。注意除 $0$ 和负数的情况。
+
+## Code
+
+```c++
+// Problem: F
+// Contest: QOJ - The 2024 ICPC China Sichuan Provincial Programming Contest
+// URL: https://qoj.ac/contest/1862/problem/9668/statement/zh_cn
+// Time: 2026-11-03 16:38:23
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+void solve()
+{
+    ll x, y, r, vx, vy;
+    cin >> x >> y >> r >> vx >> vy;
+
+    ll lx, ly, rx, ry;
+    cin >> lx >> ly >> rx >> ry;
+
+    lx += r, rx -= r, ly += r, ry -= r;
+    if (lx > rx || ly > ry)
+    {
+        cout << "No" << endl;
+        return;
+    }
+
+    // lx <= x + vx * t <= rx
+    // ly <= y + vy * t <= ry
+    // 判断两个合法的 t 范围是否有交集
+
+    ld L = 0, R = INF;
+    auto check = [&](ll l, ll r, ll p, ll v) -> bool
+    {
+        if (v == 0)
+            return l <= p && p <= r;
+
+        ld a = (ld) (l - p) / v, b = (ld) (r - p) / v;
+
+        if (a > b)
+            swap(a, b);
+
+        L = max(L, a), R = min(R, b);
+
+        return L <= R;
+    };
+
+    if (!check(lx, rx, x, vx) || !check(ly, ry, y, vy))
+    {
+        cout << "No" << endl;
+        return;
+    }
+
+    cout << "Yes" << endl;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
 
 
 
