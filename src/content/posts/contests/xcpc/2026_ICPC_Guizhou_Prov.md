@@ -368,9 +368,141 @@ signed main()
 }
 ```
 
+# E - Charging Adapters
+
+> 关键词：图论建模，最短路
+
+## 思路
+
+对于状态 $(i,c)$，题目有两种操作：
+
+1. 乘坐型号为 $c$ 的船前往左侧或右侧最近的码头 $j$，费用为两个码头之间的距离
+2. 在码头 $i$，把船的型号更换成 $d$，费用为 $w_{i,d}$
+
+考虑如何处理换船的操作，我们显然不能对所有船型建边，这样的边数是 $O(m_i^2)$ 的。考虑给每一个码头拆点，对于一个码头，每读入一个船型，就新增一个点，表示对应的状态 $(i,c)$。最开始的 $1\to n$ 节点是码头的虚拟节点，可以理解成一个公共的换船区。假设码头 $i$ 支持 $A,B$ 两种型号，对应的装船费用分别为 $w_A$，$w_B$。`g[i].eb(id, w);` 表示货物在码头上，现在需要装到型号为 $c$ 的船上，所以建边 $P_i\xrightarrow{w_{i,c}}(i,c)$。从船型节点到虚拟节点的边权为 $0$，表示货物从船型为 $c$ 的这个状态切换到了公共换乘状态。
+
+考虑如何处理航行的操作，对于每个船型 $c$，维护 `lst[c]` 表示上一个支持型号 $c$ 的船型状态节点编号，`pos[c]` 表示上一个支持型号 $c$ 的码头编号，建双向边即可。
+
+由于我们将 $1 \to n$ 设置成了虚拟节点，所以直接从 $s \to t$ 跑一遍 `Dijkstra` 即可。
+
+## Code
+
+```c++
+// Problem: E
+// Contest: QOJ - Guizhou Provincial 2026
+// URL: https://qoj.ac/contest/4121/problem/20288/statement/zh_cn
+// Time: 2026-11-07 13:57:38
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 0;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+void solve()
+{
+    int n, k, s, t;
+    cin >> n >> k >> s >> t;
+
+    vector<ll> x(n + 1);
+    for (int i = 1; i <= n; i++)
+        cin >> x[i];
+
+    vector<vector<pll>> g(n + 1);
+    vector<int> lst(k + 1), pos(k + 1);
+
+    for (int i = 1; i <= n; i++)
+    {
+        int m;
+        cin >> m;
+
+        for (int j = 1; j <= m; j++)
+        {
+            int c, w;
+            cin >> c >> w;
+
+            // switch boat
+            int id = g.size();
+            g.eb();
+
+            g[i].eb(id, w), g[id].eb(i, 0);
+
+            // switch port
+            if (lst[c])
+            {
+                ll d = abs(x[i] - x[pos[c]]);
+                g[lst[c]].eb(id, d), g[id].eb(lst[c], d);
+            }
+
+            lst[c] = id, pos[c] = i;
+        }
+    }
+
+    auto dijkstra = [&](int st, int ed) -> ll
+    {
+        vector<ll> dis(g.size() + 1, INF);
+        priority_queue<pll, vector<pll>, greater<pll>> pq;
+
+        pq.emplace(0, st), dis[st] = 0;
+        while (!pq.empty())
+        {
+            auto [d, u] = pq.top();
+            pq.pop();
+
+            for (auto [v, w]: g[u])
+            {
+                if (dis[v] > d + w)
+                    dis[v] = d + w, pq.emplace(dis[v], v);
+            }
+        }
+
+        return dis[ed] == INF ? -1 : dis[ed];
+    };
+
+    cout << dijkstra(s, t) << endl;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # K - Two-Tone Palindromes
 
-> 关键词：马拉车，滑动窗口
+> 关键词：马拉车，预处理
 
 ## 思路
 
