@@ -1721,6 +1721,8 @@ int main()
 
 # 割点与桥（无向图 Tarjan）
 
+[gpt 对话链接](https://chatgpt.com/share/6af1f5ea-9068-83ec-9f99-1bb7935eb85b)
+
 割点与桥的定义不做说明。简单来说，一个是点，一个是边，删除他们都会让原图的连通性增加。
 
 ## 思路
@@ -1737,4 +1739,161 @@ int main()
 
 第一种情况：$v$ 没有访问过，此时说明这条边 $(u,v)$ 一定是树边，先 $DFS$ 到 $v$，然后更新 $low$ 值：$\operatorname{low}[u] =\min(\operatorname{low}[u],\operatorname{low}[v])$。
 
-第二种情况：
+第二种情况：$v$ 已经访问过，且 $(u,v)$ 不是进入 $u$ 的那条父边。此时利用返祖边更新：$\operatorname{low}[u]=\min(\operatorname{low}[u],\operatorname{dfn}[v])$。
+
+接下来，我们根据 `low[v]` 和 `dfn[v]` 的大小关系，判断割点与桥。
+
+**桥的判定条件是：$\boxed{\operatorname{low}[v]>\operatorname{dfn}[u]}$，这个判断只对 $DFS$ 树边进行**。
+
+> [!TIP]
+>
+> 如果 `low[v] < dfn[u]`，说明 \(v\) 的子树能通过返祖边到达 \(u\) 的某个祖先。
+>
+> 如果 `low[v] == dfn[u]`，说明 \(v\) 的子树能通过返祖边回到 \(u\)。
+>
+> 如果 `low[v] > dfn[u]`，说明 \(v\) 的子树无法通过返祖边回到 \(u\) 或更高的祖先。
+
+**割点的判定条件是：当 $u$ 不是 $DFS$ 树的根节点时 $\boxed{\operatorname{low}[v]\ge\operatorname{dfn}[u]}$，是根节点时，$DFS$ 树子节点数量需要 $\ge 2$**。
+
+> [!TIP]
+>
+> 判定割点时我们需要考虑，节点 $v$ 的子树能否通过返祖边到达 $u$ 的祖先，从而绕过被删除的节点 $u$。
+>
+> 那么显然如果 ${\operatorname{low}[v]\ge\operatorname{dfn}[u]}$，就说明 $u$ 是一个割点，因为此时 $u$ 已经被删了，哪怕 $u$ 的子树可以回到 $u$，也没有意义了。
+>
+> 由于根节点并没有父节点，也没有祖先，就需要特判一下。不难发现，如果根节点子节点数量比 $1$ 大，就一定会让图增加连通分量。
+
+## 模板
+
+> [!NOTE]
+>
+> 存储边编号是为了解决重边的问题，也可以处理一些特殊输出，或者求边双时用。
+
+### Struct
+
+```c++
+struct CutBridge
+{
+    int n, cur, cnt;
+    vector<vector<pii>> g;
+    vector<int> dfn, low, cut;
+    vector<pii> bridge;
+
+    CutBridge() {}
+    CutBridge(int n)
+    {
+        init(n);
+    }
+
+    void init(int n)
+    {
+        this->n = n;
+        g.assign(n + 1, {});
+        dfn.assign(n + 1, -1);
+        low.resize(n + 1);
+        cut.assign(n + 1, 0);
+        bridge.clear();
+        cur = cnt = 0;
+    }
+
+    void addEdge(int u, int v)
+    {
+        g[u].eb(v, cnt);
+        g[v].eb(u, cnt++);
+    }
+
+    void dfs(int u, int pe)
+    {
+        dfn[u] = low[u] = cur++;
+        int son = 0;
+
+        for (auto [v, e]: g[u])
+        {
+            if (e == pe)
+                continue;
+
+            if (dfn[v] == -1)
+            {
+                son++;
+                dfs(v, e);
+                low[u] = min(low[u], low[v]);
+
+                // 割点（非根节点）
+                if (pe != -1 && low[v] >= dfn[u])
+                    cut[u] = 1;
+
+                // 桥
+                if (low[v] > dfn[u])
+                    bridge.eb(u, v);
+            }
+            else
+                low[u] = min(low[u], dfn[v]);
+        }
+
+        // 割点（根节点）
+        if (pe == -1 && son >= 2)
+            cut[u] = 1;
+    }
+
+    vector<int> work()
+    {
+        for (int i = 1; i <= n; i++)
+            if (dfn[i] == -1)
+                dfs(i, -1);
+
+        return cut;
+    }
+};
+
+// 1-indexed
+// CutBridge cb(n);
+// cb.addEdge(u, v);
+// auto cut = cb.work();
+// auto bridge = cb.bridge;
+```
+
+### Lambda
+
+```c++
+vector<int> dfn(n + 1, -1), low(n + 1), cut(n + 1);
+vector<pii> bridges;
+int cur = 0;
+
+auto tarjan = [&](auto &&self, int x, int inEdge) -> void
+{
+    dfn[x] = low[x] = cur++;
+    int child = 0;
+
+    for (auto [y, id]: g[x])
+    {
+        if (id == inEdge)
+            continue;
+
+        if (dfn[y] == -1)
+        {
+            child++;
+            self(self, y, id);
+            low[x] = min(low[x], low[y]);
+
+            if (inEdge != -1 && low[y] >= dfn[x])
+                cut[x] = 1;
+
+            if (low[y] > dfn[x])
+                bridges.eb(x, y);
+        }
+        else
+            low[x] = min(low[x], dfn[y]);
+    }
+
+    if (inEdge == -1 && child >= 2)
+        cut[x] = 1;
+};
+
+for (int i = 1; i <= n; i++)
+    if (dfn[i] == -1)
+        tarjan(tarjan, i, -1);
+
+```
+
+
+
