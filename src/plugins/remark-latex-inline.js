@@ -4,22 +4,27 @@
  */
 export function remarkLatexInline() {
 	const data = this.data();
-	(data.micromarkExtensions ??= []).push({
+	data.micromarkExtensions ??= [];
+	data.micromarkExtensions.push({
 		text: { 92: { name: "latexInline", tokenize } },
 	});
-	(data.fromMarkdownExtensions ??= []).push({
+	data.fromMarkdownExtensions ??= [];
+	data.fromMarkdownExtensions.push({
 		enter: {
 			latexInline(token) {
 				const value = this.sliceSerialize(token).slice(2, -2);
-				this.enter({
-					type: "inlineMath",
-					value,
-					data: {
-						hName: "code",
-						hProperties: { className: ["language-math", "math-inline"] },
-						hChildren: [{ type: "text", value }],
+				this.enter(
+					{
+						type: "inlineMath",
+						value,
+						data: {
+							hName: "code",
+							hProperties: { className: ["language-math", "math-inline"] },
+							hChildren: [{ type: "text", value }],
+						},
 					},
-				}, token);
+					token,
+				);
 			},
 		},
 		exit: {
@@ -47,7 +52,8 @@ function tokenize(effects, ok, nok) {
 
 	function body(code) {
 		// Inline delimiters must close on the same line. Block formulas use $$.
-		if (code === null || code === -5 || code === -4 || code === -3) return nok(code);
+		if (code === null || code === -5 || code === -4 || code === -3)
+			return nok(code);
 		effects.consume(code);
 		return code === 92 ? backslash : body;
 	}
