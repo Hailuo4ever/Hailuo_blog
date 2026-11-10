@@ -1857,8 +1857,158 @@ Kruskal 重构树（Kruskal Reconstruction Tree）是一个建立在 Kruskal 算
 
 相比普通的 Kruskal 算法，Kruskal 重构树不仅能得到生成树，还能把整个连通块的合并过程保存下来。
 
+## 最小瓶颈路问题
+
+给定一张带权无向图，对于每组询问 $(u,v)$，求 ${\min_{P:u\to v}\ \max_{e\in P}w(e)}$。
+
+我们需要知道一个结论：**原图两点间的最小瓶颈值，等于最小生成树上这两点之间唯一路径的最大边权**。
+
+> 考虑如何证明这个结论。假设最小生成树 $T$ 上从 $u$ 到 $v$ 的路径中最大边权为 $W$，显然可以发现 $f(u,v) \le E$。至于 $f(u,v) \ge W$，我们可以使用反证法。假设我们删掉 $W$ 这条边，考虑一个重要性质：所有连接 $A,B$ 的原图边，它的边权一定不可能小于 $W$，因此任意路径的长度肯定比 $W$ 大。
+
+朴素的做法是先求出最小生成树，然后使用 $LCA$ 维护路径上最大边权。
+
+我们使用 `Kruskal` 重构树后，答案直接是 $LCA(u,v)$ 的点的点权。
+
 ## 思路
 
 > [!NOTE]
 >
-> **该算法的核心是：每次 Kruskal 合并两个连通块时，新建一个虚点，让这个虚点成为两个连通块的父亲，并把当前边权赋给这个虚点**。
+> **该算法的核心是：每次 Kruskal 合并两个连通块时，新建一个虚点，让这个虚点连接两个连通块的根节点，成为两个连通块的父亲，并把当前边权赋给这个虚点**。
+
+像普通 `Kruskal` 一样，我们在合并边的时候，把原始点当作新树的叶子。每次合并的时候我们建一个虚点，然后把左右两侧的并查集根节点连到新建的这个虚点上。
+
+注意新虚点连接的是两个连通块的根，而不一定是原图这条边的两个端点。
+
+## 重构树的性质
+
+1. 原始点都是叶子，虚点都是内部点，原图如果有 $n$ 个节点，最终节点总数就是 $2n-1$。每个虚点恰好有两个儿子，因此它是一棵二叉树。如果原图不连通，最后得到的是一片二叉森林。
+2. 点权具有类似大根堆的性质，即从叶子到根的点权单调不降。因为我们是按照边权从小到大建树的，通常情况下，原始节点（叶子）的点权不参与比较，在边权非负的情况下，可以将点权初始化成 $0$。
+3. 两点的 $LCA$ 点权就是最小瓶颈值。可以将整个建树过程看作一个逐渐放宽边权限制的过程。
+4. 一个虚点的子树对应某个边权阈值下的连通块。假设我们只允许经过 $w(e) \le x$ 的边，对于原始节点 $u$，从它开始不断向父亲跳，只要父亲的点权不超过 $x$，就可以继续向上。设最终找到的最高祖先为 $p$，那么 $p$ 子树中所有原始节点就是 $u$ 在边权限制 $x$ 下能够到达的节点。由于点权单调，可以通过倍增在 $O(\log n)$ 时间内找到这个祖先。
+
+> [!TIP]
+>
+> 以上均以最小生成树为例，最大生成树的性质与结论全部反过来即可。
+
+## Code
+
+```c++
+struct KruskalTree
+{
+    struct Edge
+    {
+        int u, v;
+        ll w;
+    };
+
+    int n, tot, lg;
+    vector<int> dsu, dep, rt;
+    vector<ll> val;
+    vector<vector<int>> son, fa;
+
+    int find(int x)
+    {
+        if (dsu[x] == x)
+            return x;
+        return dsu[x] = find(dsu[x]);
+    }
+
+    // maximum = false: 最小生成树重构
+    // maximum = true : 最大生成树重构
+    KruskalTree(int n, vector<Edge> edges, bool maximum = false) : n(n), tot(n)
+    {
+        int N = 2 * n + 1;
+
+        dsu.resize(N);
+        iota(dsu.begin(), dsu.end(), 0);
+
+        val.assign(N, 0);
+        son.resize(N);
+
+        sort(all(edges), [&](const Edge &a, const Edge &b) { return maximum ? a.w > b.w : a.w < b.w; });
+
+        for (auto [u, v, w]: edges)
+        {
+            u = find(u), v = find(v);
+
+            if (u == v)
+                continue;
+
+            ++tot;
+            val[tot] = w, son[tot].eb(u), son[tot].eb(v);
+            dsu[u] = dsu[v] = tot;
+        }
+
+        lg = 1;
+        while ((1 << lg) <= tot)
+            lg++;
+
+        dep.assign(tot + 1, 0);
+        rt.assign(tot + 1, 0);
+        fa.assign(tot + 1, vector<int>(lg));
+
+        auto dfs = [&](auto &&self, int u, int p, int root) -> void
+        {
+            dep[u] = dep[p] + 1;
+            rt[u] = root;
+
+            fa[u][0] = p;
+
+            for (int j = 1; j < lg; j++)
+                fa[u][j] = fa[fa[u][j - 1]][j - 1];
+
+            for (int v: son[u])
+                self(self, v, u, root);
+        };
+
+        for (int i = 1; i <= tot; i++)
+        {
+            if (find(i) == i)
+                dfs(dfs, i, 0, i);
+        }
+    }
+
+    int lca(int u, int v) const
+    {
+        if (dep[u] < dep[v])
+            swap(u, v);
+
+        int d = dep[u] - dep[v];
+
+        for (int j = 0; j < lg; j++)
+            if ((d >> j) & 1)
+                u = fa[u][j];
+
+        if (u == v)
+            return u;
+
+        for (int j = lg - 1; j >= 0; j--)
+        {
+            if (fa[u][j] != fa[v][j])
+            {
+                u = fa[u][j];
+                v = fa[v][j];
+            }
+        }
+
+        return fa[u][0];
+    }
+
+    // 不连通返回 -1；同一点返回 0
+    ll query(int u, int v) const
+    {
+        if (rt[u] != rt[v])
+            return -1;
+
+        if (u == v)
+            return 0;
+
+        return val[lca(u, v)];
+    }
+};
+
+// vector<KruskalTree::Edge> edges(m);
+// KruskalTree tr(n, edges);
+
+```
+
