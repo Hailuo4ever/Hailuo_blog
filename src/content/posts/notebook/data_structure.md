@@ -552,3 +552,68 @@ struct Event
 ## 原理
 
 和 $LCA$ 类似，我们定义 $st[i][j]$ 表示从 $i$ 开始，连续 $2^j$ 个数的最大值。
+
+因此，ST表中 $(i,j)$ 对应的区间是 $[i,\ i+2^j-1]$，它的长度为 $2^j$，我们可以通过倍增 $DP$ 的方式预处理出所有信息。把一个区间拆成两半，有 ${ st[i][j] = \max \left( st[i][j-1], st[i+2^{j-1}][j-1] \right) }$。
+
+在查询时，假设我们要查询 $[l,r]$ 的最大值，区间长度 $len=r-l+1$，找到最大的满足 $2^k\le len$ 的 $k$，也就是 $k=\lfloor\log_2(len)\rfloor$，然后取两个长度为 $2^k$ 的区间，左侧 $[l,l+2^k-1]$，右侧 $[r-2^k+1,r]$。答案即为 $\boxed{ \max \left( st[l][k], st[r-2^k+1][k] \right) }$。如下图所示。
+
+```text
+左边：[2,5]
+
+2 3 4 5
+████████
+
+右边：[4,7]
+
+    4 5 6 7
+    ████████
+```
+
+由于这种查询是有重叠区间的，因此他只适合处理一些重复贡献不影响答案的操作，例如 $\max,\min,\gcd,\operatorname{lcm},\&,|$。
+
+对于求 `log`，可以使用 `int k = __lg(r - l + 1);`，或者直接预处理出 `lg` 数组。
+
+## 模板
+
+```c++
+struct ST
+{
+    int n, K;
+    vector<int> lg;
+    vector<vector<ll>> st;
+
+    ST() {}
+
+    ST(const vector<ll> &a)
+    {
+        init(a);
+    }
+
+    void init(const vector<ll> &a)
+    {
+        n = (int) a.size() - 1;
+        K = __lg(n);
+
+        lg.assign(n + 1, 0);
+        for (int i = 2; i <= n; i++)
+            lg[i] = lg[i / 2] + 1;
+
+        st.assign(n + 1, vector<ll>(K + 1));
+
+        for (int i = 1; i <= n; i++)
+            st[i][0] = a[i];
+
+        for (int j = 1; j <= K; j++)
+            for (int i = 1; i + (1 << j) - 1 <= n; i++)
+                st[i][j] = max(st[i][j - 1], st[i + (1 << (j - 1))][j - 1]);
+    }
+
+    ll query(int l, int r)
+    {
+        int k = lg[r - l + 1];
+        return max(st[l][k], st[r - (1 << k) + 1][k]);
+    }
+};
+
+```
+
