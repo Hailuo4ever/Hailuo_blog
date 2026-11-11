@@ -2012,3 +2012,161 @@ struct KruskalTree
 
 ```
 
+# 边双连通分量（EBCC）
+
+## 基本概念
+
+在一张无向图中，如果两个不同的顶点 $u,v$ 之间**存在至少两条没有公共边的路径**，那么称这两个顶点**边双连通**。
+
+一个边双连通分量，就是一个极大的边双连通顶点集合。单独一个顶点也可以构成一个边双连通分量。
+
+> [!TIP]
+>
+> EBCC 与桥的关系；一个 EBCC 内部一定不存在桥，连接两个不同 EBCC 的边一定是桥。
+>
+> 所以可以将 EBCC 理解成：桥将整张图分割成几个连通块，这些连通块就是 EBCC。
+
+## 求解方法
+
+有两种写法，一种是先跑 `Tarjan` 找到所有桥，然后 `DFS` 求删掉桥后的连通块；一种是利用 `Tarjan` 和栈，在一次 `DFS` 中直接求 `EBCC`。
+
+我们知道桥的判断方式是对于 `DFS` 树中的一条树边 $(u,v)$，满足 $low[v]>dfn[u]$。可以采用类似于 $SCC$ 的方式，使用栈来划分 `EBCC`。
+
+```c++
+if (dfn[x] == low[x])
+{
+    int y;
+    do
+    {
+        y = stk.back();
+        bel[y] = cnt;
+        stk.pop_back();
+    } while (y != x);
+    cnt++;
+}
+```
+
+当满足 `low[u] == dfn[u]` 时，说明 $u$ 的 $DFS$ 子树无法通过返祖边到达 $u$ 的严格祖先，此时如果 $u$ 有父亲，那么连接 $u$ 与父亲的树边是桥；如果 $u$ 是 $DFS$ 根，那么它本身就是当前连通块的起点。因此可以把从栈顶到 $u$ 的所有尚未归属于某个 `EBCC` 的节点弹出，放入同一个 `EBCC`。
+
+## Code
+
+```c++
+struct EBCC
+{
+    int n, m = 0, timer = 0, cnt = 0;
+
+    vector<vector<pii>> g;
+    vector<pii> edges;
+    vector<int> dfn, low, bel, stk, isBridge;
+
+    EBCC(int n) : n(n)
+    {
+        g.resize(n + 1);
+        edges.resize(1);
+        dfn.resize(n + 1);
+        low.resize(n + 1);
+        bel.resize(n + 1);
+        isBridge.resize(1);
+    }
+
+    void addEdge(int u, int v)
+    {
+        ++m;
+        g[u].eb(v, m);
+        g[v].eb(u, m);
+        edges.eb(u, v);
+        isBridge.eb(0);
+    }
+
+    vector<int> work()
+    {
+        timer = cnt = 0;
+        stk.clear();
+
+        fill(all(dfn), 0);
+        fill(all(low), 0);
+        fill(all(bel), 0);
+        fill(all(isBridge), 0);
+
+        auto dfs = [&](auto &&self, int u, int pe) -> void
+        {
+            dfn[u] = low[u] = ++timer;
+            stk.eb(u);
+
+            for (auto [v, id]: g[u])
+            {
+                if (id == pe)
+                    continue;
+
+                if (!dfn[v])
+                {
+                    self(self, v, id);
+                    low[u] = min(low[u], low[v]);
+
+                    if (low[v] > dfn[u])
+                        isBridge[id] = 1;
+                }
+                else if (dfn[v] < dfn[u])
+                    low[u] = min(low[u], dfn[v]);
+            }
+
+            if (dfn[u] == low[u])
+            {
+                ++cnt;
+                while (true)
+                {
+                    int v = stk.back();
+                    stk.pop_back();
+                    bel[v] = cnt;
+
+                    if (v == u)
+                        break;
+                }
+            }
+        };
+
+        for (int i = 1; i <= n; i++)
+            if (!dfn[i])
+                dfs(dfs, i, 0);
+
+        return bel;
+    }
+
+    struct Graph
+    {
+        int n;
+        vector<vector<int>> g;
+        vector<pii> edges;
+        vector<int> siz, cnte;
+    };
+
+    Graph compress()
+    {
+        Graph res;
+        res.n = cnt;
+        res.g.resize(cnt + 1);
+        res.siz.resize(cnt + 1);
+        res.cnte.resize(cnt + 1);
+
+        for (int i = 1; i <= n; i++)
+            res.siz[bel[i]]++;
+
+        for (int i = 1; i <= m; i++)
+        {
+            auto [u, v] = edges[i];
+            int x = bel[u], y = bel[v];
+
+            if (x == y)
+                res.cnte[x]++;
+            else
+                res.edges.eb(x, y), res.g[x].eb(y), res.g[y].eb(x);
+        }
+
+        return res;
+    }
+};
+
+```
+
+## 性质
+
