@@ -34,6 +34,7 @@ import {
 	plantumlConfig,
 	siteConfig,
 } from "./src/config";
+import oblivion from "./src/config/themes/oblivion.mjs";
 import I18nKey from "./src/i18n/i18nKey";
 import { i18n } from "./src/i18n/translation";
 import { MusicPlayerComponent } from "./src/plugins/rehype-component-music-player.mjs";
@@ -159,7 +160,9 @@ export default defineConfig({
 			},
 		}),
 		expressiveCode({
-			themes: [expressiveCodeConfig.darkTheme, expressiveCodeConfig.lightTheme],
+			themes: [expressiveCodeConfig.darkTheme, expressiveCodeConfig.lightTheme].map(
+				(name) => name === oblivion.name ? oblivion : name,
+			),
 			useDarkModeMediaQuery: false,
 			themeCssSelector: (theme) => `[data-theme='${theme.name}']`,
 			plugins: [

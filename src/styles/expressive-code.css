@@ -28,7 +28,7 @@
   /*
    * expressive-code-collapsible 判断亮色的方式是 html.light / [data-theme='light'] /
    * @media (prefers-color-scheme: light)，本站用的是 :root.dark 加
-   * data-theme='one-light' | 'one-dark-pro'，三种都命中不了；于是系统暗色 + 站点亮色时
+   * data-theme 标记代码主题名称，三种都命中不了；于是系统暗色 + 站点亮色时
    * 只剩插件的暗色兜底值，遮罩就成了暗色。
    *
    * 插件所有渐变规则都优先读 --ec-collapse-bg-color，而遮罩层本身位于 .expressive-code
@@ -65,11 +65,10 @@
 }
 
 /* ec-lang-logo 亮暗色适配 - 覆盖插件默认的 data-theme=light/dark 选择器 */
-/* 项目使用 data-theme='one-dark-pro' / data-theme='one-light' 作为主题标识 */
-html[data-theme='one-light'] {
+html:not(.dark) {
   --ec-lang-logo: #111;
 }
-html[data-theme='one-dark-pro'] {
+html.dark {
   --ec-lang-logo: #fff;
 }
 
