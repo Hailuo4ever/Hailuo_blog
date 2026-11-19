@@ -694,6 +694,173 @@ int main()
 
 ```
 
+# I - 农历
+
+> 关键词：模拟
+
+## 思路
+
+数据范围给的不大，我们可以直接逐天模拟。当我们来到某一天时，首先计算一下是不是节气。在计算下一天，注意要维护两个日期，一个是公历日期（注意闰年的处理），一个是农历日期。农历日期在更新的过程中，如果我们发现下一个农历日期的月份有变化，说明当前是农历日期的最后一天，我们开始计算答案。
+
+根据题意，农历月是一个闰月当且仅当其中 $1$ 的个数不为 $0$ 且 $2$ 的个数为 $0$，计算后更新年份的答案。
+
+但还需要考虑一个问题：农历月可能跨过了一个公历年，对两个公历年的答案做出贡献。因此，我们需要额外维护当前农历月对应的公历年范围的左边界和右边界。
+
+## Code
+
+```c++
+// Problem: QOJ 25513
+// Contest: QOJ - （2026）第七届辽宁省大学生程序设计竞赛 (沈阳)
+// URL: https://qoj.ac/contest/4707/problem/25513
+// Time: 2026-11-19 22:41:39
+#include <bits/stdc++.h>
+#include <cassert>
+using namespace std;
+
+#ifdef LOCAL
+#include "Debug.hpp"
+#else
+#define debug(...) ((void) 0)
+#endif
+
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+#define eb emplace_back
+
+using ll = long long;
+using ld = long double;
+using ull = unsigned long long;
+using pii = pair<int, int>;
+using pdd = pair<double, double>;
+using pll = pair<long long, long long>;
+using i128 = __int128;
+
+const int dx[] = {-1, 0, 1, 0, -1, 1, 1, -1};
+const int dy[] = {0, 1, 0, -1, 1, 1, -1, -1};
+const int inf = 0x3f3f3f3f;
+const int N = 2e5 + 10;
+const ll INF = 4e18;
+
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+int rand(int l, int r)
+{
+    return uniform_int_distribution<int>(l, r)(rnd);
+}
+
+int lunar_days[] = {0, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30};
+int days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+bool run(int year)
+{
+    return (year % 400 == 0 or (year % 4 == 0 and year % 100 != 0));
+}
+
+array<int, 2> get_lunar(array<int, 2> now)
+{
+    auto [m, d] = now;
+
+    if (++d > lunar_days[m])
+        ++m, d = 1;
+
+    if (m > 12)
+        m = 1;
+
+    return {m, d};
+}
+
+array<int, 3> get_days(array<int, 3> now)
+{
+    auto [y, m, d] = now;
+
+    if (run(y))
+        days[2] = 29;
+    else
+        days[2] = 28;
+
+    if (++d > days[m])
+        ++m, d = 1;
+
+    if (m > 12)
+        m = 1, y++;
+
+    return {y, m, d};
+}
+
+void solve()
+{
+    int y = 1900, m = 1, d = 1, lm = 12, ld = 1, st = inf, ed = 0;
+    vector<int> res(N), sun, lunar;
+
+    while (true)
+    {
+        if (y == 200001 && m == 1 && d == 1)
+            break;
+
+        if (m >= 1 and m <= 6)
+        {
+            if (d == 6)
+                lunar.eb(1);
+            else if (d == 21)
+                lunar.eb(2);
+        }
+        else
+        {
+            if (d == 8)
+                lunar.eb(1);
+            else if (d == 23)
+                lunar.eb(2);
+        }
+
+        auto [sy, sm, sd] = get_days({y, m, d});
+        auto [lunarm, lunard] = get_lunar({lm, ld});
+
+        st = min(st, y), ed = max(ed, y);
+
+        if (lunarm != lm)
+        {
+            if (count(all(lunar), 1) and !count(all(lunar), 2))
+            {
+                for (int j = st; j <= ed; j++)
+                    res[j]++;
+            }
+
+            st = inf, ed = 0, lunar.clear();
+        }
+
+        if (sy != y)
+            res[y] += res[y - 1];
+
+        y = sy, m = sm, d = sd, lm = lunarm, ld = lunard;
+    }
+
+    int q;
+    cin >> q;
+
+    while (q--)
+    {
+        int l, r;
+        cin >> l >> r;
+        cout << res[r] - res[l - 1] << endl;
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0), cin.tie(0);
+
+    int T = 1;
+    // cin >> T;
+
+    while (T--)
+        solve();
+
+    return 0;
+}
+
+```
+
+
+
 # J - 数字谜题
 
 > 关键词：思维
