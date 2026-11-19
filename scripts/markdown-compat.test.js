@@ -122,3 +122,18 @@ test("legacy music directives retain native audio, cover and format sources", as
 	assert.match(result.code, /cover\.png/);
 	assert.match(result.code, /preload="none"/);
 });
+
+test("single-line article music supports local files without a cover or artist", async () => {
+	const { code } = await processor.render('::music{title="Song" src="/music/track.ogg"}');
+	assert.match(code, /<article-music\b/);
+	assert.match(code, /<audio[^>]*controls[^>]*preload="none"/);
+	assert.match(code, /<source src="\/music\/track\.ogg">/);
+	assert.match(code, /<button[^>]*hidden/);
+	assert.doesNotMatch(code, /<img|track-artist|autoplay/);
+});
+
+test("missing music sources display the authoring hint without an empty player", async () => {
+	const { code } = await processor.render('::music{title="Song" src=" "}');
+	assert.match(code, /音频地址未配置/);
+	assert.doesNotMatch(code, /<article-music|<audio/);
+});

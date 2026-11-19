@@ -1,0 +1,106 @@
+.custom-md article-music {
+	display: block;
+	box-sizing: border-box;
+	width: min(100%, 28rem);
+	margin: 1.25rem 0;
+	padding: .75rem;
+	border: 1px solid var(--line-color);
+	border-radius: .875rem;
+	background: var(--card-bg);
+	color: var(--tw-prose-headings);
+	line-height: 1.35;
+
+	&:has(.track-toggle:not([hidden])) {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: .875rem;
+	}
+
+	[hidden] { display: none; }
+	audio { width: 100%; margin-top: .5rem; }
+
+	.track-toggle {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 3.75rem;
+		height: 3.75rem;
+		padding: 0;
+		border-radius: .625rem;
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		cursor: pointer;
+	}
+
+	.track-toggle img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		border-radius: inherit;
+		object-fit: cover;
+		pointer-events: none;
+	}
+
+	.track-symbol {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+	}
+
+	.track-toggle:has(img:not([hidden])) .track-symbol {
+		color: white;
+		background: rgb(0 0 0 / 62%);
+	}
+
+	.track-symbol::before {
+		content: "";
+		width: .9rem;
+		height: 1rem;
+		background: currentColor;
+		clip-path: polygon(18% 0, 100% 50%, 18% 100%);
+	}
+
+	[data-playing] .track-symbol::before {
+		width: .75rem;
+		clip-path: none;
+		background: none;
+		border-inline: .25rem solid currentColor;
+	}
+
+	.track-title, .track-artist {
+		display: block;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.track-title { font-size: 1rem; font-weight: 600; }
+	.track-artist, .track-status { font-size: .8125rem; color: var(--content-meta); }
+	.track-timeline { display: flex; align-items: center; gap: .65rem; }
+	.track-time { flex: none; font-size: .6875rem; font-variant-numeric: tabular-nums; color: var(--content-meta); }
+
+	input[type="range"] {
+		appearance: none;
+		flex: 1;
+		min-width: 0;
+		height: 1.5rem;
+		margin: 0;
+		background: linear-gradient(to right, var(--primary) var(--progress, 0%), var(--meta-divider) 0) center / 100% 3px no-repeat;
+		cursor: pointer;
+	}
+
+	input:disabled { cursor: default; }
+	input::-webkit-slider-thumb { appearance: none; width: .625rem; height: .625rem; border-radius: 50%; background: var(--btn-content); }
+	input::-moz-range-thumb { width: .625rem; height: .625rem; border: 0; border-radius: 50%; background: var(--btn-content); }
+	input:disabled::-webkit-slider-thumb { opacity: 0; }
+	input:disabled::-moz-range-thumb { opacity: 0; }
+	:focus-visible { outline: 2px solid var(--btn-content); outline-offset: 2px; }
+	/* Explicitly hide enhanced controls before the custom element is ready. */
+	.track-toggle[hidden], .track-timeline[hidden] { display: none; }
+}
