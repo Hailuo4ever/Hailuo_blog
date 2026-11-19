@@ -47,6 +47,9 @@ jobs:
       - name: Test writing tools
         run: pnpm test:luogu-format
 
+      - name: Test blog password gate
+        run: node --test scripts/password-gate.test.js
+
       - name: Test Markdown compatibility
         run: pnpm test:markdown-compat
 
