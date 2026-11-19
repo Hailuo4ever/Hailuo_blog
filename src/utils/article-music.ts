@@ -6,7 +6,7 @@ function formatTime(seconds: number): string {
 class ArticleMusic extends HTMLElement {
 	private listeners?: AbortController;
 
-	connectedCallback() {
+	connectedCallback(): void {
 		const audio = this.querySelector("audio");
 		const toggle = this.querySelector<HTMLButtonElement>(".track-toggle");
 		const timeline = this.querySelector<HTMLElement>(".track-timeline");
@@ -117,7 +117,7 @@ class ArticleMusic extends HTMLElement {
 		toggle.hidden = timeline.hidden = false;
 	}
 
-	disconnectedCallback() {
+	disconnectedCallback(): void {
 		this.listeners?.abort();
 		this.querySelector("audio")?.pause();
 	}
