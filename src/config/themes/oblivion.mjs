@@ -18,14 +18,24 @@ export default {
 		},
 		{
 			scope: [
-				"keyword.operator.word", "keyword.operator.new", "keyword.operator.delete",
-				"keyword.operator.sizeof", "keyword.operator.logical.python",
-				"keyword.operator.expression.instanceof", "keyword.operator.expression.typeof",
+				"keyword.operator.word",
+				"keyword.operator.new",
+				"keyword.operator.delete",
+				"keyword.operator.sizeof",
+				"keyword.operator.logical.python",
+				"keyword.operator.expression.instanceof",
+				"keyword.operator.expression.typeof",
 			],
 			settings: { foreground: "#ffffff", fontStyle: "bold italic" },
 		},
 		{
-			scope: ["storage.type", "support.type", "support.class", "entity.name.type", "entity.name.class"],
+			scope: [
+				"storage.type",
+				"support.type",
+				"support.class",
+				"entity.name.type",
+				"entity.name.class",
+			],
 			settings: { foreground: "#8ae234", fontStyle: "bold italic" },
 		},
 		{
@@ -37,7 +47,11 @@ export default {
 			settings: { foreground: "#edd400" },
 		},
 		{
-			scope: ["constant.character.escape", "constant.language", "constant.numeric.float"],
+			scope: [
+				"constant.character.escape",
+				"constant.language",
+				"constant.numeric.float",
+			],
 			settings: { foreground: "#f57900" },
 		},
 		{
