@@ -8,7 +8,7 @@ import type { ExpressiveCodeConfig } from "../types/expressiveCodeConfig";
 
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// 暗色主题（用于暗色模式）
-	darkTheme: "oblivion",
+	darkTheme: "tokyo-night",
 
 	// 亮色主题（用于亮色模式）
 	lightTheme: "one-light",

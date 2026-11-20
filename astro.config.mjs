@@ -163,6 +163,31 @@ export default defineConfig({
 			themes: [expressiveCodeConfig.darkTheme, expressiveCodeConfig.lightTheme].map(
 				(name) => name === oblivion.name ? oblivion : name,
 			),
+			customizeTheme(theme) {
+				if (theme.name !== "tokyo-night") return;
+				theme.settings.push({
+					scope: [
+						"keyword.control",
+						"keyword.control.flow.python",
+						"keyword.other",
+						"keyword.operator.word",
+						"keyword.operator.new",
+						"keyword.operator.delete",
+						"keyword.operator.sizeof",
+						"keyword.operator.logical.python",
+						"keyword.operator.expression.instanceof",
+						"keyword.operator.expression.typeof",
+						"storage.type",
+						"storage.modifier",
+						"variable.language",
+						"support.type",
+						"support.class",
+						"entity.name.type",
+						"entity.name.class",
+					],
+					settings: { fontStyle: "italic" },
+				});
+			},
 			useDarkModeMediaQuery: false,
 			themeCssSelector: (theme) => `[data-theme='${theme.name}']`,
 			plugins: [

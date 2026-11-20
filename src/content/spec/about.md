@@ -67,4 +67,4 @@ QQ: 3175947757
 2026.11.20 
 
 1. 使用 `GPT 6.2 Astra` 为博客添加了密码访问页，输入正确后会发放一个 $7$ 天的 `Cookie`。
-2. 暗色代码主题由 `Dracula` 改为 `Oblivion`。
+2. 暗色代码主题由 `Dracula` 改为 `Tokyo Night`。
